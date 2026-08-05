@@ -40,6 +40,12 @@ Markers:
 ## Automated validation
 
 - [ ] **[Codex—instructed]** Run `npm ci`.
+- [ ] **[Codex—instructed; online release check]** Run and review the full
+      `npm audit --json` result. Any unresolved high or critical
+      development-tool vulnerability requires an explicit release decision.
+- [ ] **[Codex—instructed; online release check]** Run and review the
+      production-only `npm audit --omit=dev --json` result. Any production
+      vulnerability blocks release.
 - [ ] **[Codex—instructed]** Run `npm run verify:release-integrity` and review
       the application-license, package-notice, fixture-provenance, and
       documentation checks.
