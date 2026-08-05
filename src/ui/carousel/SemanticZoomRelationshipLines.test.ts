@@ -172,6 +172,17 @@ async function selectCompact(): Promise<void> {
   );
 }
 
+async function selectOverview(): Promise<void> {
+  await fireEvent.input(screen.getByRole('slider', { name: 'Semantic zoom' }), {
+    target: { value: '0' },
+  });
+  await waitFor(() =>
+    expect(
+      document.querySelector('[data-carousel-gesture-viewport]'),
+    ).toHaveAttribute('data-semantic-zoom-presentation', 'overview'),
+  );
+}
+
 function leafwardLines(): SVGPathElement[] {
   return [
     ...document.querySelectorAll<SVGPathElement>(
@@ -223,6 +234,77 @@ afterEach(() => {
 });
 
 describe('SemanticZoomRelationshipLines', () => {
+  it('renders lighter Overview lines with unchanged endpoints and clears them in Full', async () => {
+    render(App);
+    await selectCompact();
+    await waitFor(() => expect(leafwardLines()).toHaveLength(3));
+    const compactEndpoints = leafwardLines().map((line) => [
+      line.dataset.semanticZoomLineFromX,
+      line.dataset.semanticZoomLineFromY,
+      line.dataset.semanticZoomLineToX,
+      line.dataset.semanticZoomLineToY,
+    ]);
+
+    await selectOverview();
+    await waitFor(() => expect(leafwardLines()).toHaveLength(3));
+    const layer = document.querySelector(
+      '[data-semantic-zoom-relationship-lines]',
+    );
+    expect(layer).toHaveAttribute(
+      'data-semantic-zoom-line-presentation',
+      'overview',
+    );
+    expect(layer).toHaveClass('overview');
+    expect(
+      leafwardLines().map((line) => [
+        line.dataset.semanticZoomLineFromX,
+        line.dataset.semanticZoomLineFromY,
+        line.dataset.semanticZoomLineToX,
+        line.dataset.semanticZoomLineToY,
+      ]),
+    ).toEqual(compactEndpoints);
+
+    await fireEvent.input(
+      screen.getByRole('slider', { name: 'Semantic zoom' }),
+      { target: { value: '2' } },
+    );
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-semantic-zoom-relationship-lines]'),
+      ).not.toBeInTheDocument(),
+    );
+  });
+
+  it('passes the corrected State A → B → C identity sequence in Overview', async () => {
+    activateRelationshipFixture();
+    render(App);
+    await selectOverview();
+    await waitFor(() => expect(leafwardLines().length).toBeGreaterThan(2));
+    const stateAKeys = lineKeys();
+
+    const typeCard = screen.getByRole('article', {
+      name: /RelationshipLineType/u,
+    });
+    await fireEvent.click(
+      within(typeCard).getByRole('button', { name: /Navigate leafward/u }),
+    );
+    await screen.findByRole('heading', { name: 'RelationshipLineType' });
+    await waitFor(() =>
+      expect(
+        document.querySelectorAll('[data-semantic-zoom-line-kind="rootward"]'),
+      ).toHaveLength(1),
+    );
+    const stateBKeys = lineKeys();
+    expect(stateBKeys).not.toEqual(stateAKeys);
+    for (const key of stateAKeys) expect(stateBKeys).not.toContain(key);
+
+    await fireEvent.click(
+      screen.getByRole('button', { name: /Navigate rootward/u }),
+    );
+    await waitFor(() => expect(lineKeys()).toEqual(stateAKeys));
+    for (const key of stateBKeys) expect(lineKeys()).not.toContain(key);
+  });
+
   it('shares the offset stage coordinate system and maps every line to its card identity', async () => {
     const rendered = render(App);
     await selectCompact();

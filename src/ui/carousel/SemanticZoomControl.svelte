@@ -2,6 +2,7 @@
   import { onDestroy } from 'svelte';
   import {
     semanticZoomLevelLabel,
+    stepSemanticZoom,
     type SemanticZoomState,
   } from '../../app/stores/semanticZoomStore';
   import {
@@ -35,8 +36,10 @@
 
   $: currentLabel = semanticZoomLevelLabel(presentation);
   $: rangeValue = semanticZoomControlValue(presentation);
-  $: canZoomOut = presentation === 'full';
-  $: canZoomIn = presentation === 'compact';
+  $: zoomOutTarget = stepSemanticZoom(presentation, 'out');
+  $: zoomInTarget = stepSemanticZoom(presentation, 'in');
+  $: canZoomOut = zoomOutTarget !== presentation;
+  $: canZoomIn = zoomInTarget !== presentation;
 
   onDestroy(resetWheelInteraction);
 
@@ -83,10 +86,11 @@
     };
     const action = semanticZoomWheelAction(input);
     if (!action) return;
-    if (
-      (presentation === 'compact' && action === 'zoomOut') ||
-      (presentation === 'full' && action === 'zoomIn')
-    ) {
+    const boundaryTarget = stepSemanticZoom(
+      presentation,
+      action === 'zoomOut' ? 'out' : 'in',
+    );
+    if (boundaryTarget === presentation) {
       return;
     }
 
@@ -120,15 +124,15 @@
     <span class="control-label">Zoom</span>
     <button
       type="button"
-      aria-label="Zoom out to Compact"
+      aria-label={`Zoom out to ${semanticZoomLevelLabel(zoomOutTarget)}`}
       disabled={!canZoomOut}
-      onclick={() => selectPresentation('compact')}
+      onclick={() => selectPresentation(zoomOutTarget)}
     >
       <span aria-hidden="true">−</span>
     </button>
     <input
       type="range"
-      min="1"
+      min="0"
       max="2"
       step="1"
       value={rangeValue}
@@ -138,9 +142,9 @@
     />
     <button
       type="button"
-      aria-label="Zoom in to Full detail"
+      aria-label={`Zoom in to ${semanticZoomLevelLabel(zoomInTarget)}`}
       disabled={!canZoomIn}
-      onclick={() => selectPresentation('full')}
+      onclick={() => selectPresentation(zoomInTarget)}
     >
       <span aria-hidden="true">+</span>
     </button>

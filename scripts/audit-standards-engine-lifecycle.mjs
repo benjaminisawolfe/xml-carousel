@@ -911,7 +911,19 @@ async function waitForRelationshipLineState(
   }
 }
 
-async function relationshipLineRegression(driver, screenshotDirectory) {
+async function relationshipLineRegression(
+  driver,
+  screenshotDirectory,
+  presentation = 'compact',
+) {
+  const rangeValue = presentation === 'overview' ? '0' : '1';
+  await driver.evaluate(`(() => {
+    const range = document.querySelector('[aria-label="Semantic zoom"]');
+    if (!range) return false;
+    range.value = ${JSON.stringify(rangeValue)};
+    range.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    return true;
+  })()`);
   await importFile(
     driver,
     'xsd',
@@ -928,7 +940,7 @@ async function relationshipLineRegression(driver, screenshotDirectory) {
   if (screenshotDirectory) {
     screenshots.stateA = path.join(
       screenshotDirectory,
-      'relationship-lines-state-a.png',
+      `relationship-lines-${presentation}-state-a.png`,
     );
     await driver.screenshot(screenshots.stateA);
   }
@@ -945,7 +957,7 @@ async function relationshipLineRegression(driver, screenshotDirectory) {
   if (screenshotDirectory) {
     screenshots.stateB = path.join(
       screenshotDirectory,
-      'relationship-lines-state-b.png',
+      `relationship-lines-${presentation}-state-b.png`,
     );
     await driver.screenshot(screenshots.stateB);
   }
@@ -962,7 +974,7 @@ async function relationshipLineRegression(driver, screenshotDirectory) {
   if (screenshotDirectory) {
     screenshots.stateC = path.join(
       screenshotDirectory,
-      'relationship-lines-state-c.png',
+      `relationship-lines-${presentation}-state-c.png`,
     );
     await driver.screenshot(screenshots.stateC);
   }
@@ -990,17 +1002,18 @@ async function relationshipLineRegression(driver, screenshotDirectory) {
   await driver.evaluate(`(() => {
     const range = document.querySelector('[aria-label="Semantic zoom"]');
     if (!range) return false;
-    range.value = '1';
+    range.value = ${JSON.stringify(rangeValue)};
     range.dispatchEvent(new InputEvent('input', { bubbles: true }));
     return true;
   })()`);
-  const compactRestored = await waitForRelationshipLineState(
+  const presentationRestored = await waitForRelationshipLineState(
     driver,
     'Schema overview',
     3,
     0,
   );
   return {
+    presentation,
     fixture: INPUTS.relationshipLines,
     stateA,
     stateB,
@@ -1008,7 +1021,7 @@ async function relationshipLineRegression(driver, screenshotDirectory) {
     noStateBPathsRemain,
     stateARestored,
     fullCleared,
-    compactRestored,
+    presentationRestored,
     screenshots,
   };
 }
@@ -1075,6 +1088,7 @@ async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
       focusName: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
       focusIsHeading: document.activeElement?.matches?.('[data-focus-card-heading]') ?? false,
       focusCompact: focus?.classList.contains('compact') ?? false,
+      focusHeight: focus?.getBoundingClientRect().height ?? null,
       focusSummaryPresent: Boolean(focus?.querySelector('[data-focus-card-scroll-region]')),
       focusKindPresent: Boolean(focus?.querySelector('.kind-badge')),
       inspectPresent: Boolean(focus?.querySelector('[aria-label="Inspect book"]')),
@@ -1246,10 +1260,82 @@ async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
     await rm(compactBranchDirectory, { recursive: true, force: true });
   }
 
-  const relationshipLines = await relationshipLineRegression(
+  const compactRelationshipLines = await relationshipLineRegression(
     driver,
     screenshotDirectory,
+    'compact',
   );
+  const compactVisibleLeafwardCards =
+    compactRelationshipLines.stateA.leafwardCount;
+  const overviewRelationshipLines = await relationshipLineRegression(
+    driver,
+    screenshotDirectory,
+    'overview',
+  );
+  const overviewVisibleLeafwardCards =
+    overviewRelationshipLines.stateA.leafwardCount;
+  await driver.click(
+    '[data-semantic-zoom-leafward-edge-id] [data-carousel-navigation-action]',
+  );
+  await waitUntil(
+    () =>
+      driver.evaluate(
+        `document.querySelector('[data-focus-card-heading]')?.textContent?.trim() === 'RelationshipLineType'`,
+      ),
+    'Task 14.3 Overview rootward names-only state',
+  );
+  const overviewRootwardNamesOnly = await driver.evaluate(`(() => {
+    const cards = [...document.querySelectorAll('.rootward-context .context-card')];
+    return cards.length > 0 && cards.every((card) =>
+      card.textContent?.trim() === card.querySelector('.node-name')?.textContent?.trim()
+    );
+  })()`);
+  await driver.click(
+    '[data-semantic-zoom-rootward-position] [data-carousel-navigation-action]',
+  );
+  await waitUntil(
+    () =>
+      driver.evaluate(
+        `document.querySelector('[data-focus-card-heading]')?.textContent?.trim() === 'Schema overview'`,
+      ),
+    'Task 14.3 Overview rootward return',
+  );
+  const overview = await driver.evaluate(`(() => {
+    const surface = document.querySelector('[data-carousel-gesture-viewport]');
+    const focus = document.querySelector('[data-semantic-zoom-focus-card]');
+    const contextCards = [...document.querySelectorAll('.context-card')];
+    const historyRows = [...document.querySelectorAll('[data-rootward-history-row]')];
+    const visibleText = (element) => element?.textContent?.trim() ?? '';
+    return {
+      requested: surface?.getAttribute('data-semantic-zoom-requested') ?? null,
+      effective: surface?.getAttribute('data-semantic-zoom-effective') ?? null,
+      presentation: surface?.getAttribute('data-semantic-zoom-presentation') ?? null,
+      rangeValue: document.querySelector('[aria-label="Semantic zoom"]')?.value ?? null,
+      rangeValueText: document.querySelector('[aria-label="Semantic zoom"]')?.getAttribute('aria-valuetext') ?? null,
+      focusText: visibleText(focus),
+      focusName: focus?.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
+      focusHeight: focus?.getBoundingClientRect().height ?? null,
+      rootwardNamesOnly: ${overviewRootwardNamesOnly},
+      contextNamesOnly: contextCards.every((card) =>
+        visibleText(card) === visibleText(card.querySelector('.node-name'))
+      ),
+      historyNamesOnly: historyRows.every((row) =>
+        visibleText(row) === visibleText(row.querySelector('.node-name'))
+      ),
+      inspectCount: surface?.querySelectorAll('[data-inspect-node-id]').length ?? -1,
+      kindBadgeCount: surface?.querySelectorAll('.kind-badge').length ?? -1,
+      occurrenceVisible: contextCards.some((card) => /[?*+]$/u.test(visibleText(card))),
+      linePresentation: document.querySelector('[data-semantic-zoom-relationship-lines]')?.getAttribute('data-semantic-zoom-line-presentation') ?? null,
+      compactVisibleLeafwardCards: ${compactVisibleLeafwardCards},
+      overviewVisibleLeafwardCards: ${overviewVisibleLeafwardCards},
+      contextIncrease: ${overviewVisibleLeafwardCards} > ${compactVisibleLeafwardCards},
+      overflowControlPresent: Boolean(document.querySelector('[data-carousel-window-direction^="leafward-"]')),
+    };
+  })()`);
+  const relationshipLines = {
+    compact: compactRelationshipLines,
+    overview: overviewRelationshipLines,
+  };
 
   const importPersistence = [];
   for (const [format, input, filename] of [
@@ -1286,28 +1372,36 @@ async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
     };
     const down = dispatch(control, { deltaY: 120 });
     await new Promise((resolve) => setTimeout(resolve, 220));
-    const compactBoundary = dispatch(control, { deltaY: 120 });
-    const compactAfterBoundary = surface.getAttribute('data-semantic-zoom-requested');
+    const downAgain = dispatch(control, { deltaY: 120 });
+    await new Promise((resolve) => setTimeout(resolve, 220));
+    const overviewBoundary = dispatch(control, { deltaY: 120 });
+    const overviewAfterBoundary = surface.getAttribute('data-semantic-zoom-requested');
     const up = dispatch(control, { deltaY: -120 });
     await new Promise((resolve) => setTimeout(resolve, 220));
+    const upAgain = dispatch(control, { deltaY: -120 });
+    await new Promise((resolve) => setTimeout(resolve, 220));
+    const fullBoundary = dispatch(control, { deltaY: -120 });
     const ctrl = dispatch(control, { deltaY: 120, ctrlKey: true });
     const meta = dispatch(control, { deltaY: -120, metaKey: true });
     const ordinary = dispatch(surface, { deltaY: 120 });
     return {
       down,
-      compactBoundary,
+      downAgain,
+      overviewBoundary,
       up,
+      upAgain,
+      fullBoundary,
       ctrl,
       meta,
       ordinary,
-      compactAfterBoundary,
+      overviewAfterBoundary,
       finalRequested: surface.getAttribute('data-semantic-zoom-requested'),
     };
   })()`);
 
   await driver.evaluate(`(() => {
     const range = document.querySelector('[aria-label="Semantic zoom"]');
-    range.value = '1';
+    range.value = '0';
     range.dispatchEvent(new InputEvent('input', { bubbles: true }));
     range.focus();
   })()`);
@@ -1327,14 +1421,14 @@ async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
           lineLayerPresent: Boolean(document.querySelector('[data-semantic-zoom-relationship-lines]')),
         };
       })()`),
-    'Task 14.2 constrained fallback',
+    'Task 14.3 constrained fallback',
   );
   await driver.setViewport(1440, 900, false);
   const restored = await waitUntil(
     () =>
       driver.evaluate(`(() => {
         const surface = document.querySelector('[data-carousel-gesture-viewport]');
-        if (surface?.getAttribute('data-semantic-zoom-presentation') !== 'compact') return null;
+        if (surface?.getAttribute('data-semantic-zoom-presentation') !== 'overview') return null;
         return {
           requested: surface.getAttribute('data-semantic-zoom-requested'),
           effective: surface.getAttribute('data-semantic-zoom-effective'),
@@ -1343,13 +1437,14 @@ async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
           rangeValue: document.querySelector('[aria-label="Semantic zoom"]')?.value ?? null,
         };
       })()`),
-    'Task 14.2 desktop restoration',
+    'Task 14.3 desktop restoration',
   );
 
   return {
     url,
     initial,
     compact,
+    overview,
     inspectionOpened,
     inspectionClosed,
     compactContext,
@@ -1858,7 +1953,7 @@ async function main() {
             semanticZoom.overviewVisible === false &&
             semanticZoom.lineLayerCount === 0 &&
             (!semanticZoom.queryMatches ||
-              (semanticZoom.rangeMin === '1' && semanticZoom.rangeMax === '2')),
+              (semanticZoom.rangeMin === '0' && semanticZoom.rangeMax === '2')),
         ),
         compactSemanticZoom:
           compactSemanticZoom.initial.project === 'sample.book.dtd' &&
@@ -1869,7 +1964,7 @@ async function main() {
           compactSemanticZoom.initial.available === 'true' &&
           compactSemanticZoom.initial.reducedMotion === 'true' &&
           compactSemanticZoom.initial.controlPresent &&
-          compactSemanticZoom.initial.range?.min === '1' &&
+          compactSemanticZoom.initial.range?.min === '0' &&
           compactSemanticZoom.initial.range?.max === '2' &&
           compactSemanticZoom.initial.range?.value === '2' &&
           compactSemanticZoom.initial.range?.valueText === 'Full detail' &&
@@ -1900,19 +1995,65 @@ async function main() {
           compactSemanticZoom.compactContext.leafwardLineCount > 0 &&
           compactSemanticZoom.compactContext.finitePaths &&
           compactSemanticZoom.compactContext.uniqueKeys &&
-          compactSemanticZoom.relationshipLines.stateA.leafwardCount >= 3 &&
-          compactSemanticZoom.relationshipLines.stateA.rootwardCount === 0 &&
-          compactSemanticZoom.relationshipLines.stateA.allCorrect &&
-          compactSemanticZoom.relationshipLines.stateB.leafwardCount >= 1 &&
-          compactSemanticZoom.relationshipLines.stateB.rootwardCount === 1 &&
-          compactSemanticZoom.relationshipLines.stateB.allCorrect &&
-          compactSemanticZoom.relationshipLines.stateC.leafwardCount >= 3 &&
-          compactSemanticZoom.relationshipLines.stateC.rootwardCount === 0 &&
-          compactSemanticZoom.relationshipLines.stateC.allCorrect &&
-          compactSemanticZoom.relationshipLines.noStateBPathsRemain &&
-          compactSemanticZoom.relationshipLines.stateARestored &&
-          compactSemanticZoom.relationshipLines.fullCleared &&
-          compactSemanticZoom.relationshipLines.compactRestored.allCorrect &&
+          compactSemanticZoom.overview.requested === 'overview' &&
+          compactSemanticZoom.overview.effective === 'overview' &&
+          compactSemanticZoom.overview.presentation === 'overview' &&
+          compactSemanticZoom.overview.rangeValue === '0' &&
+          compactSemanticZoom.overview.rangeValueText === 'Overview' &&
+          compactSemanticZoom.overview.focusText ===
+            compactSemanticZoom.overview.focusName &&
+          compactSemanticZoom.overview.focusHeight <
+            compactSemanticZoom.compact.focusHeight &&
+          compactSemanticZoom.overview.rootwardNamesOnly &&
+          compactSemanticZoom.overview.contextNamesOnly &&
+          compactSemanticZoom.overview.historyNamesOnly &&
+          compactSemanticZoom.overview.inspectCount === 0 &&
+          compactSemanticZoom.overview.kindBadgeCount === 0 &&
+          !compactSemanticZoom.overview.occurrenceVisible &&
+          compactSemanticZoom.overview.linePresentation === 'overview' &&
+          compactSemanticZoom.overview.contextIncrease &&
+          compactSemanticZoom.relationshipLines.compact.stateA.leafwardCount >=
+            3 &&
+          compactSemanticZoom.relationshipLines.compact.stateA.rootwardCount ===
+            0 &&
+          compactSemanticZoom.relationshipLines.compact.stateA.allCorrect &&
+          compactSemanticZoom.relationshipLines.compact.stateB.leafwardCount >=
+            1 &&
+          compactSemanticZoom.relationshipLines.compact.stateB.rootwardCount ===
+            1 &&
+          compactSemanticZoom.relationshipLines.compact.stateB.allCorrect &&
+          compactSemanticZoom.relationshipLines.compact.stateC.leafwardCount >=
+            3 &&
+          compactSemanticZoom.relationshipLines.compact.stateC.rootwardCount ===
+            0 &&
+          compactSemanticZoom.relationshipLines.compact.stateC.allCorrect &&
+          compactSemanticZoom.relationshipLines.compact.noStateBPathsRemain &&
+          compactSemanticZoom.relationshipLines.compact.stateARestored &&
+          compactSemanticZoom.relationshipLines.compact.fullCleared &&
+          compactSemanticZoom.relationshipLines.compact.presentationRestored
+            .allCorrect &&
+          compactSemanticZoom.relationshipLines.overview.stateA.leafwardCount >
+            compactSemanticZoom.relationshipLines.compact.stateA
+              .leafwardCount &&
+          compactSemanticZoom.relationshipLines.overview.stateA
+            .rootwardCount === 0 &&
+          compactSemanticZoom.relationshipLines.overview.stateA.allCorrect &&
+          compactSemanticZoom.relationshipLines.overview.stateB.leafwardCount >=
+            1 &&
+          compactSemanticZoom.relationshipLines.overview.stateB
+            .rootwardCount === 1 &&
+          compactSemanticZoom.relationshipLines.overview.stateB.allCorrect &&
+          compactSemanticZoom.relationshipLines.overview.stateC.leafwardCount >
+            compactSemanticZoom.relationshipLines.compact.stateC
+              .leafwardCount &&
+          compactSemanticZoom.relationshipLines.overview.stateC
+            .rootwardCount === 0 &&
+          compactSemanticZoom.relationshipLines.overview.stateC.allCorrect &&
+          compactSemanticZoom.relationshipLines.overview.noStateBPathsRemain &&
+          compactSemanticZoom.relationshipLines.overview.stateARestored &&
+          compactSemanticZoom.relationshipLines.overview.fullCleared &&
+          compactSemanticZoom.relationshipLines.overview.presentationRestored
+            .allCorrect &&
           compactSemanticZoom.leafwardNode === 'chapter' &&
           compactSemanticZoom.rootwardNode === 'book.content' &&
           compactSemanticZoom.searchInspection.inspected ===
@@ -1928,19 +2069,25 @@ async function main() {
           compactSemanticZoom.importPersistence.length === 3 &&
           compactSemanticZoom.importPersistence.every(
             ({ requested, effective, presentation, controlPresent }) =>
-              requested === 'compact' &&
-              effective === 'compact' &&
-              presentation === 'compact' &&
+              requested === 'overview' &&
+              effective === 'overview' &&
+              presentation === 'overview' &&
               controlPresent,
           ) &&
           compactSemanticZoom.wheel &&
           !compactSemanticZoom.wheel.down.dispatchResult &&
           compactSemanticZoom.wheel.down.defaultPrevented &&
-          compactSemanticZoom.wheel.compactBoundary.dispatchResult &&
-          !compactSemanticZoom.wheel.compactBoundary.defaultPrevented &&
-          compactSemanticZoom.wheel.compactAfterBoundary === 'compact' &&
+          !compactSemanticZoom.wheel.downAgain.dispatchResult &&
+          compactSemanticZoom.wheel.downAgain.defaultPrevented &&
+          compactSemanticZoom.wheel.overviewBoundary.dispatchResult &&
+          !compactSemanticZoom.wheel.overviewBoundary.defaultPrevented &&
+          compactSemanticZoom.wheel.overviewAfterBoundary === 'overview' &&
           !compactSemanticZoom.wheel.up.dispatchResult &&
           compactSemanticZoom.wheel.up.defaultPrevented &&
+          !compactSemanticZoom.wheel.upAgain.dispatchResult &&
+          compactSemanticZoom.wheel.upAgain.defaultPrevented &&
+          compactSemanticZoom.wheel.fullBoundary.dispatchResult &&
+          !compactSemanticZoom.wheel.fullBoundary.defaultPrevented &&
           compactSemanticZoom.wheel.ctrl.dispatchResult &&
           !compactSemanticZoom.wheel.ctrl.defaultPrevented &&
           compactSemanticZoom.wheel.meta.dispatchResult &&
@@ -1948,17 +2095,17 @@ async function main() {
           compactSemanticZoom.wheel.ordinary.dispatchResult &&
           !compactSemanticZoom.wheel.ordinary.defaultPrevented &&
           compactSemanticZoom.wheel.finalRequested === 'full' &&
-          compactSemanticZoom.constrained.requested === 'compact' &&
+          compactSemanticZoom.constrained.requested === 'overview' &&
           compactSemanticZoom.constrained.effective === 'full' &&
           compactSemanticZoom.constrained.presentation === 'full' &&
           !compactSemanticZoom.constrained.controlPresent &&
           compactSemanticZoom.constrained.focusIsHeading &&
           !compactSemanticZoom.constrained.lineLayerPresent &&
-          compactSemanticZoom.restored.requested === 'compact' &&
-          compactSemanticZoom.restored.effective === 'compact' &&
-          compactSemanticZoom.restored.presentation === 'compact' &&
+          compactSemanticZoom.restored.requested === 'overview' &&
+          compactSemanticZoom.restored.effective === 'overview' &&
+          compactSemanticZoom.restored.presentation === 'overview' &&
           compactSemanticZoom.restored.controlPresent &&
-          compactSemanticZoom.restored.rangeValue === '1',
+          compactSemanticZoom.restored.rangeValue === '0',
         rootCandidatePresentation: rootCandidateViewports.every(
           (audit, index, audits) =>
             audit.sectionLabelled &&

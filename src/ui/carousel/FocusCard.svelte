@@ -55,6 +55,7 @@
 
 <article
   class:compact={presentation === 'compact'}
+  class:overview={presentation === 'overview'}
   class="focus-card"
   aria-label={summary.displayName}
   data-carousel-gesture-origin
@@ -65,26 +66,28 @@
   data-semantic-zoom-line-node-id={summary.nodeId}
   data-journey-position={journeyPosition}
 >
-  <div class="card-topline">
-    {#if presentation === 'full' && summary.kind !== 'schema'}
-      <NodeKindBadge kind={summary.kind} />
-    {:else}
-      <span aria-hidden="true"></span>
-    {/if}
-    <button
-      class:close-inspection={isInspected}
-      type="button"
-      aria-label={isInspected
-        ? `Close inspection for ${summary.displayName}`
-        : `Inspect ${summary.displayName}`}
-      aria-pressed={isInspected}
-      data-inspect-node-id={summary.nodeId}
-      data-carousel-gesture-ignore
-      onclick={() => onToggleInspection(summary.nodeId)}
-    >
-      {isInspected ? 'Close Inspection' : 'Inspect'}
-    </button>
-  </div>
+  {#if presentation !== 'overview'}
+    <div class="card-topline">
+      {#if presentation === 'full' && summary.kind !== 'schema'}
+        <NodeKindBadge kind={summary.kind} />
+      {:else}
+        <span aria-hidden="true"></span>
+      {/if}
+      <button
+        class:close-inspection={isInspected}
+        type="button"
+        aria-label={isInspected
+          ? `Close inspection for ${summary.displayName}`
+          : `Inspect ${summary.displayName}`}
+        aria-pressed={isInspected}
+        data-inspect-node-id={summary.nodeId}
+        data-carousel-gesture-ignore
+        onclick={() => onToggleInspection(summary.nodeId)}
+      >
+        {isInspected ? 'Close Inspection' : 'Inspect'}
+      </button>
+    </div>
+  {/if}
 
   <h2 bind:this={heading} tabindex="-1" data-focus-card-heading>
     {summary.displayName}
@@ -329,6 +332,21 @@
   .focus-card.compact h2 {
     margin: 0;
     font-size: var(--font-size-xl);
+  }
+
+  .focus-card.overview {
+    display: flex;
+    min-height: 72px;
+    align-items: center;
+    padding: var(--space-3) var(--space-4);
+    border-width: 2px;
+    border-top-width: 4px;
+  }
+
+  .focus-card.overview h2 {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    line-height: 1.25;
   }
 
   .focus-card-summary {

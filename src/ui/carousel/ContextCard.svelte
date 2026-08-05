@@ -47,13 +47,14 @@
               focusedNodeKind,
               node.kind,
             ))));
-  $: visibleName = `${displayName}${occurrence}`;
+  $: semanticName = `${displayName}${occurrence}`;
+  $: visibleName = presentation === 'overview' ? displayName : semanticName;
   $: accessibleName =
     direction === 'rootward'
-      ? `Navigate rootward to ${visibleName}, ${formatSchemaNodeKind(node.kind)}`
+      ? `Navigate rootward to ${semanticName}, ${formatSchemaNodeKind(node.kind)}`
       : isDtdContainment
-        ? `Navigate leafward to ${visibleName}, ${formatSchemaNodeKind(node.kind)}`
-        : `Navigate leafward through ${directionLabel} to ${visibleName}, ${formatSchemaNodeKind(node.kind)}`;
+        ? `Navigate leafward to ${semanticName}, ${formatSchemaNodeKind(node.kind)}`
+        : `Navigate leafward through ${directionLabel} to ${semanticName}, ${formatSchemaNodeKind(node.kind)}`;
 </script>
 
 <article
@@ -64,8 +65,9 @@
   class:terminal-cycle-closure={relationshipDisposition ===
     'terminalCycleClosure'}
   class:compact={presentation === 'compact'}
+  class:overview={presentation === 'overview'}
   class="context-card"
-  aria-label={`${directionLabel} ${visibleName}`}
+  aria-label={`${directionLabel} ${semanticName}`}
   data-carousel-gesture-origin
   data-carousel-leafward-candidate-id={direction === 'leafward'
     ? node.id
@@ -101,7 +103,7 @@
         title={terminalLabel ?? 'Already present in this path'}
         aria-hidden="true">↺</span
       >
-    {:else if terminalLabel}
+    {:else if presentation !== 'overview' && terminalLabel}
       <span class="terminal-label">{terminalLabel}</span>
     {/if}
     {#if presentation === 'full' && showKind}
@@ -112,7 +114,8 @@
   {#if relationshipDisposition === 'terminalCycleClosure'}
     <div
       class="context-body"
-      aria-label={`${directionLabel} ${visibleName}. ${terminalLabel ?? 'Already present in this path'}`}
+      aria-label={`${directionLabel} ${semanticName}. ${terminalLabel ?? 'Already present in this path'}`}
+      title={terminalLabel ?? 'Already present in this path'}
       data-carousel-terminal-cycle-closure
     >
       {@render cardBody()}
@@ -147,22 +150,24 @@
     </div>
   {/if}
 
-  <div class="card-actions">
-    <button
-      class:close-inspection={isInspected}
-      class="inspect-action"
-      type="button"
-      aria-label={isInspected
-        ? `Close inspection for ${displayName}`
-        : `Inspect ${displayName}`}
-      aria-pressed={isInspected}
-      data-inspect-node-id={node.id}
-      data-carousel-gesture-ignore
-      onclick={() => onToggleInspection(node.id)}
-    >
-      {isInspected ? 'Close Inspection' : 'Inspect'}
-    </button>
-  </div>
+  {#if presentation !== 'overview'}
+    <div class="card-actions">
+      <button
+        class:close-inspection={isInspected}
+        class="inspect-action"
+        type="button"
+        aria-label={isInspected
+          ? `Close inspection for ${displayName}`
+          : `Inspect ${displayName}`}
+        aria-pressed={isInspected}
+        data-inspect-node-id={node.id}
+        data-carousel-gesture-ignore
+        onclick={() => onToggleInspection(node.id)}
+      >
+        {isInspected ? 'Close Inspection' : 'Inspect'}
+      </button>
+    </div>
+  {/if}
 </article>
 
 <style>
@@ -224,6 +229,17 @@
 
   .context-card.compact .card-actions {
     padding: var(--space-1);
+  }
+
+  .context-card.overview > button,
+  .context-card.overview .context-body {
+    align-items: center;
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .context-card.overview .node-name {
+    font-size: var(--font-size-sm);
+    line-height: 1.2;
   }
 
   .context-card > button,
@@ -421,6 +437,10 @@
     .inspect-action {
       min-height: var(--control-min-size);
       border-radius: 0;
+    }
+
+    .context-card.overview {
+      display: block;
     }
   }
 

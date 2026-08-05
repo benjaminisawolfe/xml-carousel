@@ -8,7 +8,7 @@ afterEach(() => {
 });
 
 describe('SemanticZoomControl', () => {
-  it('is absent when unavailable and exposes no Overview control', () => {
+  it('is absent when unavailable', () => {
     render(SemanticZoomControl, {
       isAvailable: false,
       presentation: 'full',
@@ -20,7 +20,7 @@ describe('SemanticZoomControl', () => {
     expect(screen.queryByText('Overview')).not.toBeInTheDocument();
   });
 
-  it('uses native controls and the implemented 1–2 range at Full', () => {
+  it('uses a native three-step range at Full', () => {
     const { container } = render(SemanticZoomControl, {
       isAvailable: true,
       presentation: 'full',
@@ -28,7 +28,7 @@ describe('SemanticZoomControl', () => {
     });
     expect(screen.getByText('Zoom')).toBeVisible();
     const range = screen.getByRole('slider', { name: 'Semantic zoom' });
-    expect(range).toHaveAttribute('min', '1');
+    expect(range).toHaveAttribute('min', '0');
     expect(range).toHaveAttribute('max', '2');
     expect(range).toHaveAttribute('step', '1');
     expect(range).toHaveValue('2');
@@ -42,7 +42,6 @@ describe('SemanticZoomControl', () => {
     expect(
       container.querySelector('[data-semantic-zoom-control]'),
     ).toHaveAttribute('data-carousel-gesture-ignore');
-    expect(container).not.toHaveTextContent('Overview');
   });
 
   it('supports range input, buttons, boundaries, and one announcement per change', async () => {
@@ -68,8 +67,8 @@ describe('SemanticZoomControl', () => {
     expect(range).toHaveValue('1');
     expect(range).toHaveAttribute('aria-valuetext', 'Compact');
     expect(
-      screen.getByRole('button', { name: 'Zoom out to Compact' }),
-    ).toBeDisabled();
+      screen.getByRole('button', { name: 'Zoom out to Overview' }),
+    ).toBeEnabled();
     expect(
       screen.getByRole('button', { name: 'Zoom in to Full detail' }),
     ).toBeEnabled();
@@ -85,17 +84,40 @@ describe('SemanticZoomControl', () => {
     expect(screen.getByRole('status')).toHaveTextContent(
       'Semantic zoom: Full detail.',
     );
+
+    await rendered.rerender({
+      isAvailable: true,
+      presentation: 'compact',
+      onSelect,
+    });
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'Zoom out to Overview' }),
+    );
+    expect(onSelect).toHaveBeenLastCalledWith('overview');
+    await rendered.rerender({
+      isAvailable: true,
+      presentation: 'overview',
+      onSelect,
+    });
+    expect(range).toHaveValue('0');
+    expect(range).toHaveAttribute('aria-valuetext', 'Overview');
+    expect(
+      screen.getByRole('button', { name: 'Zoom out to Overview' }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: 'Zoom in to Compact' }),
+    ).toBeEnabled();
   });
 
   it.each([
-    ['ArrowLeft', '1', 'compact'],
-    ['ArrowDown', '1', 'compact'],
-    ['Home', '1', 'compact'],
+    ['ArrowLeft', '0', 'overview'],
+    ['ArrowDown', '0', 'overview'],
+    ['Home', '0', 'overview'],
     ['ArrowRight', '2', 'full'],
     ['ArrowUp', '2', 'full'],
     ['End', '2', 'full'],
   ] as const)(
-    'accepts the native %s range result without exposing Overview',
+    'accepts the native %s range result',
     async (_key, value, expected) => {
       const onSelect = vi.fn();
       render(SemanticZoomControl, {
@@ -111,7 +133,7 @@ describe('SemanticZoomControl', () => {
     },
   );
 
-  it('consumes only valid settled wheel steps within Full and Compact', async () => {
+  it('consumes one settled wheel step through Full, Compact, and Overview', async () => {
     vi.useFakeTimers();
     const onSelect = vi.fn();
     const rendered = render(SemanticZoomControl, {
@@ -147,16 +169,30 @@ describe('SemanticZoomControl', () => {
       onSelect,
     });
 
-    const compactBoundary = new WheelEvent('wheel', {
+    vi.advanceTimersByTime(181);
+    const toOverview = new WheelEvent('wheel', {
       deltaY: 80,
       bubbles: true,
       cancelable: true,
     });
-    control.dispatchEvent(compactBoundary);
-    expect(compactBoundary.defaultPrevented).toBe(false);
-    expect(onSelect).toHaveBeenCalledOnce();
+    control.dispatchEvent(toOverview);
+    expect(toOverview.defaultPrevented).toBe(true);
+    expect(onSelect).toHaveBeenLastCalledWith('overview');
 
+    await rendered.rerender({
+      isAvailable: true,
+      presentation: 'overview',
+      onSelect,
+    });
     vi.advanceTimersByTime(181);
+    const overviewBoundary = new WheelEvent('wheel', {
+      deltaY: 80,
+      bubbles: true,
+      cancelable: true,
+    });
+    control.dispatchEvent(overviewBoundary);
+    expect(overviewBoundary.defaultPrevented).toBe(false);
+
     const up = new WheelEvent('wheel', {
       deltaY: -80,
       bubbles: true,
@@ -164,7 +200,7 @@ describe('SemanticZoomControl', () => {
     });
     control.dispatchEvent(up);
     expect(up.defaultPrevented).toBe(true);
-    expect(onSelect).toHaveBeenLastCalledWith('full');
+    expect(onSelect).toHaveBeenLastCalledWith('compact');
   });
 
   it.each([

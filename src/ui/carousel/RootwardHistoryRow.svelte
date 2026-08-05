@@ -19,6 +19,7 @@
 <li
   class:inspected={isInspected}
   class:compact={presentation === 'compact'}
+  class:overview={presentation === 'overview'}
   class="history-row"
   data-rootward-history-row
   data-journey-position={journeyPosition}
@@ -38,25 +39,27 @@
     <span class="node-name" title={displayName}>{displayName}</span>
     {#if presentation === 'full' && showKind}
       <NodeKindBadge kind={node.kind} />
-    {:else}
+    {:else if presentation === 'compact'}
       <span class="visually-hidden">{formatSchemaNodeKind(node.kind)}</span>
     {/if}
   </button>
 
-  <button
-    class:close-inspection={isInspected}
-    class="inspect-action"
-    type="button"
-    aria-label={isInspected
-      ? `Close inspection for ${displayName}`
-      : `Inspect ${displayName}`}
-    aria-pressed={isInspected}
-    data-inspect-node-id={node.id}
-    data-carousel-gesture-ignore
-    onclick={() => onToggleInspection(node.id)}
-  >
-    {isInspected ? 'Close Inspection' : 'Inspect'}
-  </button>
+  {#if presentation !== 'overview'}
+    <button
+      class:close-inspection={isInspected}
+      class="inspect-action"
+      type="button"
+      aria-label={isInspected
+        ? `Close inspection for ${displayName}`
+        : `Inspect ${displayName}`}
+      aria-pressed={isInspected}
+      data-inspect-node-id={node.id}
+      data-carousel-gesture-ignore
+      onclick={() => onToggleInspection(node.id)}
+    >
+      {isInspected ? 'Close Inspection' : 'Inspect'}
+    </button>
+  {/if}
 </li>
 
 <style>
@@ -80,6 +83,18 @@
   }
 
   .history-row.compact .node-name {
+    font-size: var(--font-size-xs);
+  }
+
+  .history-row.overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .history-row.overview .jump-action {
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .history-row.overview .node-name {
     font-size: var(--font-size-xs);
   }
 

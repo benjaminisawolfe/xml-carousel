@@ -1,7 +1,11 @@
+import type { ImplementedSemanticZoomPresentation } from './semanticZoomPresentation';
+
 export const MIN_LEAFWARD_CARDS = 1;
 export const DEFAULT_LEAFWARD_CARDS = 3;
 export const MAX_LEAFWARD_CARDS = 7;
+export const MAX_OVERVIEW_LEAFWARD_CARDS = 11;
 export const MAX_EARLIER_PATH_ROWS = 2;
+export const MAX_OVERVIEW_EARLIER_PATH_ROWS = 5;
 export const VERTICAL_WINDOW_FOCUS_CLEARANCE = 6;
 /** @deprecated Use MAX_EARLIER_PATH_ROWS for role-aware rootward windows. */
 export const MAX_ROOTWARD_CARDS = MAX_EARLIER_PATH_ROWS + 1;
@@ -87,12 +91,13 @@ export function getBranchWindow<T>(
   items: readonly T[],
   requestedStartIndex = 0,
   size = DEFAULT_LEAFWARD_CARDS,
+  presentation: ImplementedSemanticZoomPresentation = 'full',
 ): SideWindow<T> {
   const requestedSize = Number.isFinite(size)
     ? Math.floor(size)
     : DEFAULT_LEAFWARD_CARDS;
   const boundedSize = Math.min(
-    MAX_LEAFWARD_CARDS,
+    getMaximumLeafwardCards(presentation),
     Math.max(MIN_LEAFWARD_CARDS, requestedSize),
   );
   return computeSideWindow(items, requestedStartIndex, boundedSize);
@@ -110,7 +115,25 @@ export function getLeafwardWindowSize(viewportHeight: number): number {
 export function getLeafwardWindowSizeForStage(
   stageWidth: number,
   stageHeight: number,
+  presentation: ImplementedSemanticZoomPresentation = 'full',
 ): number {
+  if (presentation === 'overview') {
+    const heightCapacity = !Number.isFinite(stageHeight)
+      ? MAX_OVERVIEW_LEAFWARD_CARDS
+      : stageHeight < 320
+        ? 1
+        : stageHeight < 520
+          ? 3
+          : stageHeight < 720
+            ? 7
+            : stageHeight < 900
+              ? 9
+              : MAX_OVERVIEW_LEAFWARD_CARDS;
+    if (!Number.isFinite(stageWidth)) return heightCapacity;
+    if (stageWidth < 420) return Math.min(heightCapacity, 3);
+    if (stageWidth < 700) return Math.min(heightCapacity, 7);
+    return heightCapacity;
+  }
   const heightCapacity = getLeafwardWindowSize(stageHeight);
   if (!Number.isFinite(stageWidth)) return heightCapacity;
   if (stageWidth < 420) return Math.min(heightCapacity, 3);
@@ -120,9 +143,32 @@ export function getLeafwardWindowSizeForStage(
 
 export function getRootwardHistoryRowCountForStage(
   stageHeight: number,
+  presentation: ImplementedSemanticZoomPresentation = 'full',
 ): number {
+  if (presentation === 'overview') {
+    if (!Number.isFinite(stageHeight)) return MAX_OVERVIEW_EARLIER_PATH_ROWS;
+    if (stageHeight < 420) return 1;
+    if (stageHeight < 600) return 3;
+    return MAX_OVERVIEW_EARLIER_PATH_ROWS;
+  }
   if (!Number.isFinite(stageHeight)) return MAX_EARLIER_PATH_ROWS;
   return stageHeight < 520 ? 1 : MAX_EARLIER_PATH_ROWS;
+}
+
+export function getMaximumLeafwardCards(
+  presentation: ImplementedSemanticZoomPresentation,
+): number {
+  return presentation === 'overview'
+    ? MAX_OVERVIEW_LEAFWARD_CARDS
+    : MAX_LEAFWARD_CARDS;
+}
+
+export function getMaximumEarlierPathRows(
+  presentation: ImplementedSemanticZoomPresentation,
+): number {
+  return presentation === 'overview'
+    ? MAX_OVERVIEW_EARLIER_PATH_ROWS
+    : MAX_EARLIER_PATH_ROWS;
 }
 
 export function renderedVerticalWindowFits(
@@ -169,10 +215,11 @@ export function getRootwardWindow<T>(
   requestedHistoryStartIndex = 0,
   journeyLength = items.length + 1,
   earlierPathRows = MAX_EARLIER_PATH_ROWS,
+  presentation: ImplementedSemanticZoomPresentation = 'full',
 ): RootwardPathWindow<T> {
   const previousItem = items[0];
   const safeEarlierPathRows = Math.min(
-    MAX_EARLIER_PATH_ROWS,
+    getMaximumEarlierPathRows(presentation),
     Math.max(1, Math.floor(earlierPathRows)),
   );
   const historyWindow = computeSideWindow(

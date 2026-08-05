@@ -8,10 +8,15 @@
     type SemanticZoomRectangle,
     type SemanticZoomRelationshipLine,
   } from './semanticZoomRelationshipGeometry';
+  import type { ImplementedSemanticZoomPresentation } from './semanticZoomPresentation';
 
   export let reflowRevision = 0;
   export let navigationKey = '';
   export let isResting = true;
+  export let presentation: Exclude<
+    ImplementedSemanticZoomPresentation,
+    'full'
+  > = 'compact';
 
   let lineLayer: SVGSVGElement;
   let lines: readonly SemanticZoomRelationshipLine[] = [];
@@ -26,7 +31,7 @@
   let observedScheduleKey = '';
   let scheduleGeneration = 0;
 
-  $: scheduleKey = `${isResting ? 'resting' : 'moving'}\u0000${reflowRevision}\u0000${navigationKey}`;
+  $: scheduleKey = `${isResting ? 'resting' : 'moving'}\u0000${presentation}\u0000${reflowRevision}\u0000${navigationKey}`;
   $: if (scheduleKey !== observedScheduleKey) {
     observedScheduleKey = scheduleKey;
     invalidateAndScheduleMeasurement();
@@ -253,6 +258,7 @@
 <svg
   bind:this={lineLayer}
   class="semantic-zoom-relationship-lines"
+  class:overview={presentation === 'overview'}
   viewBox={`0 0 ${stageWidth} ${stageHeight}`}
   preserveAspectRatio="none"
   aria-hidden="true"
@@ -261,6 +267,7 @@
   data-semantic-zoom-stage-width={stageWidth}
   data-semantic-zoom-stage-height={stageHeight}
   data-semantic-zoom-relationship-lines
+  data-semantic-zoom-line-presentation={presentation}
 >
   {#each lines as line (line.key)}
     <path
@@ -297,6 +304,10 @@
     fill: none;
     stroke-width: 3;
     stroke-linecap: round;
+  }
+
+  .semantic-zoom-relationship-lines.overview path {
+    stroke-width: 2;
   }
 
   path.leafward {
