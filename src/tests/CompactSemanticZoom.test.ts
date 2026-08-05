@@ -274,14 +274,14 @@ describe('Compact semantic zoom integration', () => {
     expect(get(semanticZoomStore).requestedLevel).toBe('compact');
   });
 
-  it('renders programmatic Overview safely as Compact without exposing it', async () => {
+  it('keeps Compact unchanged when programmatic Overview renders genuinely', async () => {
     installMatchMedia();
     const { container } = render(App);
     semanticZoomStore.setRequestedLevel('overview');
     await waitFor(() =>
       expect(surface()).toHaveAttribute(
         'data-semantic-zoom-presentation',
-        'compact',
+        'overview',
       ),
     );
     expect(surface()).toHaveAttribute(
@@ -289,9 +289,9 @@ describe('Compact semantic zoom integration', () => {
       'overview',
     );
     expect(screen.getByRole('slider', { name: 'Semantic zoom' })).toHaveValue(
-      '1',
+      '0',
     );
-    expect(container).not.toHaveTextContent('Overview');
+    expect(container).toHaveTextContent('Overview');
   });
 
   it('draws keyed leafward and adjacent rootward lines and removes them in Full', async () => {

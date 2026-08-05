@@ -7,10 +7,14 @@ import {
   getBranchWindow,
   getLeafwardWindowSize,
   getLeafwardWindowSizeForStage,
+  getMaximumEarlierPathRows,
+  getMaximumLeafwardCards,
   getRootwardHistoryRowCountForStage,
   getRootwardWindow,
   MAX_EARLIER_PATH_ROWS,
   MAX_LEAFWARD_CARDS,
+  MAX_OVERVIEW_EARLIER_PATH_ROWS,
+  MAX_OVERVIEW_LEAFWARD_CARDS,
   MAX_ROOTWARD_CARDS,
   MIN_LEAFWARD_CARDS,
   renderedVerticalWindowFits,
@@ -157,6 +161,24 @@ describe('adaptive leafward windows', () => {
     expect(getLeafwardWindowSizeForStage(Number.NaN, 700)).toBe(3);
   });
 
+  it('raises but bounds Overview capacity without reducing Compact', () => {
+    expect(MAX_OVERVIEW_LEAFWARD_CARDS).toBe(11);
+    expect(getMaximumLeafwardCards('full')).toBe(7);
+    expect(getMaximumLeafwardCards('compact')).toBe(7);
+    expect(getMaximumLeafwardCards('overview')).toBe(11);
+    expect(getLeafwardWindowSizeForStage(1200, 920, 'overview')).toBe(11);
+    expect(getLeafwardWindowSizeForStage(1200, 700, 'overview')).toBe(7);
+    expect(getLeafwardWindowSizeForStage(1200, 300, 'overview')).toBe(1);
+    expect(
+      getLeafwardWindowSizeForStage(1200, 700, 'overview'),
+    ).toBeGreaterThanOrEqual(
+      getLeafwardWindowSizeForStage(1200, 700, 'compact'),
+    );
+    expect(
+      getBranchWindow(Array.from({ length: 20 }), 0, 99, 'overview').size,
+    ).toBe(11);
+  });
+
   it.each([1, 2, 3, 4, 5, 6, 7])(
     'accepts an explicit %s-card window',
     (size) => {
@@ -207,6 +229,24 @@ describe('adaptive leafward windows', () => {
 });
 
 describe('role-aware rootward windows', () => {
+  it('uses presentation-aware earlier-history maximums', () => {
+    expect(MAX_OVERVIEW_EARLIER_PATH_ROWS).toBe(5);
+    expect(getMaximumEarlierPathRows('full')).toBe(2);
+    expect(getMaximumEarlierPathRows('compact')).toBe(2);
+    expect(getMaximumEarlierPathRows('overview')).toBe(5);
+    expect(getRootwardHistoryRowCountForStage(900, 'overview')).toBe(5);
+    expect(getRootwardHistoryRowCountForStage(550, 'overview')).toBe(3);
+    expect(
+      getRootwardWindow(
+        ['previous', 'one', 'two', 'three', 'four', 'five', 'six'],
+        0,
+        8,
+        99,
+        'overview',
+      ).earlierSteps,
+    ).toHaveLength(5);
+  });
+
   it('reduces earlier-path rows when rendered stage height contracts', () => {
     expect(getRootwardHistoryRowCountForStage(900)).toBe(2);
     expect(getRootwardHistoryRowCountForStage(519)).toBe(1);

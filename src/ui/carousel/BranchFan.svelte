@@ -68,7 +68,7 @@
     resetWheelState();
     windowAnnouncement = '';
   }
-  $: capacityKey = `${windowKey}\u0000${reflowRevision}\u0000${availableWidth ?? ''}\u0000${availableHeight ?? ''}`;
+  $: capacityKey = `${windowKey}\u0000${presentation}\u0000${reflowRevision}\u0000${availableWidth ?? ''}\u0000${availableHeight ?? ''}`;
   $: if (capacityKey !== observedCapacityKey) {
     observedCapacityKey = capacityKey;
     const nextSize = getLeafwardWindowSizeForStage(
@@ -76,6 +76,7 @@
         (typeof window === 'undefined' ? Number.NaN : window.innerWidth),
       availableHeight ??
         (typeof window === 'undefined' ? Number.NaN : window.innerHeight),
+      presentation,
     );
     if (nextSize !== leafwardWindowSize) {
       leafwardWindowSize = nextSize;
@@ -83,6 +84,7 @@
         relationships,
         windowStartIndex,
         nextSize,
+        presentation,
       ).startIndex;
       ensureKeyboardSelectionVisible();
       resetWheelState();
@@ -95,6 +97,7 @@
     relationships,
     windowStartIndex,
     leafwardWindowSize,
+    presentation,
   );
   $: keyboardWindowKey = `${windowKey}\u0000${keyboardSelectedRelationshipId ?? ''}`;
   $: synchronizeKeyboardWindow(keyboardWindowKey);
@@ -169,11 +172,17 @@
       relationships,
       windowStartIndex,
       leafwardWindowSize,
+      presentation,
     ).startIndex;
     ensureKeyboardSelectionVisible();
     if (windowAnnouncement) {
       windowAnnouncement = formatBranchWindowRange(
-        getBranchWindow(relationships, windowStartIndex, leafwardWindowSize),
+        getBranchWindow(
+          relationships,
+          windowStartIndex,
+          leafwardWindowSize,
+          presentation,
+        ),
       );
     }
     capacityMeasurementPending = true;
@@ -241,6 +250,7 @@
 <section
   bind:this={laneElement}
   class:compact={presentation === 'compact'}
+  class:overview={presentation === 'overview'}
   class="context-lane leafward-context"
   aria-label="Leafward destinations"
   data-carousel-side-window="leafward"
@@ -376,11 +386,14 @@
   }
 
   .context-lane.compact,
-  .context-lane.compact .context-stack {
+  .context-lane.compact .context-stack,
+  .context-lane.overview,
+  .context-lane.overview .context-stack {
     gap: var(--space-1);
   }
 
-  .context-lane.compact .lane-label {
+  .context-lane.compact .lane-label,
+  .context-lane.overview .lane-label {
     position: absolute;
     width: 1px;
     height: 1px;

@@ -3,12 +3,14 @@ import type { SemanticZoomLevel } from '../../app/stores/semanticZoomStore';
 export const IMPLEMENTED_SEMANTIC_ZOOM_PRESENTATIONS = Object.freeze([
   'full',
   'compact',
+  'overview',
 ] as const);
 
 export type ImplementedSemanticZoomPresentation =
   (typeof IMPLEMENTED_SEMANTIC_ZOOM_PRESENTATIONS)[number];
 
 export const SEMANTIC_ZOOM_CONTROL_VALUES = Object.freeze({
+  overview: 0,
   compact: 1,
   full: 2,
 } as const satisfies Readonly<
@@ -31,8 +33,9 @@ export function resolveImplementedSemanticZoomPresentation(
     case 'full':
       return 'full';
     case 'compact':
-    case 'overview':
       return 'compact';
+    case 'overview':
+      return 'overview';
     default:
       throw new TypeError(
         `Unknown implemented semantic zoom presentation: ${String(effectiveLevel)}`,
@@ -49,6 +52,7 @@ export function semanticZoomControlValue(
 export function implementedSemanticZoomPresentationFromControlValue(
   value: number,
 ): ImplementedSemanticZoomPresentation | undefined {
+  if (value === SEMANTIC_ZOOM_CONTROL_VALUES.overview) return 'overview';
   if (value === SEMANTIC_ZOOM_CONTROL_VALUES.compact) return 'compact';
   if (value === SEMANTIC_ZOOM_CONTROL_VALUES.full) return 'full';
   return undefined;

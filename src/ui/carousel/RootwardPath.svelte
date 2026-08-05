@@ -47,7 +47,7 @@
     observedJourneyKey = resetKey;
     historyStartIndex = 0;
   }
-  $: capacityKey = `${resetKey}\u0000${reflowRevision}\u0000${earlierPathRows}\u0000${availableHeight ?? ''}`;
+  $: capacityKey = `${resetKey}\u0000${presentation}\u0000${reflowRevision}\u0000${earlierPathRows}\u0000${availableHeight ?? ''}`;
   $: if (capacityKey !== observedCapacityKey) {
     observedCapacityKey = capacityKey;
     fittedEarlierPathRows = earlierPathRows;
@@ -56,6 +56,7 @@
       historyStartIndex,
       journeyLength,
       fittedEarlierPathRows,
+      presentation,
     ).historyStartIndex;
     capacityMeasurementPending = true;
   }
@@ -64,6 +65,7 @@
     historyStartIndex,
     journeyLength,
     fittedEarlierPathRows,
+    presentation,
   );
   $: visibleNodes = [
     ...(windowed.previousStep ? [windowed.previousStep.item] : []),
@@ -92,6 +94,7 @@
       historyStartIndex,
       journeyLength,
       fittedEarlierPathRows,
+      presentation,
     ).historyStartIndex;
     capacityMeasurementPending = true;
   });
@@ -116,6 +119,7 @@
       windowed.historyStartIndex + delta,
       journeyLength,
       fittedEarlierPathRows,
+      presentation,
     ).historyStartIndex;
     capacityMeasurementPending = true;
     await tick();
@@ -137,6 +141,7 @@
 <section
   bind:this={laneElement}
   class:compact={presentation === 'compact'}
+  class:overview={presentation === 'overview'}
   class="context-lane rootward-context"
   aria-label="Rootward journey"
   data-carousel-side-window="rootward"
@@ -259,17 +264,22 @@
   }
 
   .context-lane.compact,
-  .context-lane.compact .context-stack {
+  .context-lane.compact .context-stack,
+  .context-lane.overview,
+  .context-lane.overview .context-stack {
     gap: var(--space-1);
   }
 
-  .context-lane.compact .history-group {
+  .context-lane.compact .history-group,
+  .context-lane.overview .history-group {
     gap: var(--space-1);
     padding-top: var(--space-1);
   }
 
   .context-lane.compact .lane-label,
-  .context-lane.compact .history-group h3 {
+  .context-lane.compact .history-group h3,
+  .context-lane.overview .lane-label,
+  .context-lane.overview .history-group h3 {
     position: absolute;
     width: 1px;
     height: 1px;

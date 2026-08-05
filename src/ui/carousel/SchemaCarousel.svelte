@@ -166,12 +166,14 @@
     keyboardSelectionKey,
     actionableLeafwardRelationships,
   );
-  $: rootwardHistoryRowCount =
-    getRootwardHistoryRowCountForStage(carouselStageHeight);
   $: implementedSemanticZoomPresentation =
     resolveImplementedSemanticZoomPresentation(
       $semanticZoomStore.effectiveLevel,
     );
+  $: rootwardHistoryRowCount = getRootwardHistoryRowCountForStage(
+    carouselStageHeight,
+    implementedSemanticZoomPresentation,
+  );
   $: {
     const nextEffectiveLevel = $semanticZoomStore.effectiveLevel;
     if (nextEffectiveLevel !== observedEffectiveSemanticZoomLevel) {
@@ -360,8 +362,46 @@
   async function preserveCarouselFocusAfterSemanticZoomChange(
     previouslyFocusedAction: HTMLElement,
   ): Promise<void> {
+    const inspectOwner = previouslyFocusedAction.matches(
+      '[data-inspect-node-id]',
+    )
+      ? previouslyFocusedAction.closest<HTMLElement>(
+          '[data-semantic-zoom-leafward-edge-id], [data-semantic-zoom-rootward-position], [data-semantic-zoom-focus-card]',
+        )
+      : undefined;
+    const terminalInspect = Boolean(
+      inspectOwner?.matches(
+        '[data-relationship-disposition="terminalCycleClosure"]',
+      ),
+    );
+    const replacementLeafwardEdgeId = terminalInspect
+      ? undefined
+      : inspectOwner?.dataset.semanticZoomLeafwardEdgeId;
+    const replacementRootwardPosition = terminalInspect
+      ? undefined
+      : inspectOwner?.dataset.semanticZoomRootwardPosition;
+
     await tick();
     if (!gestureSurface?.isConnected || previouslyFocusedAction.isConnected) {
+      return;
+    }
+    const replacement = [
+      ...gestureSurface.querySelectorAll<HTMLElement>(
+        '[data-semantic-zoom-leafward-edge-id], [data-semantic-zoom-rootward-position]',
+      ),
+    ]
+      .find(
+        (candidate) =>
+          (replacementLeafwardEdgeId !== undefined &&
+            candidate.dataset.semanticZoomLeafwardEdgeId ===
+              replacementLeafwardEdgeId) ||
+          (replacementRootwardPosition !== undefined &&
+            candidate.dataset.semanticZoomRootwardPosition ===
+              replacementRootwardPosition),
+      )
+      ?.querySelector<HTMLElement>('[data-carousel-navigation-action]');
+    if (replacement) {
+      replacement.focus({ preventScroll: true });
       return;
     }
     focusCard?.focusHeading();
@@ -1051,6 +1091,8 @@
     class:keyboard-selection-active={Boolean(keyboardSelectedRelationshipId)}
     class:semantic-zoom-compact={implementedSemanticZoomPresentation ===
       'compact'}
+    class:semantic-zoom-overview={implementedSemanticZoomPresentation ===
+      'overview'}
     class="gesture-viewport presentation-{presentationState.phase}"
     data-carousel-gesture-viewport
     data-gesture-phase={gestureSnapshot.phase}
@@ -1086,11 +1128,12 @@
       style:--gesture-offset={`${presentationOffsetX}px`}
     >
       <div class="carousel-stage">
-        {#if $semanticZoomStore.isAvailable && implementedSemanticZoomPresentation === 'compact'}
+        {#if $semanticZoomStore.isAvailable && implementedSemanticZoomPresentation !== 'full'}
           <SemanticZoomRelationshipLines
             reflowRevision={carouselReflowRevision}
             navigationKey={`${$activeProjectStore.project.id}\u0000${$navigationPathIds.join('\u0000')}`}
             isResting={presentationState.phase === 'resting'}
+            presentation={implementedSemanticZoomPresentation}
           />
         {/if}
         <div class="context-slot rootward-slot">
@@ -1251,6 +1294,14 @@
       minmax(0, 1fr);
     column-gap: var(--space-6);
     row-gap: var(--space-3);
+  }
+
+  .gesture-viewport.semantic-zoom-overview .carousel-stage {
+    grid-template-columns:
+      minmax(0, 1fr) minmax(180px, 240px)
+      minmax(0, 1fr);
+    column-gap: var(--space-6);
+    row-gap: var(--space-2);
   }
 
   .context-slot {

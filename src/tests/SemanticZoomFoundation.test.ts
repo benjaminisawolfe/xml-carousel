@@ -246,7 +246,13 @@ describe('semantic zoom carousel foundation', () => {
     );
     expect(get(inspectorStore.inspectedNodeId)).toBe(bookDtdNodeIds.index);
     expect(search).toHaveValue('chapter');
-    expect(inspect).toHaveFocus();
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', {
+          name: 'Navigate leafward to chapter+, DTD element declaration',
+        }),
+      ).toHaveFocus(),
+    );
   });
 
   it('persists requested zoom through project replacement and session reset', async () => {
@@ -265,7 +271,7 @@ describe('semantic zoom carousel foundation', () => {
     );
   });
 
-  it('keeps store-level Overview explicit while rendering the implemented Compact fallback', async () => {
+  it('renders requested Overview as the genuine Overview presentation', async () => {
     installMatchMedia(true);
     const { container } = render(App);
     const originalNames = accessibleCardNames();
@@ -287,13 +293,13 @@ describe('semantic zoom carousel foundation', () => {
     );
     expect(zoomSurface()).toHaveAttribute(
       'data-semantic-zoom-presentation',
-      'compact',
+      'overview',
     );
     expect(accessibleCardNames()).toEqual(originalNames);
     expect(screen.getByRole('slider', { name: 'Semantic zoom' })).toHaveValue(
-      '1',
+      '0',
     );
-    expect(container).not.toHaveTextContent('Overview');
+    expect(container).toHaveTextContent('Overview');
   });
 
   it('keeps spatial keyboard navigation operational at future levels', async () => {
