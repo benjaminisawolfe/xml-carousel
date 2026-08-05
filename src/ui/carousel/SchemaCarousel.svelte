@@ -6,6 +6,11 @@
   import { activeProjectStore } from '../../app/stores/projectStore';
   import { projectSessionResetStore } from '../../app/stores/projectSessionResetStore';
   import {
+    SEMANTIC_ZOOM_DESKTOP_MEDIA_QUERY,
+    semanticZoomStore,
+    type SemanticZoomLevel,
+  } from '../../app/stores/semanticZoomStore';
+  import {
     getOutgoingStructuralRelationships,
     getSchemaNode,
     type SchemaNodeId,
@@ -125,6 +130,8 @@
   let pendingCarouselStageWidth = Number.NaN;
   let pendingCarouselStageHeight = Number.NaN;
   let carouselReflowFrame: number | undefined;
+  let observedEffectiveSemanticZoomLevel: SemanticZoomLevel = 'full';
+  let semanticZoomLifecycleMounted = false;
 
   $: leafwardPreviewRelationshipId =
     gestureSnapshot.semanticIntent === 'leafward'
@@ -155,8 +162,20 @@
   );
   $: rootwardHistoryRowCount =
     getRootwardHistoryRowCountForStage(carouselStageHeight);
+  $: {
+    const nextEffectiveLevel = $semanticZoomStore.effectiveLevel;
+    if (nextEffectiveLevel !== observedEffectiveSemanticZoomLevel) {
+      observedEffectiveSemanticZoomLevel = nextEffectiveLevel;
+      if (semanticZoomLifecycleMounted) {
+        handleEffectiveSemanticZoomChange();
+      }
+    }
+  }
 
   onMount(() => {
+    const semanticZoomQuery = window.matchMedia?.(
+      SEMANTIC_ZOOM_DESKTOP_MEDIA_QUERY,
+    );
     const reducedMotionQuery = window.matchMedia?.(
       '(prefers-reduced-motion: reduce)',
     );
@@ -175,7 +194,16 @@
       },
       onSnapshot: handleGestureSnapshot,
     });
+    semanticZoomLifecycleMounted = true;
+    semanticZoomStore.setDesktopAvailability(
+      semanticZoomQuery?.matches ?? false,
+    );
 
+    const handleSemanticZoomAvailabilityChange = (
+      event: MediaQueryListEvent,
+    ): void => {
+      semanticZoomStore.setDesktopAvailability(event.matches);
+    };
     const handleReducedMotionChange = (event: MediaQueryListEvent): void => {
       prefersReducedMotion = event.matches;
       if (presentationState.phase !== 'direct-manipulation') {
@@ -213,6 +241,10 @@
           })
         : undefined;
 
+    semanticZoomQuery?.addEventListener(
+      'change',
+      handleSemanticZoomAvailabilityChange,
+    );
     reducedMotionQuery?.addEventListener('change', handleReducedMotionChange);
     if (resizeObserver) {
       resizeObserver.observe(gestureSurface);
@@ -223,8 +255,13 @@
     window.addEventListener('keydown', handleCarouselKeydown);
 
     return () => {
+      semanticZoomLifecycleMounted = false;
       gestureController?.destroy();
       gestureController = undefined;
+      semanticZoomQuery?.removeEventListener(
+        'change',
+        handleSemanticZoomAvailabilityChange,
+      );
       reducedMotionQuery?.removeEventListener(
         'change',
         handleReducedMotionChange,
@@ -284,6 +321,29 @@
       thresholdCrossed: false,
     };
     setPresentationOffset(0);
+  }
+
+  function handleEffectiveSemanticZoomChange(): void {
+    const focusedCarouselAction =
+      document.activeElement instanceof HTMLElement &&
+      gestureSurface?.contains(document.activeElement)
+        ? document.activeElement
+        : undefined;
+    resetTransientReflowPresentation();
+    carouselReflowRevision += 1;
+    if (focusedCarouselAction) {
+      void preserveCarouselFocusAfterSemanticZoomChange(focusedCarouselAction);
+    }
+  }
+
+  async function preserveCarouselFocusAfterSemanticZoomChange(
+    previouslyFocusedAction: HTMLElement,
+  ): Promise<void> {
+    await tick();
+    if (!gestureSurface?.isConnected || previouslyFocusedAction.isConnected) {
+      return;
+    }
+    focusCard?.focusHeading();
   }
 
   function applyCarouselReflow(width: number, height: number): void {
@@ -970,6 +1030,11 @@
     data-carousel-reflow-revision={carouselReflowRevision}
     data-carousel-stage-width={carouselStageWidth}
     data-carousel-stage-height={carouselStageHeight}
+    data-semantic-zoom-requested={$semanticZoomStore.requestedLevel}
+    data-semantic-zoom-effective={$semanticZoomStore.effectiveLevel}
+    data-semantic-zoom-available={$semanticZoomStore.isAvailable
+      ? 'true'
+      : 'false'}
     data-keyboard-cursor-state={keyboardSelectedRelationshipId
       ? 'leafward-selection'
       : 'current-focus'}
