@@ -50,6 +50,7 @@ const packageLock = JSON.parse(read('package-lock.json')) as {
 const releaseNotes = read('docs/first-public-alpha.md');
 const releaseChecklist = read('docs/release-checklist.md');
 const candidateReport = read('docs/release-candidate-report.md');
+const thirdPartyLicensing = read('docs/third-party-licensing.md');
 const architecture = read('docs/architecture.md');
 const validationScript = read('scripts/run-validation.mjs');
 
@@ -77,7 +78,7 @@ describe('public alpha documentation and package contracts', () => {
 
     expect(readme).not.toMatch(/[A-Z]:\\(?:Work|Users)\\/u);
     expect(readme).toContain(
-      "Version 0.1.0 is XML Carousel's first public alpha.",
+      'Version 0.1.0 is the planned first public alpha.',
     );
     expect(readme).toContain(
       "XML Carousel's post-Xerces extraction and presentation",
@@ -143,26 +144,24 @@ describe('public alpha documentation and package contracts', () => {
   it('records the limitations baseline and candidate release boundary', () => {
     const limitations = read('docs/known-limitations.md');
     expect(limitations).toContain('XSD 1.1 is not supported');
-    expect(limitations).toContain('unresolved historical redistribution');
+    expect(limitations).toMatch(/closes the former unresolved historical/iu);
     expect(releaseNotes).toContain('# XML Carousel 0.1.0 — First Public Alpha');
+    expect(releaseNotes).toContain('Release date: pending publication');
     expect(releaseNotes).toContain('`v0.1.0`');
-    expect(releaseNotes).toMatch(
-      /tag and the corresponding GitHub[\s\n]+Release will be created only after explicit publication authorization/iu,
+    expect(releaseNotes).toContain('GitHub Release: not yet created');
+    expect(releaseNotes).toContain(
+      'Current candidate deployment: not yet performed',
     );
+    expect(releaseNotes).toContain('[Standards support](standards-support.md)');
     expect(releaseNotes).toContain('[Known limitations](known-limitations.md)');
     expect(releaseNotes).toContain(
       '[release-candidate report](release-candidate-report.md)',
     );
-    expect(releaseNotes).toContain('121 test files and 1,799 tests');
-    expect(releaseNotes).toContain('271 transformed modules');
     expect(releaseNotes).toContain(
-      '`assets/schemaImportWorker-ll5tt6Dr.js` worker asset of 246,258 bytes',
+      '[Third-party licensing](third-party-licensing.md)',
     );
-    expect(releaseNotes).toMatch(/one\s+portable relative-base artifact/iu);
-    expect(releaseNotes).toContain('https://xmlcarousel.wolfshafenpress.com/');
-    expect(releaseNotes).toMatch(/successfully uploaded and loaded/iu);
     expect(releaseNotes).toMatch(
-      /any directory served by a static web server/iu,
+      /any directory served by\s+a static web server/iu,
     );
     expect(releaseNotes).not.toMatch(
       /https:\/\/benjaminisawolfe\.github\.io/iu,
@@ -210,40 +209,37 @@ describe('public alpha documentation and package contracts', () => {
   });
 
   it('records a complete release-candidate report structure', () => {
-    expect(candidateReport).toContain(
-      'c6af0c4cded3445478fa74a3cc737378e1c61af4',
-    );
     for (const heading of [
       'Candidate identity',
+      'Source and scope',
+      'Audit and integrity',
       'Automated validation',
-      'Functional smoke matrix',
-      'Large-schema matrix',
-      'Responsive matrix',
-      'Accessibility matrix',
-      'Portable artifact preview evidence',
-      'Distribution conclusion',
+      'Standards and visualization evidence',
+      'Regression evidence',
+      'Deterministic candidate build',
+      'Browser evidence',
+      'Manual QA pending',
+      'Publication gates',
+      'Candidate conclusion',
     ]) {
       expect(candidateReport).toContain(`## ${heading}`);
     }
     for (const evidence of [
-      '121 test files',
-      '1,799 tests',
-      '271',
-      'schemaImportWorker-ll5tt6Dr.js',
-      '246,258 bytes',
-      '412 × 915',
-      '44 × 44',
-      'Dependency audit',
-      'Manual accessibility gates',
+      'npm run validate',
+      'npm audit --json',
+      'npm run acceptance:complete-visualization',
+      'Relative path',
+      'Chrome',
+      'Firefox',
+      'manual QA',
     ]) {
       expect(candidateReport).toContain(evidence);
     }
     expect(candidateReport).not.toMatch(/[A-Z]:\\(?:Work|Users)\\/u);
-    expect(candidateReport).toContain(
-      '08bf2c235d12dc0ad01aeb661abee2e3ed1bc078',
-    );
-    expect(candidateReport).toContain(
-      'No distribution blocker remains for revision `0.1.0`.',
+    expect(candidateReport).toMatch(/not tagged/iu);
+    expect(candidateReport).toMatch(/not published as a GitHub Release/iu);
+    expect(candidateReport).toMatch(
+      /not\s+deployed as the current candidate/iu,
     );
   });
 
@@ -265,12 +261,8 @@ describe('public alpha documentation and package contracts', () => {
       /Transfer and hosting tooling are outside the application\s+architecture/iu,
     );
     expect(releaseChecklist).toContain('contents of `dist/`');
-    expect(candidateReport).toContain(
-      'No distribution blocker remains for revision `0.1.0`.',
-    );
-    expect(distributionDocuments).not.toMatch(
-      /\b(?:GitHub Pages|FileZilla|FTP|SFTP|nginx|SSH|control panel)\b/iu,
-    );
+    expect(candidateReport).toMatch(/automated candidate preparation passed/iu);
+    expect(distributionDocuments).not.toMatch(/actions\/deploy-pages/iu);
   });
 
   it('does not claim publication state in public release documents', () => {
@@ -281,7 +273,41 @@ describe('public alpha documentation and package contracts', () => {
       candidateReport,
     ].join('\n');
     expect(publicReleaseDocuments).not.toMatch(
-      /\b(?:repository is now public|Pages deployment passed|GitHub Release exists)\b/iu,
+      /\b(?:repository is now public|Pages deployment passed|GitHub Release exists|successfully uploaded and loaded)\b/iu,
+    );
+
+    const currentReleaseDocuments = [
+      readme,
+      releaseNotes,
+      candidateReport,
+      thirdPartyLicensing,
+    ].join('\n');
+    for (const staleEvidence of [
+      '121 test files and 1,799 tests',
+      '271 transformed modules',
+      'schemaImportWorker-ll5tt6Dr.js',
+      '246,258 bytes',
+      'successfully uploaded and loaded',
+      'c6af0c4cded3445478fa74a3cc737378e1c61af4',
+      '08bf2c235d12dc0ad01aeb661abee2e3ed1bc078',
+      'No distribution blocker remains for revision `0.1.0`.',
+    ]) {
+      expect(currentReleaseDocuments).not.toContain(staleEvidence);
+    }
+
+    for (const currentHistoryContract of [
+      'parentless',
+      'c87854ecd922ca916a6f28c176281c10a6af0970',
+      'xml-carousel-history-private',
+      'private and archived',
+      'replacement public repository',
+      'Independent third-party',
+      'caches or clones',
+    ]) {
+      expect(thirdPartyLicensing).toContain(currentHistoryContract);
+    }
+    expect(thirdPartyLicensing).not.toContain(
+      'This is an **unresolved historical redistribution**',
     );
   });
 
