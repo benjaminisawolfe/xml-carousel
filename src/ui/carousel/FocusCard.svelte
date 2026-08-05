@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { NodeCenterRequest } from '../../app/stores/navigationCentering';
   import type { FocusCardSummary } from './focusCardSummary';
+  import type { ImplementedSemanticZoomPresentation } from './semanticZoomPresentation';
   import NodeKindBadge from './NodeKindBadge.svelte';
   import { formatSchemaNodeKind } from './nodePresentation';
 
@@ -9,6 +10,8 @@
   export let onToggleInspection: (nodeId: string) => void;
   export let onCenterNode: (request: NodeCenterRequest) => void;
   export let motionKey: string;
+  export let presentation: ImplementedSemanticZoomPresentation = 'full';
+  export let journeyPosition = 0;
 
   let heading: HTMLHeadingElement;
   let summaryScrollPointerId: number | undefined;
@@ -51,14 +54,19 @@
 </script>
 
 <article
+  class:compact={presentation === 'compact'}
   class="focus-card"
   aria-label={summary.displayName}
   data-carousel-gesture-origin
   data-carousel-motion-key={motionKey}
   data-focus-card-information-layout
+  data-semantic-zoom-focus-card
+  data-semantic-zoom-line-role="focus"
+  data-semantic-zoom-line-node-id={summary.nodeId}
+  data-journey-position={journeyPosition}
 >
   <div class="card-topline">
-    {#if summary.kind !== 'schema'}
+    {#if presentation === 'full' && summary.kind !== 'schema'}
       <NodeKindBadge kind={summary.kind} />
     {:else}
       <span aria-hidden="true"></span>
@@ -82,207 +90,212 @@
     {summary.displayName}
   </h2>
 
-  <!-- svelte-ignore a11y_no_noninteractive_tabindex (the bounded overflow region must be keyboard-scrollable) -->
-  <div
-    class="focus-card-summary"
-    role="region"
-    aria-label={`Scrollable summary details for ${summary.displayName}`}
-    tabindex="0"
-    data-carousel-gesture-ignore
-    data-focus-card-scroll-region
-    onwheel={(event) => event.stopPropagation()}
-    onpointerdown={beginSummaryPointerScroll}
-    onpointermove={moveSummaryPointerScroll}
-    onpointerup={endSummaryPointerScroll}
-    onpointercancel={endSummaryPointerScroll}
-  >
-    <section
-      class="structure"
-      aria-label={summary.kind === 'schema' ? 'Declarations' : 'Structure'}
+  {#if presentation === 'full'}
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex (the bounded overflow region must be keyboard-scrollable) -->
+    <div
+      class="focus-card-summary"
+      role="region"
+      aria-label={`Scrollable summary details for ${summary.displayName}`}
+      tabindex="0"
+      data-carousel-gesture-ignore
+      data-focus-card-scroll-region
+      onwheel={(event) => event.stopPropagation()}
+      onpointerdown={beginSummaryPointerScroll}
+      onpointermove={moveSummaryPointerScroll}
+      onpointerup={endSummaryPointerScroll}
+      onpointercancel={endSummaryPointerScroll}
     >
-      {#if summary.contentModelParts.length > 0}
-        <p class="content-model" aria-label="Content model">
-          {#each summary.contentModelParts as part (part.id)}
-            {#if part.kind === 'text'}
-              <span>{part.text}</span>
-            {:else if part.disposition === 'terminalCycleClosure'}
-              <span class="recursive-static">
-                <strong>{part.relationshipLabel ?? 'Recursive child'}:</strong>
-                {part.displayName}{part.occurrence}
-                <small>{part.terminalLabel}</small>
-              </span>
-            {:else}
-              <button
-                class="node-reference"
-                type="button"
-                aria-label={`Center ${part.displayName}${part.occurrence}`}
-                data-carousel-gesture-ignore
-                onclick={() =>
-                  onCenterNode({
-                    targetNodeId: part.nodeId,
-                    relationshipContext: {
-                      kind: 'outgoing-structural',
-                      sourceNodeId: summary.nodeId,
-                      edgeId: part.id,
-                    },
-                  })}
-              >
-                {part.displayName}{part.occurrence}
-              </button>
-            {/if}
-          {/each}
-        </p>
-      {/if}
-
-      {#if summary.hasXsdPresentation && summary.visibleRelationshipSummaries.length > 0}
-        <ul
-          class="relationship-list"
-          aria-label={summary.kind === 'schema'
-            ? 'Global declarations'
-            : 'Structural destinations'}
-          data-focus-card-relationships
-        >
-          {#each summary.visibleRelationshipSummaries as relationship (relationship.edgeId)}
-            <li>
-              {#if relationship.disposition === 'terminalCycleClosure'}
-                <span class="relationship-static">
-                  <strong>{relationship.relationshipLabel}:</strong>
-                  <span>
-                    {relationship.displayName}{relationship.occurrence}
-                    {#if relationship.terminalLabel}
-                      <small>{relationship.terminalLabel}</small>
-                    {/if}
-                  </span>
+      <section
+        class="structure"
+        aria-label={summary.kind === 'schema' ? 'Declarations' : 'Structure'}
+      >
+        {#if summary.contentModelParts.length > 0}
+          <p class="content-model" aria-label="Content model">
+            {#each summary.contentModelParts as part (part.id)}
+              {#if part.kind === 'text'}
+                <span>{part.text}</span>
+              {:else if part.disposition === 'terminalCycleClosure'}
+                <span class="recursive-static">
+                  <strong>{part.relationshipLabel ?? 'Recursive child'}:</strong
+                  >
+                  {part.displayName}{part.occurrence}
+                  <small>{part.terminalLabel}</small>
                 </span>
               {:else}
                 <button
-                  class="relationship-action"
+                  class="node-reference"
                   type="button"
-                  aria-label={`Navigate leafward through ${relationship.relationshipLabel} to ${relationship.displayName}, ${formatSchemaNodeKind(relationship.kind)}`}
+                  aria-label={`Center ${part.displayName}${part.occurrence}`}
                   data-carousel-gesture-ignore
                   onclick={() =>
                     onCenterNode({
-                      targetNodeId: relationship.nodeId,
+                      targetNodeId: part.nodeId,
                       relationshipContext: {
                         kind: 'outgoing-structural',
                         sourceNodeId: summary.nodeId,
-                        edgeId: relationship.edgeId,
+                        edgeId: part.id,
                       },
                     })}
                 >
-                  <strong>{relationship.relationshipLabel}:</strong>
-                  <span>
-                    {relationship.displayName}{relationship.occurrence}
-                    {#if relationship.terminalLabel}
-                      <small>{relationship.terminalLabel}</small>
-                    {/if}
-                  </span>
+                  {part.displayName}{part.occurrence}
                 </button>
               {/if}
-            </li>
+            {/each}
+          </p>
+        {/if}
+
+        {#if summary.hasXsdPresentation && summary.visibleRelationshipSummaries.length > 0}
+          <ul
+            class="relationship-list"
+            aria-label={summary.kind === 'schema'
+              ? 'Global declarations'
+              : 'Structural destinations'}
+            data-focus-card-relationships
+          >
+            {#each summary.visibleRelationshipSummaries as relationship (relationship.edgeId)}
+              <li>
+                {#if relationship.disposition === 'terminalCycleClosure'}
+                  <span class="relationship-static">
+                    <strong>{relationship.relationshipLabel}:</strong>
+                    <span>
+                      {relationship.displayName}{relationship.occurrence}
+                      {#if relationship.terminalLabel}
+                        <small>{relationship.terminalLabel}</small>
+                      {/if}
+                    </span>
+                  </span>
+                {:else}
+                  <button
+                    class="relationship-action"
+                    type="button"
+                    aria-label={`Navigate leafward through ${relationship.relationshipLabel} to ${relationship.displayName}, ${formatSchemaNodeKind(relationship.kind)}`}
+                    data-carousel-gesture-ignore
+                    onclick={() =>
+                      onCenterNode({
+                        targetNodeId: relationship.nodeId,
+                        relationshipContext: {
+                          kind: 'outgoing-structural',
+                          sourceNodeId: summary.nodeId,
+                          edgeId: relationship.edgeId,
+                        },
+                      })}
+                  >
+                    <strong>{relationship.relationshipLabel}:</strong>
+                    <span>
+                      {relationship.displayName}{relationship.occurrence}
+                      {#if relationship.terminalLabel}
+                        <small>{relationship.terminalLabel}</small>
+                      {/if}
+                    </span>
+                  </button>
+                {/if}
+              </li>
+            {/each}
+          </ul>
+          {#if summary.hiddenRelationshipCount > 0}
+            <p class="relationship-more">
+              +{summary.hiddenRelationshipCount} more destinations
+            </p>
+          {/if}
+        {/if}
+
+        {#if summary.isStructuralLeaf}
+          <p class="leaf-state" data-focus-card-leaf-state>
+            {summary.leafStateLabel}
+          </p>
+        {/if}
+      </section>
+
+      {#if summary.xsdProperties.length > 0}
+        <dl class="xsd-metadata" aria-label="XSD orientation">
+          {#each summary.xsdProperties as property (property.id)}
+            <div title={`${property.label}: ${property.value}`}>
+              <dt>{property.label}</dt>
+              <dd>{property.value}</dd>
+            </div>
           {/each}
-        </ul>
-        {#if summary.hiddenRelationshipCount > 0}
-          <p class="relationship-more">
-            +{summary.hiddenRelationshipCount} more destinations
-          </p>
-        {/if}
+        </dl>
       {/if}
 
-      {#if summary.isStructuralLeaf}
-        <p class="leaf-state" data-focus-card-leaf-state>
-          {summary.leafStateLabel}
-        </p>
-      {/if}
-    </section>
-
-    {#if summary.xsdProperties.length > 0}
-      <dl class="xsd-metadata" aria-label="XSD orientation">
-        {#each summary.xsdProperties as property (property.id)}
-          <div title={`${property.label}: ${property.value}`}>
-            <dt>{property.label}</dt>
-            <dd>{property.value}</dd>
-          </div>
-        {/each}
-      </dl>
-    {/if}
-
-    {#if summary.documentation}
-      <section
-        class="documentation-summary"
-        aria-label="Documentation"
-        data-focus-card-documentation
-      >
-        <p class="documentation-label">
-          {summary.documentation.language
-            ? `Documentation · ${summary.documentation.language}`
-            : 'Documentation'}
-        </p>
-        <p class="documentation-excerpt">{summary.documentation.excerpt}</p>
-        {#if summary.documentation.additionalDocumentationCount > 0}
-          <p class="documentation-more">
-            {`+${summary.documentation.additionalDocumentationCount} ${
-              summary.documentation.additionalDocumentationCount === 1
-                ? 'more documentation block'
-                : 'more documentation blocks'
-            }`}
+      {#if summary.documentation}
+        <section
+          class="documentation-summary"
+          aria-label="Documentation"
+          data-focus-card-documentation
+        >
+          <p class="documentation-label">
+            {summary.documentation.language
+              ? `Documentation · ${summary.documentation.language}`
+              : 'Documentation'}
           </p>
-        {/if}
-      </section>
-    {/if}
+          <p class="documentation-excerpt">{summary.documentation.excerpt}</p>
+          {#if summary.documentation.additionalDocumentationCount > 0}
+            <p class="documentation-more">
+              {`+${summary.documentation.additionalDocumentationCount} ${
+                summary.documentation.additionalDocumentationCount === 1
+                  ? 'more documentation block'
+                  : 'more documentation blocks'
+              }`}
+            </p>
+          {/if}
+        </section>
+      {/if}
 
-    {#if summary.annotationContent}
-      <section
-        class="documentation-summary"
-        aria-label={summary.annotationContent.label}
-        data-focus-card-annotation-content
-      >
-        <p class="documentation-label">{summary.annotationContent.label}</p>
-        <p class="documentation-excerpt">{summary.annotationContent.excerpt}</p>
-      </section>
-    {/if}
+      {#if summary.annotationContent}
+        <section
+          class="documentation-summary"
+          aria-label={summary.annotationContent.label}
+          data-focus-card-annotation-content
+        >
+          <p class="documentation-label">{summary.annotationContent.label}</p>
+          <p class="documentation-excerpt">
+            {summary.annotationContent.excerpt}
+          </p>
+        </section>
+      {/if}
 
-    {#if summary.commentCount > 0 && summary.commentExcerpt}
-      <section
-        class="comment-summary"
-        aria-label={`${summary.commentCount} ${summary.commentCount === 1 ? 'comment' : 'comments'}`}
-        data-focus-card-comments
-      >
-        <p class="comment-label">
-          {summary.commentCount === 1 ? 'Comment' : 'Comments'}
-        </p>
-        <p class="comment-excerpt">{summary.commentExcerpt}</p>
-        {#if summary.commentCount > 1}
-          <p class="comment-more">+{summary.commentCount - 1} more</p>
-        {/if}
-      </section>
-    {/if}
+      {#if summary.commentCount > 0 && summary.commentExcerpt}
+        <section
+          class="comment-summary"
+          aria-label={`${summary.commentCount} ${summary.commentCount === 1 ? 'comment' : 'comments'}`}
+          data-focus-card-comments
+        >
+          <p class="comment-label">
+            {summary.commentCount === 1 ? 'Comment' : 'Comments'}
+          </p>
+          <p class="comment-excerpt">{summary.commentExcerpt}</p>
+          {#if summary.commentCount > 1}
+            <p class="comment-more">+{summary.commentCount - 1} more</p>
+          {/if}
+        </section>
+      {/if}
 
-    {#if summary.annotationCount > 0 || summary.attributeCount > 0 || summary.incomingUseCount > 0 || summary.showSourceFilename}
-      <div class="card-metadata" aria-label="Node context">
-        {#if summary.annotationCount > 0}
-          <span data-focus-card-annotation-count>
-            {summary.annotationCount}
-            {summary.annotationCount === 1 ? 'annotation' : 'annotations'}
-          </span>
-        {/if}
-        {#if summary.attributeCount > 0}
-          <span data-focus-card-attribute-count>
-            {summary.attributeCount}
-            {summary.attributeCount === 1
-              ? summary.attributeCountKind
-              : `${summary.attributeCountKind}s`}
-          </span>
-        {/if}
-        {#if summary.incomingUseCount > 0}
-          <span>Used by {summary.incomingUseCount}</span>
-        {/if}
-        {#if summary.showSourceFilename && summary.sourceFilename}
-          <span>{summary.sourceFilename}</span>
-        {/if}
-      </div>
-    {/if}
-  </div>
+      {#if summary.annotationCount > 0 || summary.attributeCount > 0 || summary.incomingUseCount > 0 || summary.showSourceFilename}
+        <div class="card-metadata" aria-label="Node context">
+          {#if summary.annotationCount > 0}
+            <span data-focus-card-annotation-count>
+              {summary.annotationCount}
+              {summary.annotationCount === 1 ? 'annotation' : 'annotations'}
+            </span>
+          {/if}
+          {#if summary.attributeCount > 0}
+            <span data-focus-card-attribute-count>
+              {summary.attributeCount}
+              {summary.attributeCount === 1
+                ? summary.attributeCountKind
+                : `${summary.attributeCountKind}s`}
+            </span>
+          {/if}
+          {#if summary.incomingUseCount > 0}
+            <span>Used by {summary.incomingUseCount}</span>
+          {/if}
+          {#if summary.showSourceFilename && summary.sourceFilename}
+            <span>{summary.sourceFilename}</span>
+          {/if}
+        </div>
+      {/if}
+    </div>
+  {/if}
 </article>
 
 <style>
@@ -301,6 +314,21 @@
     border-radius: var(--radius-card);
     background: var(--colour-panel-raised);
     box-shadow: var(--shadow-focus);
+  }
+
+  .focus-card.compact {
+    grid-template-rows: auto auto;
+    min-height: 124px;
+    padding: var(--space-4);
+  }
+
+  .focus-card.compact .card-topline {
+    margin-bottom: var(--space-3);
+  }
+
+  .focus-card.compact h2 {
+    margin: 0;
+    font-size: var(--font-size-xl);
   }
 
   .focus-card-summary {

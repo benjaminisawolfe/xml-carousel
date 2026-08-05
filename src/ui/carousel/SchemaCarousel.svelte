@@ -18,6 +18,8 @@
   } from '../../schema/model';
   import BranchFan from './BranchFan.svelte';
   import FocusCard from './FocusCard.svelte';
+  import SemanticZoomControl from './SemanticZoomControl.svelte';
+  import SemanticZoomRelationshipLines from './SemanticZoomRelationshipLines.svelte';
   import { buildFocusCardSummary } from './focusCardSummary';
   import RootwardPath from './RootwardPath.svelte';
   import {
@@ -49,6 +51,10 @@
     resolveKeyboardSelectedRelationshipId,
     type KeyboardSelectionDirection,
   } from './keyboardNavigation';
+  import {
+    resolveImplementedSemanticZoomPresentation,
+    type ImplementedSemanticZoomPresentation,
+  } from './semanticZoomPresentation';
 
   const {
     canNavigateRootward,
@@ -162,6 +168,10 @@
   );
   $: rootwardHistoryRowCount =
     getRootwardHistoryRowCountForStage(carouselStageHeight);
+  $: implementedSemanticZoomPresentation =
+    resolveImplementedSemanticZoomPresentation(
+      $semanticZoomStore.effectiveLevel,
+    );
   $: {
     const nextEffectiveLevel = $semanticZoomStore.effectiveLevel;
     if (nextEffectiveLevel !== observedEffectiveSemanticZoomLevel) {
@@ -202,7 +212,18 @@
     const handleSemanticZoomAvailabilityChange = (
       event: MediaQueryListEvent,
     ): void => {
+      const focusedCarouselAction =
+        !event.matches &&
+        document.activeElement instanceof HTMLElement &&
+        gestureSurface.contains(document.activeElement)
+          ? document.activeElement
+          : undefined;
       semanticZoomStore.setDesktopAvailability(event.matches);
+      if (focusedCarouselAction) {
+        void preserveCarouselFocusAfterSemanticZoomChange(
+          focusedCarouselAction,
+        );
+      }
     };
     const handleReducedMotionChange = (event: MediaQueryListEvent): void => {
       prefersReducedMotion = event.matches;
@@ -1015,6 +1036,12 @@
 
     inspectorStore.inspect(nodeId);
   }
+
+  function selectSemanticZoomPresentation(
+    presentation: ImplementedSemanticZoomPresentation,
+  ): void {
+    semanticZoomStore.setRequestedLevel(presentation);
+  }
 </script>
 
 <div class="motion-stage" data-carousel-motion-stage>
@@ -1022,6 +1049,8 @@
     bind:this={gestureSurface}
     class:gesture-active={gestureSnapshot.active}
     class:keyboard-selection-active={Boolean(keyboardSelectedRelationshipId)}
+    class:semantic-zoom-compact={implementedSemanticZoomPresentation ===
+      'compact'}
     class="gesture-viewport presentation-{presentationState.phase}"
     data-carousel-gesture-viewport
     data-gesture-phase={gestureSnapshot.phase}
@@ -1035,6 +1064,7 @@
     data-semantic-zoom-available={$semanticZoomStore.isAvailable
       ? 'true'
       : 'false'}
+    data-semantic-zoom-presentation={implementedSemanticZoomPresentation}
     data-keyboard-cursor-state={keyboardSelectedRelationshipId
       ? 'leafward-selection'
       : 'current-focus'}
@@ -1044,6 +1074,11 @@
     aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Enter Space"
     ontransitionend={handlePresentationTransitionEnd}
   >
+    <SemanticZoomControl
+      isAvailable={$semanticZoomStore.isAvailable}
+      presentation={implementedSemanticZoomPresentation}
+      onSelect={selectSemanticZoomPresentation}
+    />
     <div
       bind:this={gestureLayer}
       class="gesture-layer"
@@ -1051,6 +1086,13 @@
       style:--gesture-offset={`${presentationOffsetX}px`}
     >
       <div class="carousel-stage">
+        {#if $semanticZoomStore.isAvailable && implementedSemanticZoomPresentation === 'compact'}
+          <SemanticZoomRelationshipLines
+            reflowRevision={carouselReflowRevision}
+            navigationKey={`${$activeProjectStore.project.id}\u0000${$navigationPathIds.join('\u0000')}`}
+            isResting={presentationState.phase === 'resting'}
+          />
+        {/if}
         <div class="context-slot rootward-slot">
           <RootwardPath
             project={$activeProjectStore.project}
@@ -1065,6 +1107,7 @@
             earlierPathRows={rootwardHistoryRowCount}
             availableHeight={carouselStageHeight}
             reflowRevision={carouselReflowRevision}
+            presentation={implementedSemanticZoomPresentation}
             onNavigatePrevious={navigatePreviousStep}
             onJumpEarlier={jumpToEarlierPathStep}
             onToggleInspection={toggleInspection}
@@ -1084,6 +1127,8 @@
                 )}
                 onCenterNode={centerRequest}
                 onToggleInspection={toggleInspection}
+                presentation={implementedSemanticZoomPresentation}
+                journeyPosition={$navigationPathIds.length - 1}
               />
             </div>
           {/key}
@@ -1105,6 +1150,7 @@
             availableWidth={carouselStageWidth}
             availableHeight={carouselStageHeight}
             reflowRevision={carouselReflowRevision}
+            presentation={implementedSemanticZoomPresentation}
             nextJourneyPosition={$navigationPathIds.length}
             onNavigate={centerRelationship}
             onToggleInspection={toggleInspection}
@@ -1159,7 +1205,9 @@
   }
 
   .gesture-viewport {
+    position: relative;
     container: carousel / inline-size;
+    grid-template-rows: auto minmax(0, 1fr);
     overflow: hidden;
     touch-action: none;
   }
@@ -1169,6 +1217,7 @@
   }
 
   .gesture-layer {
+    grid-row: 2;
     transform: translate3d(var(--gesture-offset), 0, 0);
     transition: none;
   }
@@ -1196,11 +1245,23 @@
     grid-template-rows: minmax(0, 1fr);
   }
 
+  .gesture-viewport.semantic-zoom-compact .carousel-stage {
+    grid-template-columns:
+      minmax(0, 1fr) minmax(220px, 300px)
+      minmax(0, 1fr);
+    column-gap: var(--space-6);
+    row-gap: var(--space-3);
+  }
+
   .context-slot {
+    position: relative;
+    z-index: 1;
     min-width: 0;
   }
 
   .focus-anchor {
+    position: relative;
+    z-index: 1;
     grid-column: 2;
     display: flex;
     height: 100%;

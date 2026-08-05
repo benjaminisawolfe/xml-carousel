@@ -2,6 +2,7 @@
   import type { SchemaNode } from '../../schema/model';
   import { formatSchemaNodeKind } from './nodePresentation';
   import NodeKindBadge from './NodeKindBadge.svelte';
+  import type { ImplementedSemanticZoomPresentation } from './semanticZoomPresentation';
 
   export let node: SchemaNode;
   export let displayName = node.name;
@@ -10,16 +11,21 @@
   export let isInspected: boolean;
   export let onJump: (nodeId: string, journeyPosition: number) => void;
   export let onToggleInspection: (nodeId: string) => void;
+  export let presentation: ImplementedSemanticZoomPresentation = 'full';
 
   $: motionKey = `history:${journeyPosition}:${node.id}`;
 </script>
 
 <li
   class:inspected={isInspected}
+  class:compact={presentation === 'compact'}
   class="history-row"
   data-rootward-history-row
   data-journey-position={journeyPosition}
   data-carousel-motion-key={motionKey}
+  data-semantic-zoom-rootward-position={journeyPosition}
+  data-semantic-zoom-line-role="history"
+  data-semantic-zoom-line-node-id={node.id}
 >
   <button
     class="jump-action"
@@ -30,7 +36,7 @@
     onclick={() => onJump(node.id, journeyPosition)}
   >
     <span class="node-name" title={displayName}>{displayName}</span>
-    {#if showKind}
+    {#if presentation === 'full' && showKind}
       <NodeKindBadge kind={node.kind} />
     {:else}
       <span class="visually-hidden">{formatSchemaNodeKind(node.kind)}</span>
@@ -67,6 +73,14 @@
   .history-row.inspected {
     outline: 2px solid var(--colour-danger-action);
     outline-offset: 1px;
+  }
+
+  .history-row.compact .jump-action {
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .history-row.compact .node-name {
+    font-size: var(--font-size-xs);
   }
 
   .jump-action,

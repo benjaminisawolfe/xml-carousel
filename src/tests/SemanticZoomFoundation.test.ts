@@ -131,6 +131,10 @@ describe('semantic zoom carousel foundation', () => {
       'data-semantic-zoom-available',
       'false',
     );
+    expect(zoomSurface()).toHaveAttribute(
+      'data-semantic-zoom-presentation',
+      'full',
+    );
   });
 
   it('reflects the centralized desktop media-query result', async () => {
@@ -261,14 +265,13 @@ describe('semantic zoom carousel foundation', () => {
     );
   });
 
-  it('renders no control and leaves Full card content and names unchanged', async () => {
+  it('keeps store-level Overview explicit while rendering the implemented Compact fallback', async () => {
     installMatchMedia(true);
     const { container } = render(App);
-    const originalText = container.textContent;
     const originalNames = accessibleCardNames();
-    const originalButtons = screen
-      .getAllByRole('button')
-      .map((button) => button.getAttribute('aria-label') ?? button.textContent);
+    expect(
+      screen.getByRole('slider', { name: 'Semantic zoom' }),
+    ).toHaveAttribute('max', '2');
 
     semanticZoomStore.setRequestedLevel('overview');
     await waitFor(() =>
@@ -278,21 +281,19 @@ describe('semantic zoom carousel foundation', () => {
       ),
     );
 
-    expect(container.textContent).toBe(originalText);
+    expect(zoomSurface()).toHaveAttribute(
+      'data-semantic-zoom-requested',
+      'overview',
+    );
+    expect(zoomSurface()).toHaveAttribute(
+      'data-semantic-zoom-presentation',
+      'compact',
+    );
     expect(accessibleCardNames()).toEqual(originalNames);
-    expect(
-      screen
-        .getAllByRole('button')
-        .map(
-          (button) => button.getAttribute('aria-label') ?? button.textContent,
-        ),
-    ).toEqual(originalButtons);
-    expect(
-      screen.queryByRole('button', {
-        name: /Full detail|Compact|Overview/,
-      }),
-    ).not.toBeInTheDocument();
-    expect(container).not.toHaveTextContent('Full detail');
+    expect(screen.getByRole('slider', { name: 'Semantic zoom' })).toHaveValue(
+      '1',
+    );
+    expect(container).not.toHaveTextContent('Overview');
   });
 
   it('keeps spatial keyboard navigation operational at future levels', async () => {
