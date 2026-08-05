@@ -97,10 +97,17 @@ JavaScript MIME type for `.js`. The verified WASM path tolerates
 `application/octet-stream`. Root and nested-directory deployments use the same
 portable artifact.
 
-## Licensing release blocker
+## Repository-history licensing status
 
 The current tree stores James Clark's `xmltest` collection only as the verified
-unchanged archive permitted by its embedded terms. Earlier public Git history
-contains two unpacked entries. That unresolved historical redistribution
-requires an explicit repository-history decision before release; Task 13.19
-does not rewrite published history.
+unchanged archive permitted by its embedded terms. The former public Git
+history contained two unpacked entries; that repository is now private and
+archived. The replacement public repository began with a parentless clean root
+and contains neither historical blob. Anonymous web, API, and fresh-clone
+checks confirmed the forbidden objects are not publicly retrievable.
+
+This closes the former unresolved historical redistribution finding for GitHub
+repositories under Ben's control. Independent third-party caches or clones of
+the formerly public history may persist outside that control. XML Carousel's
+website remains hosted and deployed separately by FTP; no GitHub Pages or
+website migration was part of the repository-history remediation.
