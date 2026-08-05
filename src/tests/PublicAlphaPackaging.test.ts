@@ -77,9 +77,7 @@ describe('public alpha documentation and package contracts', () => {
     }
 
     expect(readme).not.toMatch(/[A-Z]:\\(?:Work|Users)\\/u);
-    expect(readme).toContain(
-      'Version 0.1.0 is the planned first public alpha.',
-    );
+    expect(readme).toContain('Version 0.1.0 is the first public alpha.');
     expect(readme).toContain(
       "XML Carousel's post-Xerces extraction and presentation",
     );
@@ -92,6 +90,14 @@ describe('public alpha documentation and package contracts', () => {
     );
     expect(readme).toMatch(/domain root or a nested directory/iu);
     expect(readme).toContain('https://xmlcarousel.wolfshafenpress.com/');
+    expect(readme).toContain('`v0.1.0`');
+    expect(readme).toContain(
+      '2f73adbba3ec0837fd6c4bf5c86e879af1fa0bef7730f14e6afbf0040d412dc0',
+    );
+    expect(readme).toMatch(/manual FTP/iu);
+    expect(readme).toContain('deployed-byte verification');
+    expect(readme).toContain('Chrome 151.0.7922.72');
+    expect(readme).toMatch(/Firefox\s+153\.0\.1/iu);
     expect(readme).toMatch(/No\s+application\s+backend\s+is\s+required/iu);
   });
 
@@ -141,16 +147,22 @@ describe('public alpha documentation and package contracts', () => {
     expect(packageJson.scripts.validate).toContain('run-validation.mjs');
   });
 
-  it('records the limitations baseline and candidate release boundary', () => {
+  it('records the limitations baseline and published release boundary', () => {
     const limitations = read('docs/known-limitations.md');
     expect(limitations).toContain('XSD 1.1 is not supported');
     expect(limitations).toMatch(/closes the former unresolved historical/iu);
     expect(releaseNotes).toContain('# XML Carousel 0.1.0 — First Public Alpha');
-    expect(releaseNotes).toContain('Release date: pending publication');
+    expect(releaseNotes).toContain('Release date: 2026-08-05');
     expect(releaseNotes).toContain('`v0.1.0`');
-    expect(releaseNotes).toContain('GitHub Release: not yet created');
+    expect(releaseNotes).toContain('GitHub Release: published as a prerelease');
     expect(releaseNotes).toContain(
-      'Current candidate deployment: not yet performed',
+      'Canonical site: https://xmlcarousel.wolfshafenpress.com/',
+    );
+    expect(releaseNotes).toContain('Deployment: completed by manual FTP');
+    expect(releaseNotes).toContain('Deployed-byte verification: passed');
+    expect(releaseNotes).toContain('fad25bd26e2d197a4e7d5db364ad5933d67e8c81');
+    expect(releaseNotes).toContain(
+      '2f73adbba3ec0837fd6c4bf5c86e879af1fa0bef7730f14e6afbf0040d412dc0',
     );
     expect(releaseNotes).toContain('[Standards support](standards-support.md)');
     expect(releaseNotes).toContain('[Known limitations](known-limitations.md)');
@@ -208,19 +220,27 @@ describe('public alpha documentation and package contracts', () => {
     }
   });
 
-  it('records a complete release-candidate report structure', () => {
+  it('records a complete release and deployment closure structure', () => {
     for (const heading of [
-      'Candidate identity',
+      'Publication identity',
+      'Historical candidate identity',
       'Source and scope',
       'Audit and integrity',
       'Automated validation',
       'Standards and visualization evidence',
       'Regression evidence',
       'Deterministic candidate build',
-      'Browser evidence',
-      'Manual QA pending',
-      'Publication gates',
-      'Candidate conclusion',
+      'Candidate browser evidence',
+      'Manual QA result',
+      'FTP deployment',
+      'First deployed-byte attempt',
+      'Binary transfer correction',
+      'Final deployed-byte verification',
+      'Live Chrome verification',
+      'Live Firefox verification',
+      'Network and privacy verification',
+      'GitHub Release metadata correction',
+      'Final release conclusion',
     ]) {
       expect(candidateReport).toContain(`## ${heading}`);
     }
@@ -232,15 +252,18 @@ describe('public alpha documentation and package contracts', () => {
       'Chrome',
       'Firefox',
       'manual QA',
+      '365357518',
+      '921fa5d1d6ba0ebea9cc76dbc287f4b1ff77641f',
+      '2f73adbba3ec0837fd6c4bf5c86e879af1fa0bef7730f14e6afbf0040d412dc0',
     ]) {
       expect(candidateReport).toContain(evidence);
     }
     expect(candidateReport).not.toMatch(/[A-Z]:\\(?:Work|Users)\\/u);
-    expect(candidateReport).toMatch(/not tagged/iu);
-    expect(candidateReport).toMatch(/not published as a GitHub Release/iu);
+    expect(candidateReport).toMatch(/Publication completed/iu);
     expect(candidateReport).toMatch(
-      /not\s+deployed as the current candidate/iu,
+      /canonical deployment matches the exact release\s+package/iu,
     );
+    expect(candidateReport).toMatch(/No production rebuild/iu);
   });
 
   it('documents one portable artifact with hosting-neutral distribution', () => {
@@ -261,19 +284,41 @@ describe('public alpha documentation and package contracts', () => {
       /Transfer and hosting tooling are outside the application\s+architecture/iu,
     );
     expect(releaseChecklist).toContain('contents of `dist/`');
-    expect(candidateReport).toMatch(/automated candidate preparation passed/iu);
+    expect(candidateReport).toContain('identical 14-file inventory');
     expect(distributionDocuments).not.toMatch(/actions\/deploy-pages/iu);
   });
 
-  it('does not claim publication state in public release documents', () => {
-    const publicReleaseDocuments = [
-      readme,
-      releaseNotes,
-      releaseChecklist,
-      candidateReport,
-    ].join('\n');
-    expect(publicReleaseDocuments).not.toMatch(
-      /\b(?:repository is now public|Pages deployment passed|GitHub Release exists|successfully uploaded and loaded)\b/iu,
+  it('records stable publication state and rejects pre-publication regressions', () => {
+    const closedReleaseDocuments = [readme, releaseNotes, candidateReport].join(
+      '\n',
+    );
+    for (const stableReleaseContract of [
+      '0.1.0',
+      'v0.1.0',
+      '2026-08-05',
+      'fad25bd26e2d197a4e7d5db364ad5933d67e8c81',
+      'https://xmlcarousel.wolfshafenpress.com/',
+      '2f73adbba3ec0837fd6c4bf5c86e879af1fa0bef7730f14e6afbf0040d412dc0',
+      'manual FTP',
+      'deployed-byte verification',
+      'Chrome',
+      'Firefox',
+    ]) {
+      expect(closedReleaseDocuments).toContain(stableReleaseContract);
+    }
+    for (const prePublicationRegression of [
+      'Version 0.1.0 is the planned first public alpha.',
+      'Release date: pending publication',
+      'GitHub Release: not yet created',
+      'Current candidate deployment: not yet performed',
+      'They have not yet been copied to or verified',
+      'Manual release-candidate QA remains pending',
+      'Deployment and post-deployment verification will be reported separately',
+    ]) {
+      expect(closedReleaseDocuments).not.toContain(prePublicationRegression);
+    }
+    expect(closedReleaseDocuments).not.toMatch(
+      /\b(?:Pages deployment passed|successfully uploaded and loaded)\b/iu,
     );
 
     const currentReleaseDocuments = [
