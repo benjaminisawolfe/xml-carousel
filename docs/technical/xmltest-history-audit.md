@@ -15,6 +15,26 @@ tests/fixtures/w3c-xmlconf-20130923/ci-corpus/xmltest/invalid/not-sa/022.ent
 Both are removed from the current worktree. The selected case reads byte-identical
 entries from the unchanged `xmltest.zip` instead.
 
+## Repository migration completion
+
+On 2026-08-05, the historical repository was renamed to
+`benjaminisawolfe/xml-carousel-history-private`, made private, and archived.
+The replacement public `benjaminisawolfe/xml-carousel` repository began at the
+parentless clean root commit
+`c87854ecd922ca916a6f28c176281c10a6af0970`, whose tree is
+`49b5d2b61b38bccaac436dccab95a45900972759`. No historical branch, tag, commit,
+stash, pull-request ref, unreachable object, or forbidden blob was copied.
+
+Anonymous web and API requests could not retrieve the introducing commit, the
+two historical blobs, or the former integrated commit from the replacement
+public repository. The private archive was also anonymous-inaccessible. A
+fresh anonymous clone contained one commit, passed `git fsck`, and contained
+none of those objects. The unchanged 107,060-byte `xmltest.zip` is the only
+redistributed form of the James Clark collection in the public tree.
+
+XML Carousel remains hosted and deployed separately by FTP. The repository
+migration did not use GitHub Pages or migrate the website.
+
 ## Commit and blob identities
 
 Both paths were introduced, and never subsequently changed, by:
@@ -31,7 +51,10 @@ Historical blob IDs:
 022.ent  26f2d8beb2acdf8d2a062831ce2790f449e33f69
 ```
 
-## Refs containing the historical paths
+## Historical refs retained privately
+
+The following refs were identified by the Task 13.19 audit and remain preserved
+only in the private, read-only historical archive.
 
 Local branches:
 
@@ -77,17 +100,24 @@ refs/codex/turn-diffs/checkpoints/4e419aead0e3f109adaad36cce5ce30add1198e44bff1e
 No tag exists. The preserved stash
 `0cf043aed417074936c9cc08bb2af29435c1ebb3` does not contain either path.
 
-GitHub reports a public repository with zero known forks, zero releases, and
-zero Actions artifacts. The workflow does not upload artifacts. These facts do
-not prove that no third party cloned or cached the public history.
+At the cutover gates, GitHub reported zero known forks, zero releases, and zero
+downloadable Actions artifacts for both repository identities. The workflow
+does not upload artifacts. These facts do not prove that no third party cloned
+or cached the formerly public history.
 
 ## Conclusion
 
-**Unresolved historical redistribution:** deleting the paths in the current
-tree does not remove their blobs from published history or retained branches.
-An explicit repository-history and release decision remains required. This
-task performed no history rewrite, reset, rebase, force-push, branch deletion,
-tag deletion, release operation, or GitHub Support request.
+The Task 13.19 finding was **Unresolved historical redistribution**: deleting
+the paths in the current tree did not remove their blobs from then-public
+history or retained branches. The clean-repository migration resolved that
+finding for GitHub repositories under Ben's control. The historical objects
+remain preserved only in the private archived repository, while the public
+repository has independent clean history.
+
+The migration performed no history rewrite, filter operation, mirror push,
+force-push, historical branch deletion, tag deletion, or release operation.
+Independent third-party caches or clones may still exist outside Ben's
+control.
 
 Audit commands included `git log --all -- <paths>`, `git rev-parse
 HEAD:<path>`, `git for-each-ref`, `git cat-file -e <ref>:<path>`, `git tag

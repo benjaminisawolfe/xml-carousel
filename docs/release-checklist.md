@@ -127,7 +127,7 @@ Markers:
       one Xerces NOTICE, and one Emscripten license asset.
 - [ ] **[Codex—instructed]** Run hostile-MIME verification and confirm all
       license/notice files remain readable at both root and nested mounts.
-- [x] **[Manual QA]** Copy the contents of `dist/` into the chosen web-served
+- [ ] **[Manual QA]** Copy the contents of `dist/` into the chosen web-served
       directory.
 - [ ] **[Manual QA]** Direct-load and reload
       `https://xmlcarousel.wolfshafenpress.com/`.
@@ -151,9 +151,10 @@ Markers:
 - [ ] **[Codex—instructed]** Confirm the CC0 identifier and checked-in licence
       agree.
 - [ ] **[Codex—instructed]** Review
-      `docs/technical/xmltest-history-audit.md`. Do not tag or release while
-      historical redistribution remains unresolved without an explicit
-      repository-history decision.
+      `docs/technical/xmltest-history-audit.md`. The historical repository is
+      private and archived; the replacement public repository has one
+      parentless clean root and passed anonymous forbidden-object verification.
+      Third-party caches or clones outside Ben's control may still persist.
 - [ ] **[Codex—instructed]** Confirm XML Carousel's CC0 wording excludes
       third-party runtime components and fixtures.
 
