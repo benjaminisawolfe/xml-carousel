@@ -23,15 +23,48 @@
   ) => void;
 
   const WHEEL_SETTLE_MS = 180;
+  const RANGE_DESCRIPTION_ID = 'semantic-zoom-range-description';
   const wheelController = createSemanticZoomWheelController();
 
   let announcement = '';
   let wheelSettleTimeout: number | undefined;
   let observedAvailability = isAvailable;
+  let lastAcceptedPresentation = presentation;
+  let pendingRangePresentation: ImplementedSemanticZoomPresentation | undefined;
+  let pendingBoundaryFocusPresentation:
+    ImplementedSemanticZoomPresentation | undefined;
+  let rangeUpdateQueued = false;
+  let rangeElement: HTMLInputElement;
+  let boundaryFocusFrame: number | undefined;
+  let destroyed = false;
 
   $: if (isAvailable !== observedAvailability) {
     observedAvailability = isAvailable;
     if (!isAvailable) resetWheelInteraction();
+  }
+  $: if (presentation !== lastAcceptedPresentation) {
+    lastAcceptedPresentation = presentation;
+  }
+  $: if (presentation === pendingBoundaryFocusPresentation) {
+    pendingBoundaryFocusPresentation = undefined;
+    if (boundaryFocusFrame !== undefined) {
+      window.cancelAnimationFrame(boundaryFocusFrame);
+    }
+    boundaryFocusFrame = window.requestAnimationFrame(() => {
+      boundaryFocusFrame = undefined;
+      const activeElement = document.activeElement;
+      if (
+        destroyed ||
+        (activeElement !== document.body &&
+          !(
+            activeElement instanceof HTMLElement &&
+            activeElement.closest('[data-semantic-zoom-control]')
+          ))
+      ) {
+        return;
+      }
+      rangeElement.focus({ preventScroll: true });
+    });
   }
 
   $: currentLabel = semanticZoomLevelLabel(presentation);
@@ -41,7 +74,16 @@
   $: canZoomOut = zoomOutTarget !== presentation;
   $: canZoomIn = zoomInTarget !== presentation;
 
-  onDestroy(resetWheelInteraction);
+  onDestroy(() => {
+    destroyed = true;
+    pendingRangePresentation = undefined;
+    pendingBoundaryFocusPresentation = undefined;
+    if (boundaryFocusFrame !== undefined) {
+      window.cancelAnimationFrame(boundaryFocusFrame);
+      boundaryFocusFrame = undefined;
+    }
+    resetWheelInteraction();
+  });
 
   function resetWheelInteraction(): void {
     if (wheelSettleTimeout !== undefined) {
@@ -64,7 +106,8 @@
   function selectPresentation(
     nextPresentation: ImplementedSemanticZoomPresentation,
   ): boolean {
-    if (nextPresentation === presentation) return false;
+    if (nextPresentation === lastAcceptedPresentation) return false;
+    lastAcceptedPresentation = nextPresentation;
     onSelect(nextPresentation);
     announcement = `Semantic zoom: ${semanticZoomLevelLabel(nextPresentation)}.`;
     return true;
@@ -74,7 +117,27 @@
     const input = event.currentTarget as HTMLInputElement;
     const nextPresentation =
       implementedSemanticZoomPresentationFromControlValue(input.valueAsNumber);
-    if (nextPresentation) selectPresentation(nextPresentation);
+    if (!nextPresentation) return;
+
+    pendingRangePresentation = nextPresentation;
+    if (rangeUpdateQueued) return;
+    rangeUpdateQueued = true;
+    queueMicrotask(() => {
+      rangeUpdateQueued = false;
+      if (destroyed) return;
+      const pending = pendingRangePresentation;
+      pendingRangePresentation = undefined;
+      if (pending) selectPresentation(pending);
+    });
+  }
+
+  function handleButtonSelect(
+    nextPresentation: ImplementedSemanticZoomPresentation,
+    reachesBoundary: boolean,
+  ): void {
+    if (reachesBoundary) rangeElement.focus({ preventScroll: true });
+    if (!selectPresentation(nextPresentation)) return;
+    if (reachesBoundary) pendingBoundaryFocusPresentation = nextPresentation;
   }
 
   function handleWheel(event: WheelEvent): void {
@@ -87,17 +150,17 @@
     const action = semanticZoomWheelAction(input);
     if (!action) return;
     const boundaryTarget = stepSemanticZoom(
-      presentation,
+      lastAcceptedPresentation,
       action === 'zoomOut' ? 'out' : 'in',
     );
-    if (boundaryTarget === presentation) {
+    if (boundaryTarget === lastAcceptedPresentation) {
       return;
     }
 
     scheduleWheelSettle();
     const state: SemanticZoomState = {
-      requestedLevel: presentation,
-      effectiveLevel: presentation,
+      requestedLevel: lastAcceptedPresentation,
+      effectiveLevel: lastAcceptedPresentation,
       isAvailable,
     };
     const decision = wheelController.handle(input, state);
@@ -116,7 +179,8 @@
 {#if isAvailable}
   <section
     class="semantic-zoom-control"
-    aria-label="Semantic zoom controls"
+    role="group"
+    aria-label="Semantic zoom"
     data-semantic-zoom-control
     data-carousel-gesture-ignore
     onwheel={handleWheel}
@@ -126,11 +190,13 @@
       type="button"
       aria-label={`Zoom out to ${semanticZoomLevelLabel(zoomOutTarget)}`}
       disabled={!canZoomOut}
-      onclick={() => selectPresentation(zoomOutTarget)}
+      onclick={() =>
+        handleButtonSelect(zoomOutTarget, zoomOutTarget === 'overview')}
     >
       <span aria-hidden="true">−</span>
     </button>
     <input
+      bind:this={rangeElement}
       type="range"
       min="0"
       max="2"
@@ -138,17 +204,22 @@
       value={rangeValue}
       aria-label="Semantic zoom"
       aria-valuetext={currentLabel}
+      aria-describedby={RANGE_DESCRIPTION_ID}
       oninput={handleRangeInput}
     />
     <button
       type="button"
       aria-label={`Zoom in to ${semanticZoomLevelLabel(zoomInTarget)}`}
       disabled={!canZoomIn}
-      onclick={() => selectPresentation(zoomInTarget)}
+      onclick={() => handleButtonSelect(zoomInTarget, zoomInTarget === 'full')}
     >
       <span aria-hidden="true">+</span>
     </button>
     <span class="current-level">{currentLabel}</span>
+    <span id={RANGE_DESCRIPTION_ID} class="visually-hidden">
+      Use arrow keys to choose Overview, Compact, or Full detail. You can also
+      use the mouse wheel while pointing at or focusing the zoom control.
+    </span>
     <span
       class="visually-hidden"
       role="status"
@@ -176,6 +247,7 @@
     border-radius: var(--radius-large);
     background: var(--colour-panel-raised);
     box-shadow: var(--shadow-low);
+    touch-action: manipulation;
   }
 
   .control-label,
@@ -203,6 +275,7 @@
     font-size: var(--font-size-xl);
     font-weight: 700;
     cursor: pointer;
+    touch-action: manipulation;
   }
 
   button:hover:not(:disabled) {
@@ -217,10 +290,12 @@
   }
 
   input[type='range'] {
-    width: clamp(88px, 10vw, 132px);
+    width: clamp(72px, 10cqi, 132px);
+    min-width: 72px;
     min-height: var(--control-min-size);
     accent-color: var(--colour-accent);
     cursor: pointer;
+    touch-action: manipulation;
   }
 
   button:focus-visible,
@@ -239,5 +314,78 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+  }
+
+  @container carousel (max-width: 760px) {
+    .semantic-zoom-control {
+      max-width: calc(100% - var(--space-2) * 2);
+      gap: var(--space-1);
+      padding: var(--space-1) var(--space-2);
+      margin: var(--space-1);
+    }
+
+    .control-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .current-level {
+      min-width: 5.75rem;
+    }
+  }
+
+  @container carousel (max-width: 460px) {
+    input[type='range'] {
+      width: 72px;
+    }
+
+    .current-level {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      white-space: normal;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .semantic-zoom-control {
+      border: 2px solid CanvasText;
+      background: Canvas;
+      color: CanvasText;
+      box-shadow: none;
+    }
+
+    .control-label,
+    .current-level {
+      color: CanvasText;
+    }
+
+    button {
+      border-color: ButtonText;
+      background: ButtonFace;
+      color: ButtonText;
+    }
+
+    button:disabled {
+      border-color: GrayText;
+      border-style: dashed;
+      background: Canvas;
+      color: GrayText;
+    }
+
+    input[type='range'] {
+      accent-color: Highlight;
+    }
+
+    button:focus-visible,
+    input:focus-visible {
+      outline-color: Highlight;
+    }
   }
 </style>

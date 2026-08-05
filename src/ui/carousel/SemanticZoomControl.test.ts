@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import SemanticZoomControl from './SemanticZoomControl.svelte';
 
@@ -15,7 +15,7 @@ describe('SemanticZoomControl', () => {
       onSelect: vi.fn(),
     });
     expect(
-      screen.queryByRole('region', { name: 'Semantic zoom controls' }),
+      screen.queryByRole('group', { name: 'Semantic zoom' }),
     ).not.toBeInTheDocument();
     expect(screen.queryByText('Overview')).not.toBeInTheDocument();
   });
@@ -27,12 +27,20 @@ describe('SemanticZoomControl', () => {
       onSelect: vi.fn(),
     });
     expect(screen.getByText('Zoom')).toBeVisible();
-    const range = screen.getByRole('slider', { name: 'Semantic zoom' });
+    const range = screen.getByRole<HTMLInputElement>('slider', {
+      name: 'Semantic zoom',
+    });
     expect(range).toHaveAttribute('min', '0');
     expect(range).toHaveAttribute('max', '2');
     expect(range).toHaveAttribute('step', '1');
     expect(range).toHaveValue('2');
     expect(range).toHaveAttribute('aria-valuetext', 'Full detail');
+    expect(range).toHaveAccessibleDescription(
+      'Use arrow keys to choose Overview, Compact, or Full detail. You can also use the mouse wheel while pointing at or focusing the zoom control.',
+    );
+    expect(
+      screen.getByRole('group', { name: 'Semantic zoom' }),
+    ).toHaveAttribute('data-carousel-gesture-ignore');
     expect(
       screen.getByRole('button', { name: 'Zoom out to Compact' }),
     ).toBeEnabled();
@@ -109,6 +117,45 @@ describe('SemanticZoomControl', () => {
     ).toBeEnabled();
   });
 
+  it('keeps focus in the control when a button reaches a disabled boundary', async () => {
+    const onSelect = vi.fn();
+    const rendered = render(SemanticZoomControl, {
+      isAvailable: true,
+      presentation: 'compact',
+      onSelect,
+    });
+    const range = screen.getByRole('slider', { name: 'Semantic zoom' });
+
+    const zoomOut = screen.getByRole('button', {
+      name: 'Zoom out to Overview',
+    });
+    zoomOut.focus();
+    await fireEvent.click(zoomOut);
+    await rendered.rerender({
+      isAvailable: true,
+      presentation: 'overview',
+      onSelect,
+    });
+    await waitFor(() => expect(range).toHaveFocus());
+
+    await rendered.rerender({
+      isAvailable: true,
+      presentation: 'compact',
+      onSelect,
+    });
+    const zoomIn = screen.getByRole('button', {
+      name: 'Zoom in to Full detail',
+    });
+    zoomIn.focus();
+    await fireEvent.click(zoomIn);
+    await rendered.rerender({
+      isAvailable: true,
+      presentation: 'full',
+      onSelect,
+    });
+    await waitFor(() => expect(range).toHaveFocus());
+  });
+
   it.each([
     ['ArrowLeft', '0', 'overview'],
     ['ArrowDown', '0', 'overview'],
@@ -141,8 +188,8 @@ describe('SemanticZoomControl', () => {
       presentation: 'full',
       onSelect,
     });
-    const control = screen.getByRole('region', {
-      name: 'Semantic zoom controls',
+    const control = screen.getByRole('group', {
+      name: 'Semantic zoom',
     });
 
     const down = new WheelEvent('wheel', {
@@ -219,9 +266,7 @@ describe('SemanticZoomControl', () => {
       bubbles: true,
       cancelable: true,
     });
-    screen
-      .getByRole('region', { name: 'Semantic zoom controls' })
-      .dispatchEvent(event);
+    screen.getByRole('group', { name: 'Semantic zoom' }).dispatchEvent(event);
     expect(event.defaultPrevented).toBe(false);
     expect(onSelect).not.toHaveBeenCalled();
   });
@@ -235,7 +280,7 @@ describe('SemanticZoomControl', () => {
       onSelect: vi.fn(),
     });
     await fireEvent.wheel(
-      screen.getByRole('region', { name: 'Semantic zoom controls' }),
+      screen.getByRole('group', { name: 'Semantic zoom' }),
       { deltaY: 80 },
     );
     await rendered.rerender({
@@ -246,5 +291,32 @@ describe('SemanticZoomControl', () => {
     expect(clearTimeoutSpy).toHaveBeenCalled();
     rendered.unmount();
     expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('coalesces same-update range bursts and deduplicates same-value noise', async () => {
+    const onSelect = vi.fn();
+    render(SemanticZoomControl, {
+      isAvailable: true,
+      presentation: 'full',
+      onSelect,
+    });
+    const range = screen.getByRole<HTMLInputElement>('slider', {
+      name: 'Semantic zoom',
+    });
+
+    range.value = '1';
+    range.dispatchEvent(new Event('input', { bubbles: true }));
+    range.value = '0';
+    range.dispatchEvent(new Event('input', { bubbles: true }));
+    range.dispatchEvent(new Event('input', { bubbles: true }));
+    await Promise.resolve();
+
+    expect(onSelect).toHaveBeenCalledOnce();
+    expect(onSelect).toHaveBeenCalledWith('overview');
+    await waitFor(() =>
+      expect(screen.getByRole('status')).toHaveTextContent(
+        'Semantic zoom: Overview.',
+      ),
+    );
   });
 });

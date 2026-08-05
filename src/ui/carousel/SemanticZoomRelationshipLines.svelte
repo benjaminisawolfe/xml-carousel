@@ -9,10 +9,12 @@
     type SemanticZoomRelationshipLine,
   } from './semanticZoomRelationshipGeometry';
   import type { ImplementedSemanticZoomPresentation } from './semanticZoomPresentation';
+  import type { SemanticZoomTransitionPhase } from './semanticZoomTransition';
 
   export let reflowRevision = 0;
   export let navigationKey = '';
   export let isResting = true;
+  export let transitionPhase: SemanticZoomTransitionPhase = 'idle';
   export let presentation: Exclude<
     ImplementedSemanticZoomPresentation,
     'full'
@@ -31,7 +33,8 @@
   let observedScheduleKey = '';
   let scheduleGeneration = 0;
 
-  $: scheduleKey = `${isResting ? 'resting' : 'moving'}\u0000${presentation}\u0000${reflowRevision}\u0000${navigationKey}`;
+  $: canRenderSettledLines = isResting && transitionPhase === 'idle';
+  $: scheduleKey = `${canRenderSettledLines ? 'resting' : 'moving'}\u0000${transitionPhase}\u0000${presentation}\u0000${reflowRevision}\u0000${navigationKey}`;
   $: if (scheduleKey !== observedScheduleKey) {
     observedScheduleKey = scheduleKey;
     invalidateAndScheduleMeasurement();
@@ -104,35 +107,42 @@
       window.cancelAnimationFrame(pendingFrame);
       pendingFrame = undefined;
     }
-    if (!mounted || !stage || !isResting) return;
+    if (!mounted || !stage || !canRenderSettledLines) return;
     void scheduleSettledMeasurement(generation);
   }
 
   async function scheduleSettledMeasurement(generation: number): Promise<void> {
     await tick();
     if (!canMeasure(generation)) return;
-    scheduleFrame(generation, 2);
+    scheduleFrame(generation, 2, 3);
   }
 
   function canMeasure(generation: number): boolean {
     return Boolean(
       mounted &&
-      isResting &&
+      canRenderSettledLines &&
       stage?.isConnected &&
       generation === scheduleGeneration,
     );
   }
 
-  function scheduleFrame(generation: number, framesRemaining: number): void {
+  function scheduleFrame(
+    generation: number,
+    framesRemaining: number,
+    measurementsRemaining: number,
+  ): void {
     if (!canMeasure(generation)) return;
     pendingFrame = window.requestAnimationFrame(() => {
       pendingFrame = undefined;
       if (!canMeasure(generation)) return;
       if (framesRemaining > 1) {
-        scheduleFrame(generation, framesRemaining - 1);
+        scheduleFrame(generation, framesRemaining - 1, measurementsRemaining);
         return;
       }
       measureLines();
+      if (measurementsRemaining > 1) {
+        scheduleFrame(generation, 2, measurementsRemaining - 1);
+      }
     });
   }
 
@@ -161,7 +171,7 @@
   }
 
   function measureLines(): void {
-    if (!stage?.isConnected || !isResting) return;
+    if (!stage?.isConnected || !canRenderSettledLines) return;
     const focus = stage.querySelector<HTMLElement>(
       '[data-semantic-zoom-focus-card]',
     );
@@ -263,7 +273,8 @@
   preserveAspectRatio="none"
   aria-hidden="true"
   focusable="false"
-  data-semantic-zoom-lines-state={isResting ? 'resting' : 'moving'}
+  data-semantic-zoom-lines-state={canRenderSettledLines ? 'resting' : 'moving'}
+  data-semantic-zoom-line-transition={transitionPhase}
   data-semantic-zoom-stage-width={stageWidth}
   data-semantic-zoom-stage-height={stageHeight}
   data-semantic-zoom-relationship-lines
@@ -322,5 +333,24 @@
     stroke: var(--colour-border-strong);
     stroke-dasharray: 5 5;
     stroke-linecap: butt;
+  }
+
+  @media (forced-colors: active) {
+    path.leafward {
+      stroke: LinkText;
+      stroke-dasharray: none;
+    }
+
+    path.rootward {
+      stroke: CanvasText;
+      stroke-dasharray: 2 4;
+      stroke-linecap: round;
+    }
+
+    path.terminal {
+      stroke: Highlight;
+      stroke-dasharray: 9 4;
+      stroke-linecap: butt;
+    }
   }
 </style>

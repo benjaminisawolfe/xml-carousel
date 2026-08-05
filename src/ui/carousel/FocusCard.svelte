@@ -56,6 +56,7 @@
 <article
   class:compact={presentation === 'compact'}
   class:overview={presentation === 'overview'}
+  class:inspected={isInspected}
   class="focus-card"
   aria-label={summary.displayName}
   data-carousel-gesture-origin
@@ -349,6 +350,11 @@
     line-height: 1.25;
   }
 
+  .focus-card.inspected {
+    outline: 2px solid var(--colour-danger-action);
+    outline-offset: 2px;
+  }
+
   .focus-card-summary {
     min-width: 0;
     min-height: 0;
@@ -388,6 +394,7 @@
   h2:focus {
     border-radius: var(--radius-small);
     outline: none;
+    box-shadow: 0 0 0 3px var(--colour-focus-ring);
   }
 
   .structure {
@@ -774,6 +781,59 @@
       margin-bottom: 0;
       font-size: var(--font-size-xs);
       line-height: 1.25;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .focus-card {
+      border-color: CanvasText;
+      border-top-color: Highlight;
+      background: Canvas;
+      color: CanvasText;
+      box-shadow: none;
+    }
+
+    .focus-card.inspected {
+      outline: 3px double Highlight;
+    }
+
+    h2:focus {
+      outline: 3px solid Highlight;
+      outline-offset: 3px;
+      box-shadow: none;
+    }
+
+    .focus-card-summary:focus-visible {
+      outline-color: Highlight;
+    }
+
+    .card-topline button,
+    .relationship-action,
+    .node-reference {
+      border-color: ButtonText;
+      background: ButtonFace;
+      color: ButtonText;
+    }
+
+    .card-topline button.close-inspection {
+      border-style: double;
+      border-color: Highlight;
+      background: ButtonFace;
+      color: ButtonText;
+    }
+
+    .leaf-state,
+    .comment-summary,
+    .documentation-summary,
+    .xsd-metadata div,
+    .card-metadata span {
+      border-color: CanvasText;
+      background: Canvas;
+      color: CanvasText;
+    }
+
+    .documentation-summary {
+      border-left-color: LinkText;
     }
   }
 </style>
