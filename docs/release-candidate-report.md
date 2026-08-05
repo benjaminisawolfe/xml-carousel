@@ -1,9 +1,23 @@
-# XML Carousel 0.1.0 — Release Candidate Report
+# XML Carousel 0.1.0 — Release and Deployment Report
 
 - Report prepared: 2026-08-05
-- Release date: pending publication
+- Release date: 2026-08-05
 
-## Candidate identity
+## Publication identity
+
+- Version: `0.1.0`
+- Annotated tag: `v0.1.0`
+- Source commit: `fad25bd26e2d197a4e7d5db364ad5933d67e8c81`
+- Source tree: `111b14268ce1273ff1717ef193aef267fcaf450a`
+- Tag object: `921fa5d1d6ba0ebea9cc76dbc287f4b1ff77641f`
+- GitHub Release ID: `365357518`
+- Release title: XML Carousel 0.1.0 — First Public Alpha
+- Release state: published as a prerelease
+- Canonical site: <https://xmlcarousel.wolfshafenpress.com/>
+- Deployed inventory SHA-256:
+  `2f73adbba3ec0837fd6c4bf5c86e879af1fa0bef7730f14e6afbf0040d412dc0`
+
+## Historical candidate identity
 
 - Version: `0.1.0`
 - Planned annotated tag: `v0.1.0`
@@ -19,9 +33,9 @@
 - Default branch: `main`
 - Hosted CI for the exact source baseline: passed
 
-The candidate is not tagged, is not published as a GitHub Release, and is not
-deployed as the current candidate. No local or remote `v0.1.0` tag and no
-GitHub Release for `v0.1.0` existed during preflight.
+At candidate-preparation preflight, the candidate was not tagged, published as
+a GitHub Release, or deployed. Those statements record the historical state at
+that gate; the publication identity above records the completed release.
 
 ## Source and scope
 
@@ -262,7 +276,7 @@ asset paths, and no source maps or server-only dependency. `LICENSE.txt` and
 
 The unchanged second build is preserved in ignored `dist/` for manual QA.
 
-## Browser evidence
+## Candidate browser evidence
 
 No inherited browser evidence is used. The repository's controlled lifecycle
 and responsive audit was rerun against the exact preserved candidate bytes.
@@ -295,116 +309,100 @@ and responsive audit was rerun against the exact preserved candidate bytes.
 - zero live workers between imports.
 
 Firefox did not expose heap telemetry, so no Firefox heap-growth result is
-claimed. Neither browser result claims Safari/WebKit, a physical Samsung or
-other mobile device, manual screen-reader hardware, browser-chrome zoom,
-deployment by FTP, or canonical-site validation.
+claimed. This candidate-stage browser evidence did not claim Safari/WebKit, a
+physical Samsung or other mobile device, manual screen-reader hardware,
+browser-chrome zoom, deployment by FTP, or canonical-site validation. The
+separate live-site evidence is recorded below.
 
 The hostile-MIME audit separately passed at root and `/xml-carousel/`: 16
 requests, 2/2 HTML asset references, WASM served as
 `application/octet-stream`, JavaScript with a JavaScript MIME type, readable
 licences/notices at both mounts, and no `.mjs` production request.
 
-## Manual QA pending
+## Manual QA result
 
-No manual item is marked passed. Record one row or note set for each environment
-tested.
+Ben's manual release-candidate QA passed before publication. The manual result
+covered the release-candidate functional, large-schema, responsive, keyboard,
+and release-readiness gates that were available in the tested environments.
+Untested limitations remain explicit: no Safari/WebKit, physical-device,
+manual screen-reader, browser-chrome zoom, or Firefox heap evidence is claimed.
+Reduced-motion evidence is browser-emulated rather than manual OS testing.
 
-### Test record
+## FTP deployment
 
-- Date:
-- Tester:
-- Operating system:
-- Browser and exact version:
-- Viewport or device:
-- Result:
-- Notes:
-- Console findings:
-- Network findings:
+Ben completed manual FTP deployment of the exact preserved 14-file static-site
+package. No production rebuild followed publication, and the repository did
+not gain a deployment workflow or GitHub Pages configuration.
 
-### Functional smoke
+## First deployed-byte attempt
 
-- Initial Book DTD and Welcome preference behavior:
-- Help open/close/reopen and focus restoration:
-- Valid DTD, XSD, and resolved ZIP imports:
-- Invalid import preserves current project:
-- Large import cancellation and stale-result protection:
-- Search journey and Inspect actions:
-- Pointer and rootward/leafward navigation:
-- Project replacement clears prior state:
+The first cache-bypassed comparison found one mismatch:
+`assets/xerces-runtime-BBH8HuGk.js`. The authoritative file was 27,151 bytes
+with SHA-256
+`e00a4618d52f24aa24a8d6d49173cfb2a7556627a7c71ef54650dde00923becc`;
+the initial live file was 27,149 bytes with SHA-256
+`ccf2afe14cc1130e93d780ae65c09272e955a708e3d24fa7424f79f94f1d1779`.
+The final two authoritative CRLF line endings had been normalized to LF during
+the first FTP transfer. The blocked finding remains part of the retained
+release evidence.
 
-### Large schemas
+## Binary transfer correction
 
-- DTD 10,000 and 40,000:
-- XSD 10,000 and 40,000:
-- Resolved 20-by-1,000 package:
-- Deliberately unresolved 10-by-1,000 package:
-- Import time, responsiveness, cancellation, memory, or long-task notes:
+Ben reuploaded only the mismatched Xerces runtime in FTP binary/image mode.
+The immediate cache-bypassed gate then returned the authoritative 27,151 bytes
+and SHA-256
+`e00a4618d52f24aa24a8d6d49173cfb2a7556627a7c71ef54650dde00923becc`,
+with a direct byte-for-byte match.
 
-### Responsive layout
+## Final deployed-byte verification
 
-- Wide desktop:
-- Compact desktop or tablet:
-- Narrow portrait and landscape:
-- Horizontal overflow, clipping, or inaccessible controls:
+Fresh verification downloaded all 14 expected paths from
+<https://xmlcarousel.wolfshafenpress.com/>. Missing, unexpected, mismatched,
+and media-type-violation counts were all zero. `/` and `/index.html` were
+byte-identical, and the final live inventory SHA-256 was
+`2f73adbba3ec0837fd6c4bf5c86e879af1fa0bef7730f14e6afbf0040d412dc0`,
+exactly matching the published package.
 
-### Keyboard-only use
+## Live Chrome verification
 
-- File chooser activation:
-- Help/dialog containment and Escape:
-- Tab and Shift+Tab:
-- Spatial carousel arrows:
-- Visible focus and restoration:
+Chrome 151.0.7922.72 passed direct load and reload, expected static assets,
+Book DTD and Library XSD samples, valid DTD/XSD/ZIP imports, Help focus
+restoration, Search and Inspect journey behavior, rootward/leafward/spatial
+navigation, escaped source, malformed-input preservation, cancellation and
+stale-result protection, project replacement, responsive containment,
+browser-emulated reduced motion, large-schema smoke, and final worker cleanup.
 
-### Browser zoom
+## Live Firefox verification
 
-- Browser-chrome zoom levels tested:
-- Reflow and control access:
+Firefox 153.0.1 passed the same applicable live-site flows. Firefox enforced a
+500-CSS-pixel minimum effective width for the two narrowest requested portrait
+windows; those effective viewports still passed containment. Firefox heap
+telemetry was unavailable and is not claimed.
 
-### Reduced motion
+## Network and privacy verification
 
-- Operating-system/browser preference enabled:
-- Carousel transitions and focus behavior:
+Application traffic used only `xmlcarousel.wolfshafenpress.com`. Counts were
+zero for external, `file:`, mixed-content, production `.mjs`, schema-upload,
+analytics, telemetry, crash-reporting, update-check, and unexpected
+schema-retrieval requests. Console errors, page errors, failed required
+requests, unhandled rejections, and surviving XML Carousel workers were zero.
 
-### Screen reader
+## GitHub Release metadata correction
 
-- Screen reader and exact browser pairing:
-- Landmarks, headings, status/error announcements, controls, and dialog:
+GitHub Release `365357518` was published under annotated tag `v0.1.0` as a
+prerelease with the approved title and no attached assets. After deployment
+verification, its body was corrected in place to remove a U+000B formatting
+defect and stale pre-deployment statements. The corrected public body has
+SHA-256
+`58193b9c6d822ea338439c3ebea395a095a37550a00da64f8bab8f1dedeab00a`.
+The title, tag, prerelease/draft state, assets, tag object, and tag target were
+unchanged.
 
-### Physical mobile device, if tested
+## Final release conclusion
 
-- Device and operating-system version:
-- Browser and exact version:
-- Touch, orientation, import, and layout findings:
-
-### Exact candidate artifact identity
-
-- Inventory SHA-256 observed:
-- File count observed:
-- JavaScript worker name and byte count observed:
-- Candidate served without rebuilding:
-
-## Publication gates
-
-The following remain pending and require separate authorization or action:
-
-1. Review and integrate the candidate-preparation task.
-2. Select the exact release commit after integration.
-3. Create annotated tag `v0.1.0`.
-4. Publish the GitHub Release.
-5. Copy the exact `dist/` contents through Ben's chosen FTP process.
-6. Validate exact deployed bytes and the canonical URL.
-7. Perform post-release smoke testing.
-
-The repository is already public. This task neither changes its visibility nor
-uses GitHub Pages.
-
-## Candidate conclusion
-
-Automated candidate preparation passed for the exact source baseline and the
-preserved deterministic production bytes. The documentation/test correction
-changes no production behavior, and final validation must confirm the build
-inventory remains byte-identical.
-
-The candidate is ready for Ben's manual QA once the corrective validation
-sequence passes. Manual QA and every integration, tagging, release,
-deployment, canonical-site, and post-publication gate remain pending.
+Publication completed. The canonical deployment matches the exact release
+package, the public Release metadata was corrected, and immutable annotated tag
+`v0.1.0` remains on release commit
+`fad25bd26e2d197a4e7d5db364ad5933d67e8c81`. No production rebuild followed
+publication. XML Carousel remains alpha-quality exploratory software and is
+ready for post-alpha feature development within its documented limitations.

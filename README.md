@@ -16,7 +16,8 @@ XML Carousel backend is required.
 XML Carousel does not upload selected schema files to an XML Carousel backend.
 File contents are processed locally by the browser. Loading the application
 itself can still involve normal network requests to the site host for HTML,
-JavaScript, CSS, and other application assets.
+JavaScript, CSS, and other application assets. Your data remains in your
+hands. Everything happens in the browser.
 
 ## Try it
 
@@ -104,9 +105,17 @@ Serve the application from the directory URL, normally with a trailing slash.
 The server must deliver the generated files with their normal MIME types. No
 application backend is required.
 
-The intended canonical public site is
-<https://xmlcarousel.wolfshafenpress.com/>. Deployment and verification of the
-exact current candidate bytes require a separate authorized publication step.
+Version `0.1.0` is published as the first public alpha at the canonical site:
+<https://xmlcarousel.wolfshafenpress.com/>. Manual FTP deployment was completed,
+and the live site passed deployed-byte verification against the
+exact 14-file release distribution. Its inventory SHA-256 is
+`2f73adbba3ec0837fd6c4bf5c86e879af1fa0bef7730f14e6afbf0040d412dc0`.
+
+The release is identified by annotated tag
+[`v0.1.0`](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.1.0).
+Fresh live-site verification passed in Chrome 151.0.7922.72 and Firefox
+153.0.1. Distribution remains hosting-neutral: the same relative-base files
+can still be served from a domain root or nested directory without rebuilding.
 
 ## Project documentation
 
@@ -115,19 +124,20 @@ exact current candidate bytes require a separate authorized publication step.
 - [Known limitations](docs/known-limitations.md)
 - [Third-party licensing and attribution](docs/third-party-licensing.md)
 - [First public alpha release notes](docs/first-public-alpha.md)
-- [Release-candidate report](docs/release-candidate-report.md)
+- [Release and deployment report](docs/release-candidate-report.md)
 - [Release checklist](docs/release-checklist.md)
 - [Development plan](docs/development-plan.md)
 - [Style guide](docs/style-guide.md)
 
 ## Status
 
-Version 0.1.0 is the planned first public alpha. It has not yet been tagged,
-published as a GitHub Release, or deployed as the current candidate. Read the
-[release notes](docs/first-public-alpha.md), [known
-limitations](docs/known-limitations.md), and
-[release-candidate report](docs/release-candidate-report.md) before testing it
-with unfamiliar schemas.
+Version 0.1.0 is the first public alpha. Annotated tag `v0.1.0` and the
+[GitHub prerelease](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.1.0)
+identify the published source. The canonical deployment matches the exact
+published 14-file distribution, and fresh Chrome and Firefox live-site checks
+passed. Read the [release notes](docs/first-public-alpha.md), [known
+limitations](docs/known-limitations.md), and [release and deployment
+report](docs/release-candidate-report.md) before testing unfamiliar schemas.
 
 This alpha is suitable for exploratory testing. Apache Xerces-C++ is the
 authoritative XML, DTD, and XML Schema 1.0 validator within the controlled

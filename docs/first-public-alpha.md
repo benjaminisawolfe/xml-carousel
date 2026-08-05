@@ -1,13 +1,16 @@
 # XML Carousel 0.1.0 — First Public Alpha
 
-- Release date: pending publication
-- Planned annotated tag: `v0.1.0`
-- GitHub Release: not yet created
-- Current candidate deployment: not yet performed
+- Release date: 2026-08-05
+- Annotated tag: `v0.1.0`
+- GitHub Release: published as a prerelease
+- Canonical site: https://xmlcarousel.wolfshafenpress.com/
+- Deployment: completed by manual FTP
+- Deployed-byte verification: passed
 
-XML Carousel 0.1.0 is a first public alpha candidate for early testing. The
-tag, GitHub Release, and deployment remain separate publication actions that
-require Ben's explicit authorization.
+XML Carousel 0.1.0 is the first public alpha for early testing. Annotated tag
+`v0.1.0` identifies source commit
+`fad25bd26e2d197a4e7d5db364ad5933d67e8c81`, and the GitHub Release remains a
+prerelease.
 
 ## What XML Carousel does
 
@@ -52,10 +55,11 @@ Project-authored material is dedicated under CC0. Third-party runtime
 components and fixtures retain their own terms, and production builds include
 the required notices and licence texts.
 
-## Current candidate evidence
+## Release evidence
 
-Automated preparation for the exact candidate source and deterministic
 production bytes passed:
+Automated preparation for the exact release source and deterministic production
+bytes passed:
 
 - 153 test files and 2,095 tests;
 - zero Svelte/TypeScript errors or warnings;
@@ -64,28 +68,41 @@ production bytes passed:
 - 171 XSD full-suite passes and 0 fails; and
 - 92 Xerces-J comparison cases with 0 unexpected disagreements.
 
-Fresh controlled runs against the exact candidate build passed in Chrome
+Fresh controlled runs against the exact release build passed in Chrome
 151.0.7922.72 and Firefox 153.0.1. They covered root and nested serving,
 responsive containment, reduced-motion configuration, DTD/XSD/ZIP import,
 cancellation and recovery, repeated Hermetic Foundry imports, request
-boundaries, and worker cleanup. No inherited browser evidence is used for this
-candidate.
+boundaries, and worker cleanup.
+
+Ben's manual release-candidate QA passed before publication. Ben then completed
+manual FTP deployment to <https://xmlcarousel.wolfshafenpress.com/>. Fresh
+cache-bypassed deployed-byte verification confirmed that the live site serves
+the exact 14-file release distribution with inventory SHA-256
+`2f73adbba3ec0837fd6c4bf5c86e879af1fa0bef7730f14e6afbf0040d412dc0`.
+
+The first FTP attempt transferred `assets/xerces-runtime-BBH8HuGk.js` with text
+normalization, converting its final two CRLF line endings to LF. Ben reuploaded
+that single file in binary/image mode. The corrected live runtime is 27,151
+bytes with SHA-256
+`e00a4618d52f24aa24a8d6d49173cfb2a7556627a7c71ef54650dde00923becc`.
+
+Fresh live-site verification passed in Chrome 151.0.7922.72 and Firefox
+153.0.1. Application-request counts were zero for external, `file:`,
+mixed-content, production `.mjs`, schema-upload, analytics, telemetry,
+crash-reporting, and update-check requests. Console errors, page errors, failed
+required requests, and surviving XML Carousel workers were also zero.
 
 The same verified relative-base files can be placed in any directory served by
-a static web server and work at a domain root or nested path. They have not yet
-been copied to or verified at the intended canonical public site.
+a static web server and work at a domain root or nested path.
 
-## Alpha warning and pending QA
+## Alpha warning and remaining limitations
 
-This is an alpha candidate, not a stability or universal-conformance promise.
-Manual release-candidate QA remains pending for functional smoke flows, large
-schemas, responsive layouts, keyboard-only use, browser-chrome zoom, reduced
-motion, a screen-reader/browser pairing, and a physical mobile device if
-available.
+This is an alpha release, not a stability or universal-conformance promise.
 
-This candidate does not claim Safari/WebKit coverage, physical Samsung-device
-testing, manual screen-reader hardware testing, Firefox heap telemetry,
-browser-chrome zoom results, FTP deployment, or canonical-site validation.
+The release does not claim Safari/WebKit coverage, physical-device testing,
+manual screen-reader testing, Firefox heap telemetry, or browser-chrome zoom
+results. Reduced-motion evidence is browser-emulated rather than manual OS
+testing.
 
 Review [Standards support](standards-support.md),
 [Known limitations](known-limitations.md), the detailed
