@@ -1,73 +1,109 @@
 # XML Carousel 0.1.0 — First Public Alpha
 
-> Historical pre-Task-13.x release note. Current validation, visualization,
-> resolver, security, browser, and licensing claims are maintained in
-> [Standards support](standards-support.md),
-> [Known limitations](known-limitations.md), and
-> [Third-party licensing](third-party-licensing.md).
+- Release date: pending publication
+- Planned annotated tag: `v0.1.0`
+- GitHub Release: not yet created
+- Current candidate deployment: not yet performed
 
-Version 0.1.0 is XML Carousel's first public alpha. Its planned publication
-identifier is the annotated tag `v0.1.0`; that tag and the corresponding GitHub
-Release will be created only after explicit publication authorization.
+XML Carousel 0.1.0 is a first public alpha candidate for early testing. The
+tag, GitHub Release, and deployment remain separate publication actions that
+require Ben's explicit authorization.
 
-This alpha is intended for early testers who work with schema definitions and
-can help evaluate whether relationship journeys make unfamiliar structures
-easier to understand.
+## What XML Carousel does
 
-## What is included
+XML Carousel is a local-first static browser application for exploring DTD,
+XML Schema 1.0, and ZIP schema packages. It turns a schema project into a
+connected set of cards. Following a relationship advances or revisits the
+carousel journey; **Inspect** opens related detail independently without
+changing that journey.
 
-- Local DTD, XSD, and ZIP package opening
-- A normalized, searchable schema project built from supported declarations
-- A carousel journey for following structural relationships
-- Independent inspection of declarations, attributes, documentation,
-  enumerations, derivations, comments, source excerpts, and unresolved package
-  references where applicable
-- Worker-based parsing, progress, cancellation, and guarded project activation
-- Bounded presentation and committed 10,000/40,000-declaration QA fixtures for
-  large-schema testing
-- Pointer, touch, spatial keyboard, reduced-motion, desktop, and compact-layout
-  support
-- Built-in Book DTD and Library XSD samples with an integrated Help dialog
+The alpha provides:
 
-## Inputs and privacy
+- standalone DTD and XSD opening;
+- ZIP and multi-file projects with preserved relative paths;
+- Navigation, grouped Search, carousel focus, independent inspection, escaped
+  source view, and complete package inventory routes;
+- worker-based import progress and cancellation with stale-result protection;
+- bounded presentation for compact viewports and large schemas; and
+- pointer, touch, spatial keyboard, responsive, and reduced-motion contracts.
 
-The candidate accepts `.dtd`, `.xsd`, and `.zip` files. Selected files are
-processed in the browser and are not uploaded to an XML Carousel backend. The
-application is a static site and requires no backend, although a hosted copy
-still makes ordinary network requests for its own site assets.
+Apache Xerces-C++ 3.3.0 compiled to WebAssembly is the authoritative XML 1.0,
+DTD, and XML Schema 1.0 validator. After Xerces accepts input, XML Carousel's
+TypeScript layers extract source-preserving structures into a normalized
+project and present every supported contract through an appropriate interface.
+Those extraction and presentation layers are not a second standards validator.
+XSD 1.1 and universal support for every XML-related standard are not claimed.
 
-## Testing status
+## Multi-file resolution, privacy, and security
 
-The final automated release-candidate validation passed:
+Dependencies resolve only from files explicitly supplied inside the controlled
+project. A ZIP should preserve project-relative paths. Safe parent references
+may normalize inside the virtual project root, but XML Carousel does not crawl
+the host filesystem, use ambiguous basename fallback, retrieve remote schemas,
+open arbitrary `file:` URLs, or allow references to escape the project root.
 
-- 121 test files and 1,799 tests;
-- zero Svelte/TypeScript check errors or warnings;
-- lint, formatting, and whitespace checks;
-- 271 transformed modules; and
-- one `assets/schemaImportWorker-ll5tt6Dr.js` worker asset of 246,258 bytes.
+Selected schema content is processed locally in the browser and is not
+uploaded to an XML Carousel backend. XML Carousel has no application backend,
+account system, analytics, or telemetry endpoint. Loading a hosted copy still
+causes ordinary requests to that host for the application's HTML, JavaScript,
+CSS, WebAssembly, licence, and notice assets.
 
-Revision 0.1.0 has one portable relative-base artifact. The contents of
-`dist/` may be placed in any directory served by a static web server, and the
-same unchanged files can run from a domain root or nested directory. The
-portable distribution was successfully uploaded and loaded at the canonical
-public URL, <https://xmlcarousel.wolfshafenpress.com/>.
+Project-authored material is dedicated under CC0. Third-party runtime
+components and fixtures retain their own terms, and production builds include
+the required notices and licence texts.
 
-The release review also covers browser smoke tests, committed large-schema
-fixtures, and compact target sizing. Environment-limited accessibility checks
-that remain honest coverage limitations are identified in the
-[release-candidate report](release-candidate-report.md).
+## Current candidate evidence
 
-This is not a claim of complete DTD or XSD conformance. Read
-[Known limitations](known-limitations.md) before choosing test material.
+Automated preparation for the exact candidate source and deterministic
+production bytes passed:
+
+- 153 test files and 2,095 tests;
+- zero Svelte/TypeScript errors or warnings;
+- 221/221 complete supported-visualization contracts;
+- 1,912 DTD full-suite passes and 0 fails;
+- 171 XSD full-suite passes and 0 fails; and
+- 92 Xerces-J comparison cases with 0 unexpected disagreements.
+
+Fresh controlled runs against the exact candidate build passed in Chrome
+151.0.7922.72 and Firefox 153.0.1. They covered root and nested serving,
+responsive containment, reduced-motion configuration, DTD/XSD/ZIP import,
+cancellation and recovery, repeated Hermetic Foundry imports, request
+boundaries, and worker cleanup. No inherited browser evidence is used for this
+candidate.
+
+The same verified relative-base files can be placed in any directory served by
+a static web server and work at a domain root or nested path. They have not yet
+been copied to or verified at the intended canonical public site.
+
+## Alpha warning and pending QA
+
+This is an alpha candidate, not a stability or universal-conformance promise.
+Manual release-candidate QA remains pending for functional smoke flows, large
+schemas, responsive layouts, keyboard-only use, browser-chrome zoom, reduced
+motion, a screen-reader/browser pairing, and a physical mobile device if
+available.
+
+This candidate does not claim Safari/WebKit coverage, physical Samsung-device
+testing, manual screen-reader hardware testing, Firefox heap telemetry,
+browser-chrome zoom results, FTP deployment, or canonical-site validation.
+
+Review [Standards support](standards-support.md),
+[Known limitations](known-limitations.md), the detailed
+[release-candidate report](release-candidate-report.md), and
+[Third-party licensing](third-party-licensing.md) before testing unfamiliar
+schemas.
 
 ## Useful feedback
 
-Alpha feedback is most useful when it describes:
+Alpha feedback is most useful when it records the exact input and environment
+and explains:
 
-- which schema relationship you expected to follow and what was unclear;
+- which relationship or declaration was difficult to find or understand;
 - whether Search, the journey, or Inspect best supported the task;
-- unsupported DTD/XSD constructs encountered in real files;
-- package references that resolved unexpectedly or remained unresolved;
-- import responsiveness and cancellation on large inputs;
+- which supported or unsupported DTD/XSD construct was encountered;
+- whether project-local dependencies resolved as expected;
+- import responsiveness and cancellation behavior for large inputs;
 - keyboard, screen-reader, zoom, compact-layout, or reduced-motion behavior;
-- terminology, documentation, and privacy wording that could be clearer.
+  and
+- any console error, unexpected network request, privacy concern, or unclear
+  terminology.

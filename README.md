@@ -104,8 +104,9 @@ Serve the application from the directory URL, normally with a trailing slash.
 The server must deliver the generated files with their normal MIME types. No
 application backend is required.
 
-The canonical public site is
-<https://xmlcarousel.wolfshafenpress.com/>.
+The intended canonical public site is
+<https://xmlcarousel.wolfshafenpress.com/>. Deployment and verification of the
+exact current candidate bytes require a separate authorized publication step.
 
 ## Project documentation
 
@@ -121,7 +122,8 @@ The canonical public site is
 
 ## Status
 
-Version 0.1.0 is XML Carousel's first public alpha. Read the
+Version 0.1.0 is the planned first public alpha. It has not yet been tagged,
+published as a GitHub Release, or deployed as the current candidate. Read the
 [release notes](docs/first-public-alpha.md), [known
 limitations](docs/known-limitations.md), and
 [release-candidate report](docs/release-candidate-report.md) before testing it

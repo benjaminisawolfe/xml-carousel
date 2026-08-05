@@ -69,6 +69,20 @@ function requireText(source, file, snippets, errors) {
   }
 }
 
+/**
+ * @param {string} source
+ * @param {string} file
+ * @param {readonly string[]} snippets
+ * @param {string[]} errors
+ */
+function rejectText(source, file, snippets, errors) {
+  for (const snippet of snippets) {
+    if (source.includes(snippet)) {
+      errors.push(`${file}: contains stale text: ${snippet}`);
+    }
+  }
+}
+
 export async function verifyReleaseIntegrity() {
   /** @type {string[]} */
   const errors = [];
@@ -320,7 +334,13 @@ export async function verifyReleaseIntegrity() {
       'docs/third-party-licensing.md',
       [
         'James Clark',
-        'unresolved historical redistribution',
+        'parentless',
+        'c87854ecd922ca916a6f28c176281c10a6af0970',
+        'xml-carousel-history-private',
+        'private and archived',
+        'replacement public repository',
+        'Independent third-party',
+        'caches or clones',
         'LICENSE.xerces.txt',
         'LICENSE.emscripten.txt',
       ],
@@ -332,6 +352,7 @@ export async function verifyReleaseIntegrity() {
         'b639f2551cccbc2a4b6264e1c199dd236c943185',
         '26f2d8beb2acdf8d2a062831ce2790f449e33f69',
         'Unresolved historical redistribution',
+        'clean-repository migration resolved',
       ],
     ],
   ];
@@ -339,6 +360,20 @@ export async function verifyReleaseIntegrity() {
     const source = await readRepositoryFile(file);
     requireText(source, file, snippets, errors);
   }
+
+  const licensingSummary = await readRepositoryFile(
+    'docs/third-party-licensing.md',
+  );
+  rejectText(
+    licensingSummary,
+    'docs/third-party-licensing.md',
+    [
+      'The public Git history still contains the earlier unpacked blobs',
+      'This is an **unresolved historical redistribution**',
+      'an explicit repository-history decision is required before release',
+    ],
+    errors,
+  );
 
   if (errors.length > 0) {
     throw new Error(

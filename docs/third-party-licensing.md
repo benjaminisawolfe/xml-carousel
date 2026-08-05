@@ -58,21 +58,32 @@ images are shipped. Production source maps are not emitted.
 
 ## James Clark current-tree and history status
 
-The current-tree redistribution is remediated by replacing the two unpacked
-files with the unchanged archive. The public Git history still contains the
-earlier unpacked blobs. This is an **unresolved historical redistribution**:
-an explicit repository-history decision is required before release.
+The replacement public repository has clean history beginning with parentless
+root `c87854ecd922ca916a6f28c176281c10a6af0970`. The former historical
+repository was renamed `benjaminisawolfe/xml-carousel-history-private` and is
+private and archived. The replacement public repository contains neither
+historical unpacked blob; the only permitted public-tree form is the unchanged
+`tests/fixtures/third-party/james-clark-xmltest/xmltest.zip` archive described
+above.
 
-The introducing commit is
-`70917bef925c7e86a31b2b2802dea0f68907d5f3`. The historical blobs are:
+The introducing commit and forbidden object IDs remain recorded as historical
+identities:
 
+- introducing commit: `70917bef925c7e86a31b2b2802dea0f68907d5f3`;
 - `022.xml`: `b639f2551cccbc2a4b6264e1c199dd236c943185`;
 - `022.ent`: `26f2d8beb2acdf8d2a062831ce2790f449e33f69`.
 
-The complete read-only ref and GitHub audit is recorded in
+Anonymous web, API, object, and fresh-clone verification found those objects
+absent from the replacement public repository. The migration resolves the
+finding for GitHub repositories under Ben's control. Independent third-party
+caches or clones may still exist outside Ben's control, and no claim is made
+that every historical copy has disappeared.
+
+The complete read-only audit is recorded in
 [`technical/xmltest-history-audit.md`](technical/xmltest-history-audit.md).
-Task 13.19 does not rewrite history, force-push, delete branches or tags, or
-contact GitHub Support.
+The private archived repository must remain private and unaltered. The XML
+Carousel website remains separately hosted; the migration did not move it to
+GitHub Pages.
 
 ## Deterministic checks and distribution
 
