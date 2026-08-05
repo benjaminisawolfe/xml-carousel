@@ -62,6 +62,7 @@
   class:leafward={direction === 'leafward'}
   class:gesture-preview={isGesturePreview}
   class:keyboard-selected={isKeyboardSelected}
+  class:inspected={isInspected}
   class:terminal-cycle-closure={relationshipDisposition ===
     'terminalCycleClosure'}
   class:compact={presentation === 'compact'}
@@ -462,6 +463,74 @@
 
     .context-card > button {
       transition-duration: var(--duration-instant);
+    }
+  }
+
+  @media (forced-colors: active) {
+    .context-card {
+      border-color: CanvasText;
+      background: Canvas;
+      color: CanvasText;
+      box-shadow: none;
+    }
+
+    .context-card.rootward {
+      border-left: 4px dotted CanvasText;
+    }
+
+    .context-card.leafward {
+      border-right: 4px solid LinkText;
+    }
+
+    .context-card.terminal-cycle-closure {
+      border-right: 4px double Highlight;
+    }
+
+    .context-card.gesture-preview {
+      outline: 3px dotted Highlight;
+      box-shadow: none;
+    }
+
+    .context-card.keyboard-selected {
+      border: 3px double Highlight;
+      background: Canvas;
+      box-shadow: none;
+    }
+
+    .context-card.inspected {
+      outline: 2px solid LinkText;
+      outline-offset: 1px;
+    }
+
+    .context-card button,
+    .context-body,
+    .node-name,
+    .context-direction,
+    .terminal-label,
+    .recursive-marker {
+      color: CanvasText;
+    }
+
+    .card-actions {
+      border-color: CanvasText;
+      background: Canvas;
+    }
+
+    .inspect-action {
+      border-color: ButtonText;
+      background: ButtonFace;
+      color: ButtonText;
+    }
+
+    .inspect-action.close-inspection {
+      border-style: double;
+      border-color: Highlight;
+      background: ButtonFace;
+      color: ButtonText;
+    }
+
+    .context-card button:focus-visible {
+      outline-color: Highlight;
     }
   }
 </style>

@@ -26,6 +26,7 @@ function parseArguments(argv) {
     hermeticPath: undefined,
     outputPath: undefined,
     screenshotDirectory: undefined,
+    firefoxMotion: 'reduced',
     mixedCycles: 30,
     hermeticCycles: 10,
   };
@@ -40,6 +41,7 @@ function parseArguments(argv) {
     else if (name === 'hermetic-path') options.hermeticPath = value;
     else if (name === 'output') options.outputPath = value;
     else if (name === 'screenshot-dir') options.screenshotDirectory = value;
+    else if (name === 'firefox-motion') options.firefoxMotion = value;
     else if (name === 'mixed-cycles') options.mixedCycles = Number(value);
     else if (name === 'hermetic-cycles') options.hermeticCycles = Number(value);
     else throw new Error(`Unknown argument: ${argument}`);
@@ -50,6 +52,9 @@ function parseArguments(argv) {
   if (!options.browserPath) throw new Error('--browser-path is required.');
   if (options.browser === 'firefox' && !options.geckodriverPath) {
     throw new Error('--geckodriver-path is required for Firefox.');
+  }
+  if (!['normal', 'reduced'].includes(options.firefoxMotion)) {
+    throw new Error('--firefox-motion must be normal or reduced.');
   }
   if (options.hermeticCycles > 0 && !options.hermeticPath) {
     throw new Error('--hermetic-path is required when Hermetic cycles run.');
@@ -284,9 +289,19 @@ class ChromiumDriver {
   }
 
   async setReducedMotion() {
-    await this.send('Emulation.setEmulatedMedia', {
-      features: [{ name: 'prefers-reduced-motion', value: 'reduce' }],
-    });
+    await this.setMediaPreferences({ reducedMotion: true });
+  }
+
+  async setMediaPreferences({ reducedMotion = false, forcedColors = false }) {
+    const features = [];
+    if (reducedMotion) {
+      features.push({ name: 'prefers-reduced-motion', value: 'reduce' });
+    }
+    if (forcedColors) {
+      features.push({ name: 'forced-colors', value: 'active' });
+    }
+    await this.send('Emulation.setEmulatedMedia', { features });
+    return { reducedMotion, forcedColors, supported: true };
   }
 
   async screenshot(outputPath) {
@@ -416,17 +431,28 @@ async function freePort() {
 }
 
 class FirefoxDriver {
-  constructor({ process, baseUrl, sessionId, profileDirectory }) {
+  constructor({
+    process,
+    baseUrl,
+    sessionId,
+    profileDirectory,
+    bidiConnection,
+    browsingContext,
+    reducedMotion,
+  }) {
     this.process = process;
     this.baseUrl = baseUrl;
     this.sessionId = sessionId;
     this.profileDirectory = profileDirectory;
+    this.bidiConnection = bidiConnection;
+    this.browsingContext = browsingContext;
+    this.reducedMotion = reducedMotion;
     this.consoleEntries = [];
     this.pageErrors = [];
     this.requests = [];
   }
 
-  static async launch(executablePath, geckodriverPath) {
+  static async launch(executablePath, geckodriverPath, reducedMotion = true) {
     const port = await freePort();
     const profileDirectory = await mkdtemp(
       path.join(os.tmpdir(), 'xml-carousel-firefox-'),
@@ -458,11 +484,12 @@ class FirefoxDriver {
         capabilities: {
           alwaysMatch: {
             browserName: 'firefox',
+            webSocketUrl: true,
             'moz:firefoxOptions': {
               binary: executablePath,
               args: ['-headless', '-profile', profileDirectory],
               log: { level: 'warn' },
-              prefs: { 'ui.prefersReducedMotion': 1 },
+              prefs: { 'ui.prefersReducedMotion': reducedMotion ? 1 : 0 },
             },
           },
         },
@@ -472,12 +499,26 @@ class FirefoxDriver {
     if (!sessionId) {
       throw new Error(`Firefox session failed: ${JSON.stringify(response)}`);
     }
+    const webSocketUrl = response.value.capabilities.webSocketUrl;
+    if (!webSocketUrl) {
+      throw new Error('Firefox session did not provide a WebDriver BiDi URL.');
+    }
+    const bidiConnection = await CdpConnection.connect(webSocketUrl);
+    const contextTree = await bidiConnection.send('browsingContext.getTree');
+    const browsingContext = contextTree.contexts?.[0]?.context;
+    if (!browsingContext) {
+      bidiConnection.close();
+      throw new Error('Firefox session did not provide a browsing context.');
+    }
     return {
       driver: new FirefoxDriver({
         process: child,
         baseUrl,
         sessionId,
         profileDirectory,
+        bidiConnection,
+        browsingContext,
+        reducedMotion,
       }),
       version: `Firefox ${response.value.capabilities.browserVersion}`,
     };
@@ -502,12 +543,24 @@ class FirefoxDriver {
     return this.command('POST', '/url', { url });
   }
 
-  setViewport(width, height) {
-    return this.command('POST', '/window/rect', { width, height, x: 0, y: 0 });
+  async setViewport(width, height) {
+    await this.bidiConnection.send('browsingContext.setViewport', {
+      context: this.browsingContext,
+      viewport: { width, height },
+      devicePixelRatio: 1,
+    });
   }
 
   async setReducedMotion() {
     // The isolated Firefox profile sets ui.prefersReducedMotion before launch.
+  }
+
+  async setMediaPreferences({ reducedMotion = true, forcedColors = false }) {
+    return {
+      reducedMotion: this.reducedMotion,
+      forcedColors: false,
+      supported: reducedMotion === this.reducedMotion && !forcedColors,
+    };
   }
 
   async screenshot(outputPath) {
@@ -580,6 +633,7 @@ class FirefoxDriver {
   }
 
   async close() {
+    this.bidiConnection.close();
     try {
       await this.command('DELETE', '', undefined);
     } catch {
@@ -711,7 +765,9 @@ async function viewportAudit(driver, width, height) {
         ),
         rangeMin: semanticZoomRange?.getAttribute('min') ?? null,
         rangeMax: semanticZoomRange?.getAttribute('max') ?? null,
-        overviewVisible: semanticZoomControl?.textContent?.includes('Overview') ?? false,
+        overviewVisible:
+          semanticZoomControl?.querySelector('.current-level')?.textContent?.trim() ===
+          'Overview',
         lineLayerCount: document.querySelectorAll('[data-semantic-zoom-relationship-lines]').length,
       },
     };
@@ -918,7 +974,7 @@ async function relationshipLineRegression(
 ) {
   const rangeValue = presentation === 'overview' ? '0' : '1';
   await driver.evaluate(`(() => {
-    const range = document.querySelector('[aria-label="Semantic zoom"]');
+    const range = document.querySelector('input[aria-label="Semantic zoom"]');
     if (!range) return false;
     range.value = ${JSON.stringify(rangeValue)};
     range.dispatchEvent(new InputEvent('input', { bubbles: true }));
@@ -985,7 +1041,7 @@ async function relationshipLineRegression(
   const stateARestored =
     JSON.stringify(stateC.keys) === JSON.stringify(stateA.keys);
   await driver.evaluate(`(() => {
-    const range = document.querySelector('[aria-label="Semantic zoom"]');
+    const range = document.querySelector('input[aria-label="Semantic zoom"]');
     if (!range) return false;
     range.value = '2';
     range.dispatchEvent(new InputEvent('input', { bubbles: true }));
@@ -1000,7 +1056,7 @@ async function relationshipLineRegression(
     'relationship lines cleared in Full',
   );
   await driver.evaluate(`(() => {
-    const range = document.querySelector('[aria-label="Semantic zoom"]');
+    const range = document.querySelector('input[aria-label="Semantic zoom"]');
     if (!range) return false;
     range.value = ${JSON.stringify(rangeValue)};
     range.dispatchEvent(new InputEvent('input', { bubbles: true }));
@@ -1049,7 +1105,9 @@ async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
         value: range.value,
         valueText: range.getAttribute('aria-valuetext'),
       } : null,
-      overviewVisible: control?.textContent?.includes('Overview') ?? false,
+      overviewVisible:
+        control?.querySelector('.current-level')?.textContent?.trim() ===
+        'Overview',
       fullSummaryPresent: Boolean(document.querySelector('[data-focus-card-scroll-region]')),
       lineLayerCount: document.querySelectorAll('[data-semantic-zoom-relationship-lines]').length,
     };
@@ -1057,7 +1115,7 @@ async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
 
   await driver.evaluate(`(() => {
     document.querySelector('[data-focus-card-scroll-region]')?.focus();
-    const range = document.querySelector('[aria-label="Semantic zoom"]');
+    const range = document.querySelector('input[aria-label="Semantic zoom"]');
     if (!range) return false;
     range.value = '1';
     range.dispatchEvent(new InputEvent('input', { bubbles: true }));
@@ -1080,7 +1138,7 @@ async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
   const compact = await driver.evaluate(`(() => {
     const surface = document.querySelector('[data-carousel-gesture-viewport]');
     const focus = document.querySelector('[data-semantic-zoom-line-role="focus"]');
-    const range = document.querySelector('[aria-label="Semantic zoom"]');
+    const range = document.querySelector('input[aria-label="Semantic zoom"]');
     return {
       requested: surface?.getAttribute('data-semantic-zoom-requested') ?? null,
       effective: surface?.getAttribute('data-semantic-zoom-effective') ?? null,
@@ -1094,7 +1152,10 @@ async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
       inspectPresent: Boolean(focus?.querySelector('[aria-label="Inspect book"]')),
       rangeValue: range?.value ?? null,
       rangeValueText: range?.getAttribute('aria-valuetext') ?? null,
-      overviewVisible: document.querySelector('[data-semantic-zoom-control]')?.textContent?.includes('Overview') ?? false,
+      overviewVisible:
+        document
+          .querySelector('[data-semantic-zoom-control] .current-level')
+          ?.textContent?.trim() === 'Overview',
       lineCount: document.querySelectorAll('[data-semantic-zoom-line-kind="leafward"]').length,
     };
   })()`);
@@ -1310,8 +1371,8 @@ async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
       requested: surface?.getAttribute('data-semantic-zoom-requested') ?? null,
       effective: surface?.getAttribute('data-semantic-zoom-effective') ?? null,
       presentation: surface?.getAttribute('data-semantic-zoom-presentation') ?? null,
-      rangeValue: document.querySelector('[aria-label="Semantic zoom"]')?.value ?? null,
-      rangeValueText: document.querySelector('[aria-label="Semantic zoom"]')?.getAttribute('aria-valuetext') ?? null,
+      rangeValue: document.querySelector('input[aria-label="Semantic zoom"]')?.value ?? null,
+      rangeValueText: document.querySelector('input[aria-label="Semantic zoom"]')?.getAttribute('aria-valuetext') ?? null,
       focusText: visibleText(focus),
       focusName: focus?.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
       focusHeight: focus?.getBoundingClientRect().height ?? null,
@@ -1400,7 +1461,7 @@ async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
   })()`);
 
   await driver.evaluate(`(() => {
-    const range = document.querySelector('[aria-label="Semantic zoom"]');
+    const range = document.querySelector('input[aria-label="Semantic zoom"]');
     range.value = '0';
     range.dispatchEvent(new InputEvent('input', { bubbles: true }));
     range.focus();
@@ -1434,7 +1495,7 @@ async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
           effective: surface.getAttribute('data-semantic-zoom-effective'),
           presentation: surface.getAttribute('data-semantic-zoom-presentation'),
           controlPresent: Boolean(document.querySelector('[data-semantic-zoom-control]')),
-          rangeValue: document.querySelector('[aria-label="Semantic zoom"]')?.value ?? null,
+          rangeValue: document.querySelector('input[aria-label="Semantic zoom"]')?.value ?? null,
         };
       })()`),
     'Task 14.3 desktop restoration',
@@ -1458,6 +1519,487 @@ async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
     wheel,
     constrained,
     restored,
+  };
+}
+
+async function waitForSemanticZoomSettlement(driver, presentation) {
+  return waitUntil(
+    () =>
+      driver.evaluate(`(() => {
+        const surface = document.querySelector('[data-carousel-gesture-viewport]');
+        return surface?.getAttribute('data-semantic-zoom-presentation') === ${JSON.stringify(presentation)} &&
+          surface?.getAttribute('data-semantic-zoom-transition') === 'idle';
+      })()`),
+    `Task 14.4 ${presentation} semantic zoom settlement`,
+  );
+}
+
+async function beginSemanticZoomPhaseCapture(driver) {
+  await driver.evaluate(`(() => {
+    window.__xmlCarouselSemanticZoomPhases = [];
+    window.__xmlCarouselSemanticZoomObserver?.disconnect();
+    const surface = document.querySelector('[data-carousel-gesture-viewport]');
+    if (!surface) return false;
+    const capture = () => window.__xmlCarouselSemanticZoomPhases.push({
+      phase: surface.getAttribute('data-semantic-zoom-transition'),
+      from: surface.getAttribute('data-semantic-zoom-transition-from'),
+      to: surface.getAttribute('data-semantic-zoom-transition-to'),
+      presentation: surface.getAttribute('data-semantic-zoom-presentation'),
+      lineCount: document.querySelectorAll('[data-semantic-zoom-line-key]').length,
+      temporaryMotionCount: document.querySelectorAll('[data-semantic-zoom-motion]').length,
+    });
+    capture();
+    window.__xmlCarouselSemanticZoomObserver = new MutationObserver(capture);
+    window.__xmlCarouselSemanticZoomObserver.observe(surface, {
+      attributes: true,
+      attributeFilter: [
+        'data-semantic-zoom-transition',
+        'data-semantic-zoom-transition-from',
+        'data-semantic-zoom-transition-to',
+        'data-semantic-zoom-presentation',
+      ],
+    });
+    return true;
+  })()`);
+}
+
+async function finishSemanticZoomPhaseCapture(driver) {
+  return driver.evaluate(`(() => {
+    window.__xmlCarouselSemanticZoomObserver?.disconnect();
+    window.__xmlCarouselSemanticZoomObserver = undefined;
+    const phases = window.__xmlCarouselSemanticZoomPhases ?? [];
+    delete window.__xmlCarouselSemanticZoomPhases;
+    return phases;
+  })()`);
+}
+
+async function semanticZoomAction(
+  driver,
+  triggerExpression,
+  expectedPresentation,
+) {
+  await beginSemanticZoomPhaseCapture(driver);
+  const triggered = await driver.evaluate(triggerExpression);
+  if (triggered === false || triggered === null) {
+    throw new Error(
+      `Task 14.4 semantic zoom action could not target ${expectedPresentation}.`,
+    );
+  }
+  await waitForSemanticZoomSettlement(driver, expectedPresentation);
+  if (expectedPresentation !== 'full') {
+    await waitUntil(
+      () =>
+        driver.evaluate(`(() => {
+          const lines = document.querySelector('[data-semantic-zoom-relationship-lines]');
+          return lines?.getAttribute('data-semantic-zoom-lines-state') === 'resting' &&
+            lines.querySelectorAll('[data-semantic-zoom-line-key]').length > 0;
+        })()`),
+      `Task 14.4 ${expectedPresentation} relationship-line redraw`,
+    );
+  }
+  const phases = await finishSemanticZoomPhaseCapture(driver);
+  const settled = await driver.evaluate(`(() => {
+    const surface = document.querySelector('[data-carousel-gesture-viewport]');
+    const active = document.activeElement;
+    return {
+      requested: surface?.getAttribute('data-semantic-zoom-requested') ?? null,
+      effective: surface?.getAttribute('data-semantic-zoom-effective') ?? null,
+      presentation: surface?.getAttribute('data-semantic-zoom-presentation') ?? null,
+      transition: surface?.getAttribute('data-semantic-zoom-transition') ?? null,
+      focusLabel: active?.getAttribute?.('aria-label') ?? active?.textContent?.trim() ?? '',
+      focusOnBody: active === document.body,
+      temporaryMotionCount: document.querySelectorAll('[data-semantic-zoom-motion]').length,
+      transformedMotionCount: [...document.querySelectorAll('[data-carousel-motion-key]')]
+        .filter((element) => element.style.transform).length,
+      lineState: document.querySelector('[data-semantic-zoom-relationship-lines]')
+        ?.getAttribute('data-semantic-zoom-lines-state') ?? null,
+      lineCount: document.querySelectorAll('[data-semantic-zoom-line-key]').length,
+      pageOverflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    };
+  })()`);
+  return { phases, settled };
+}
+
+async function semanticZoomViewportSnapshot(driver, width, height) {
+  await driver.setViewport(width, height, false);
+  const available = width >= 1024 && height >= 600;
+  await waitUntil(
+    () =>
+      driver.evaluate(`(() => {
+        const surface = document.querySelector('[data-carousel-gesture-viewport]');
+        return surface?.getAttribute('data-semantic-zoom-available') === ${JSON.stringify(String(available))} &&
+          surface?.getAttribute('data-semantic-zoom-transition') === 'idle';
+      })()`),
+    `Task 14.4 ${width}x${height} responsive settlement`,
+  );
+  return driver.evaluate(`(() => {
+    const surface = document.querySelector('[data-carousel-gesture-viewport]');
+    const control = document.querySelector('[data-semantic-zoom-control]');
+    const controlRect = control?.getBoundingClientRect();
+    const surfaceRect = surface?.getBoundingClientRect();
+    const currentLevel = control?.querySelector('.current-level');
+    const range = control?.querySelector('input[type="range"]');
+    const buttons = [...(control?.querySelectorAll('button') ?? [])];
+    const visible = (element) => {
+      if (!element) return false;
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+    };
+    return {
+      width: innerWidth,
+      height: innerHeight,
+      queryMatches: matchMedia(${JSON.stringify(
+        '(min-width: 1024px) and (min-height: 600px)',
+      )}).matches,
+      requested: surface?.getAttribute('data-semantic-zoom-requested') ?? null,
+      effective: surface?.getAttribute('data-semantic-zoom-effective') ?? null,
+      available: surface?.getAttribute('data-semantic-zoom-available') ?? null,
+      transition: surface?.getAttribute('data-semantic-zoom-transition') ?? null,
+      controlPresent: Boolean(control),
+      controlContained: !control || Boolean(controlRect && surfaceRect &&
+        controlRect.left >= surfaceRect.left - 1 &&
+        controlRect.right <= surfaceRect.right + 1 &&
+        controlRect.top >= surfaceRect.top - 1 &&
+        controlRect.bottom <= surfaceRect.bottom + 1),
+      buttonsVisible: buttons.length === 0 || buttons.every(visible),
+      rangeVisible: !range || visible(range),
+      currentLevelVisible: !currentLevel || visible(currentLevel),
+      currentLevelText: currentLevel?.textContent?.trim() ?? '',
+      controlClipped: Boolean(control &&
+        (control.scrollWidth > control.clientWidth + 1 ||
+          control.scrollHeight > control.clientHeight + 1)),
+      pageOverflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      pageOverflowY: document.documentElement.scrollHeight > document.documentElement.clientHeight,
+    };
+  })()`);
+}
+
+async function semanticZoomReflowSnapshot(driver, width, height, scale) {
+  await driver.setViewport(width, height, false);
+  await driver.evaluate(`(() => {
+    document.documentElement.style.fontSize = ${JSON.stringify(`${scale}%`)};
+    return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  })()`);
+  return driver.evaluate(`(() => {
+    const surface = document.querySelector('[data-carousel-gesture-viewport]');
+    const control = document.querySelector('[data-semantic-zoom-control]');
+    const focus = document.querySelector('[data-semantic-zoom-focus-card]');
+    const summary = document.querySelector('[data-focus-card-scroll-region]');
+    const controlRect = control?.getBoundingClientRect();
+    const surfaceRect = surface?.getBoundingClientRect();
+    return {
+      scale: ${scale},
+      width: innerWidth,
+      height: innerHeight,
+      requested: surface?.getAttribute('data-semantic-zoom-requested') ?? null,
+      effective: surface?.getAttribute('data-semantic-zoom-effective') ?? null,
+      controlPresent: Boolean(control),
+      controlContained: !control || Boolean(controlRect && surfaceRect &&
+        controlRect.left >= surfaceRect.left - 1 && controlRect.right <= surfaceRect.right + 1),
+      currentLevelVisible: Boolean(control?.querySelector('.current-level')?.getClientRects().length),
+      focusVisible: Boolean(focus?.getClientRects().length),
+      summaryScrollable: !summary || summary.scrollHeight >= summary.clientHeight,
+      pageOverflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      pageOverflowY: document.documentElement.scrollHeight > document.documentElement.clientHeight,
+      ordinaryTwoDimensionalScrolling: document.documentElement.scrollWidth > document.documentElement.clientWidth &&
+        document.documentElement.scrollHeight > document.documentElement.clientHeight,
+    };
+  })()`);
+}
+
+async function semanticZoomUxHardeningAudit(
+  driver,
+  url,
+  browser,
+  screenshotDirectory,
+) {
+  const normalMotion = await driver.setMediaPreferences({
+    reducedMotion: false,
+    forcedColors: false,
+  });
+  await driver.setViewport(1440, 900, false);
+  await driver.navigate(url);
+  await dismissWelcome(driver);
+
+  const buttonFullToCompact = await semanticZoomAction(
+    driver,
+    `(() => {
+      const button = document.querySelector('[aria-label="Zoom out to Compact"]');
+      button?.focus();
+      button?.click();
+      return Boolean(button);
+    })()`,
+    'compact',
+  );
+  const buttonCompactToOverview = await semanticZoomAction(
+    driver,
+    `(() => {
+      const button = document.querySelector('[aria-label="Zoom out to Overview"]');
+      button?.focus();
+      button?.click();
+      return Boolean(button);
+    })()`,
+    'overview',
+  );
+  const wheelOverviewToCompact = await semanticZoomAction(
+    driver,
+    `(() => {
+      const control = document.querySelector('[data-semantic-zoom-control]');
+      const range = control?.querySelector('input[type="range"]');
+      if (!control || !range) return false;
+      range.focus();
+      const event = new WheelEvent('wheel', { deltaY: -120, bubbles: true, cancelable: true });
+      control.dispatchEvent(event);
+      return event.defaultPrevented;
+    })()`,
+    'compact',
+  );
+  const rangeCompactToFull = await semanticZoomAction(
+    driver,
+    `(() => {
+      const range = document.querySelector('input[aria-label="Semantic zoom"]');
+      if (!range) return false;
+      range.focus();
+      range.value = '2';
+      range.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      return true;
+    })()`,
+    'full',
+  );
+  const directFullToOverview = await semanticZoomAction(
+    driver,
+    `(() => {
+      const range = document.querySelector('input[aria-label="Semantic zoom"]');
+      if (!range) return false;
+      range.focus();
+      range.value = '0';
+      range.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      return true;
+    })()`,
+    'overview',
+  );
+  const rapidReversed = await semanticZoomAction(
+    driver,
+    `(async () => {
+      const range = document.querySelector('input[aria-label="Semantic zoom"]');
+      if (!range) return false;
+      range.focus();
+      for (const value of ['1', '2', '0', '1']) {
+        range.value = value;
+        range.dispatchEvent(new InputEvent('input', { bubbles: true }));
+        await Promise.resolve();
+      }
+      return true;
+    })()`,
+    'compact',
+  );
+
+  const navigationAfterChange = await driver.evaluate(`(async () => {
+    document.querySelector('[data-focus-card-heading]')?.focus();
+    document.body.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'ArrowRight', bubbles: true, cancelable: true
+    }));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    return {
+      currentNode: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
+      focusIsHeading: document.activeElement?.matches?.('[data-focus-card-heading]') ?? false,
+      transition: document.querySelector('[data-carousel-gesture-viewport]')
+        ?.getAttribute('data-semantic-zoom-transition') ?? null,
+    };
+  })()`);
+
+  await driver.navigate(url);
+  await dismissWelcome(driver);
+  await driver.evaluate(`(() => {
+    const range = document.querySelector('input[aria-label="Semantic zoom"]');
+    range.value = '0';
+    range.dispatchEvent(new InputEvent('input', { bubbles: true }));
+  })()`);
+  await waitForSemanticZoomSettlement(driver, 'overview');
+  const responsiveViewports = [];
+  for (const [width, height] of [
+    [1440, 900],
+    [1280, 720],
+    [1280, 600],
+    [1100, 600],
+    [1024, 768],
+    [1024, 600],
+    [1024, 599],
+    [1023, 600],
+  ]) {
+    responsiveViewports.push(
+      await semanticZoomViewportSnapshot(driver, width, height),
+    );
+  }
+
+  await driver.setViewport(1440, 900, false);
+  const textScaling = [];
+  for (const scale of [125, 150, 200]) {
+    textScaling.push(
+      await semanticZoomReflowSnapshot(driver, 1440, 900, scale),
+    );
+  }
+  await driver.evaluate(
+    `document.documentElement.style.removeProperty('font-size')`,
+  );
+
+  const magnificationEquivalent = [];
+  for (const [scale, width, height] of [
+    [125, 1152, 720],
+    [150, 960, 600],
+    [200, 720, 450],
+    [400, 320, 640],
+  ]) {
+    magnificationEquivalent.push(
+      await semanticZoomReflowSnapshot(driver, width, height, 100),
+    );
+    magnificationEquivalent[
+      magnificationEquivalent.length - 1
+    ].equivalentScale = scale;
+  }
+  await driver.evaluate(
+    `document.documentElement.style.removeProperty('font-size')`,
+  );
+
+  await driver.setViewport(1440, 900, false);
+  await driver.navigate(url);
+  await dismissWelcome(driver);
+  const nativeZoomInputs = await driver.evaluate(`(() => {
+    const surface = document.querySelector('[data-carousel-gesture-viewport]');
+    const control = document.querySelector('[data-semantic-zoom-control]');
+    const dispatchWheel = (target, init) => {
+      const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, ...init });
+      const result = target.dispatchEvent(event);
+      return { dispatchResult: result, defaultPrevented: event.defaultPrevented };
+    };
+    const dispatchKey = (key) => {
+      const event = new KeyboardEvent('keydown', { key, ctrlKey: true, bubbles: true, cancelable: true });
+      const result = document.dispatchEvent(event);
+      return { key, dispatchResult: result, defaultPrevented: event.defaultPrevented };
+    };
+    return {
+      controlCtrlWheel: dispatchWheel(control, { deltaY: 120, ctrlKey: true }),
+      controlMetaWheel: dispatchWheel(control, { deltaY: -120, metaKey: true }),
+      carouselCtrlWheel: dispatchWheel(surface, { deltaY: 120, ctrlKey: true }),
+      keys: ['+', '-', '0'].map(dispatchKey),
+    };
+  })()`);
+
+  const forcedColourSupport = await driver.setMediaPreferences({
+    reducedMotion: false,
+    forcedColors: true,
+  });
+  let forcedColours = { supported: false };
+  const screenshots = {};
+  if (forcedColourSupport.forcedColors) {
+    await driver.navigate(url);
+    await dismissWelcome(driver);
+    await driver.evaluate(`(() => {
+      const range = document.querySelector('input[aria-label="Semantic zoom"]');
+      range.value = '1';
+      range.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    })()`);
+    await waitForSemanticZoomSettlement(driver, 'compact');
+    await waitUntil(
+      () =>
+        driver.evaluate(
+          `document.querySelectorAll('[data-semantic-zoom-line-kind="leafward"]').length > 0`,
+        ),
+      'Task 14.4 forced-colour Compact relationship lines',
+    );
+    await driver.click(
+      '[aria-label="Navigate leafward to book.content, DTD element declaration"]',
+    );
+    await waitUntil(
+      () =>
+        driver.evaluate(
+          `document.querySelector('[data-focus-card-heading]')?.textContent?.trim() === 'book.content'`,
+        ),
+      'Task 14.4 forced-colour rootward navigation',
+    );
+    await driver.evaluate(`(() => {
+      const range = document.querySelector('input[aria-label="Semantic zoom"]');
+      range.value = '0';
+      range.dispatchEvent(new InputEvent('input', { bubbles: true }));
+      range.focus();
+    })()`);
+    await waitForSemanticZoomSettlement(driver, 'overview');
+    await waitUntil(
+      () =>
+        driver.evaluate(`(() =>
+          document.querySelectorAll('[data-semantic-zoom-line-kind="leafward"]').length > 0 &&
+          document.querySelectorAll('[data-semantic-zoom-line-kind="rootward"]').length > 0
+        )()`),
+      'Task 14.4 forced-colour Overview relationship lines',
+    );
+    forcedColours = await driver.evaluate(`(() => {
+      const control = document.querySelector('[data-semantic-zoom-control]');
+      const range = control?.querySelector('input[type="range"]');
+      const disabled = control?.querySelector('button:disabled');
+      const focus = document.querySelector('[data-semantic-zoom-focus-card]');
+      const leafward = document.querySelector('[data-semantic-zoom-line-kind="leafward"]');
+      const rootward = document.querySelector('[data-semantic-zoom-line-kind="rootward"]');
+      const terminal = document.querySelector('[data-semantic-zoom-line-terminal="true"]');
+      return {
+        supported: matchMedia('(forced-colors: active)').matches,
+        controlVisible: Boolean(control?.getClientRects().length),
+        rangeVisible: Boolean(range?.getClientRects().length),
+        disabledVisible: Boolean(disabled?.getClientRects().length),
+        focusVisible: Boolean(focus?.getClientRects().length),
+        focusedControl: document.activeElement === range,
+        controlBorderStyle: control ? getComputedStyle(control).borderStyle : '',
+        disabledBorderStyle: disabled ? getComputedStyle(disabled).borderStyle : '',
+        leafwardPattern: leafward ? getComputedStyle(leafward).strokeDasharray : '',
+        rootwardPattern: rootward ? getComputedStyle(rootward).strokeDasharray : '',
+        terminalPattern: terminal ? getComputedStyle(terminal).strokeDasharray : '',
+        pageOverflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      };
+    })()`);
+    if (screenshotDirectory) {
+      screenshots.forcedColoursFocus = path.join(
+        screenshotDirectory,
+        'task-14-4-forced-colours-focus.png',
+      );
+      await driver.screenshot(screenshots.forcedColoursFocus);
+    }
+  }
+
+  const reducedMotionSupport = await driver.setMediaPreferences({
+    reducedMotion: true,
+    forcedColors: false,
+  });
+  await driver.navigate(url);
+  await dismissWelcome(driver);
+  const reducedMotion = await semanticZoomAction(
+    driver,
+    `(() => {
+      const button = document.querySelector('[aria-label="Zoom out to Compact"]');
+      button?.focus();
+      button?.click();
+      return Boolean(button);
+    })()`,
+    'compact',
+  );
+
+  return {
+    browser,
+    normalMotion,
+    buttonFullToCompact,
+    buttonCompactToOverview,
+    wheelOverviewToCompact,
+    rangeCompactToFull,
+    directFullToOverview,
+    rapidReversed,
+    navigationAfterChange,
+    responsiveViewports,
+    textScaling,
+    magnificationEquivalent,
+    nativeZoomInputs,
+    forcedColours,
+    reducedMotionSupport,
+    reducedMotion,
+    screenshots,
   };
 }
 
@@ -1820,6 +2362,7 @@ async function main() {
         ? await FirefoxDriver.launch(
             path.resolve(options.browserPath),
             path.resolve(options.geckodriverPath),
+            options.firefoxMotion === 'reduced',
           )
         : await ChromiumDriver.launch(path.resolve(options.browserPath));
     driver = launched.driver;
@@ -1827,6 +2370,12 @@ async function main() {
     const compactSemanticZoom = await compactSemanticZoomAudit(
       driver,
       server.rootUrl,
+      screenshotDirectory,
+    );
+    const semanticZoomUxHardening = await semanticZoomUxHardeningAudit(
+      driver,
+      server.rootUrl,
+      options.browser,
       screenshotDirectory,
     );
     const root = await smokeDeployment(driver, server.rootUrl);
@@ -1887,6 +2436,7 @@ async function main() {
       browser: options.browser,
       browserVersion: launched.version,
       compactSemanticZoom,
+      semanticZoomUxHardening,
       deployment: { root, nested },
       viewports,
       rootCandidateViewports,
@@ -1930,7 +2480,11 @@ async function main() {
           ({ liveWorkers }) => liveWorkers === null || liveWorkers === 0,
         ),
         reducedMotionPreference:
-          root.capabilities.reducedMotion && nested.capabilities.reducedMotion,
+          options.browser === 'firefox' && options.firefoxMotion === 'normal'
+            ? !root.capabilities.reducedMotion &&
+              !nested.capabilities.reducedMotion
+            : root.capabilities.reducedMotion &&
+              nested.capabilities.reducedMotion,
         viewportContainment: viewports.every(
           ({
             pageOverflowX,
@@ -1962,7 +2516,11 @@ async function main() {
           compactSemanticZoom.initial.effective === 'full' &&
           compactSemanticZoom.initial.presentation === 'full' &&
           compactSemanticZoom.initial.available === 'true' &&
-          compactSemanticZoom.initial.reducedMotion === 'true' &&
+          compactSemanticZoom.initial.reducedMotion ===
+            String(
+              options.browser !== 'firefox' ||
+                options.firefoxMotion === 'reduced',
+            ) &&
           compactSemanticZoom.initial.controlPresent &&
           compactSemanticZoom.initial.range?.min === '0' &&
           compactSemanticZoom.initial.range?.max === '2' &&
@@ -2106,6 +2664,119 @@ async function main() {
           compactSemanticZoom.restored.presentation === 'overview' &&
           compactSemanticZoom.restored.controlPresent &&
           compactSemanticZoom.restored.rangeValue === '0',
+        semanticZoomUxHardening: (() => {
+          const audit = semanticZoomUxHardening;
+          const actions = [
+            audit.buttonFullToCompact,
+            audit.buttonCompactToOverview,
+            audit.wheelOverviewToCompact,
+            audit.rangeCompactToFull,
+            audit.directFullToOverview,
+            audit.rapidReversed,
+          ];
+          const transitionsClean = actions.every(
+            ({ phases, settled }) =>
+              settled.transition === 'idle' &&
+              !settled.focusOnBody &&
+              settled.temporaryMotionCount === 0 &&
+              settled.transformedMotionCount === 0 &&
+              !settled.pageOverflowX &&
+              phases
+                .filter(({ phase }) =>
+                  ['measuring', 'animating'].includes(phase),
+                )
+                .every(({ lineCount }) => lineCount === 0),
+          );
+          const expectedPresentations = [
+            'compact',
+            'overview',
+            'compact',
+            'full',
+            'overview',
+            'compact',
+          ];
+          const actionOrderCorrect = actions.every(
+            ({ settled }, index) =>
+              settled.presentation === expectedPresentations[index] &&
+              settled.requested === expectedPresentations[index] &&
+              settled.effective === expectedPresentations[index],
+          );
+          const responsive = audit.responsiveViewports.every((viewport) => {
+            const expectedAvailable =
+              viewport.width >= 1024 && viewport.height >= 600;
+            return (
+              viewport.queryMatches === expectedAvailable &&
+              viewport.available === String(expectedAvailable) &&
+              viewport.controlPresent === expectedAvailable &&
+              viewport.controlContained &&
+              viewport.buttonsVisible &&
+              viewport.rangeVisible &&
+              viewport.currentLevelVisible &&
+              (!expectedAvailable || viewport.currentLevelText.length > 0) &&
+              !viewport.controlClipped &&
+              !viewport.pageOverflowX &&
+              viewport.transition === 'idle'
+            );
+          });
+          const nativeInputsPreserved =
+            audit.nativeZoomInputs.controlCtrlWheel.dispatchResult &&
+            !audit.nativeZoomInputs.controlCtrlWheel.defaultPrevented &&
+            audit.nativeZoomInputs.controlMetaWheel.dispatchResult &&
+            !audit.nativeZoomInputs.controlMetaWheel.defaultPrevented &&
+            audit.nativeZoomInputs.carouselCtrlWheel.dispatchResult &&
+            !audit.nativeZoomInputs.carouselCtrlWheel.defaultPrevented &&
+            audit.nativeZoomInputs.keys.every(
+              ({ dispatchResult, defaultPrevented }) =>
+                dispatchResult && !defaultPrevented,
+            );
+          const forcedColours =
+            !audit.forcedColours.supported ||
+            (audit.forcedColours.controlVisible &&
+              audit.forcedColours.rangeVisible &&
+              audit.forcedColours.disabledVisible &&
+              audit.forcedColours.focusVisible &&
+              audit.forcedColours.focusedControl &&
+              audit.forcedColours.controlBorderStyle !== 'none' &&
+              audit.forcedColours.disabledBorderStyle === 'dashed' &&
+              audit.forcedColours.leafwardPattern !==
+                audit.forcedColours.rootwardPattern &&
+              !audit.forcedColours.pageOverflowX);
+          return (
+            transitionsClean &&
+            actionOrderCorrect &&
+            responsive &&
+            audit.navigationAfterChange.currentNode !== '' &&
+            audit.navigationAfterChange.focusIsHeading &&
+            audit.navigationAfterChange.transition === 'idle' &&
+            audit.textScaling.every(
+              ({
+                controlContained,
+                currentLevelVisible,
+                focusVisible,
+                pageOverflowX,
+              }) =>
+                controlContained &&
+                currentLevelVisible &&
+                focusVisible &&
+                !pageOverflowX,
+            ) &&
+            audit.magnificationEquivalent.every(
+              ({ ordinaryTwoDimensionalScrolling }) =>
+                !ordinaryTwoDimensionalScrolling,
+            ) &&
+            audit.magnificationEquivalent.at(-1)?.width === 320 &&
+            audit.magnificationEquivalent.at(-1)?.effective === 'full' &&
+            !audit.magnificationEquivalent.at(-1)?.controlPresent &&
+            nativeInputsPreserved &&
+            forcedColours &&
+            (!audit.reducedMotionSupport.supported ||
+              (audit.reducedMotion.phases.every(
+                ({ phase }) => phase !== 'animating',
+              ) &&
+                audit.reducedMotion.settled.transition === 'idle' &&
+                audit.reducedMotion.settled.temporaryMotionCount === 0))
+          );
+        })(),
         rootCandidatePresentation: rootCandidateViewports.every(
           (audit, index, audits) =>
             audit.sectionLabelled &&

@@ -195,4 +195,35 @@
       display: none;
     }
   }
+
+  @media (forced-colors: active) {
+    .history-row {
+      border-color: CanvasText;
+      background: Canvas;
+      color: CanvasText;
+    }
+
+    .history-row.inspected {
+      outline: 3px double Highlight;
+    }
+
+    .jump-action,
+    .inspect-action,
+    .node-name {
+      color: CanvasText;
+    }
+
+    .inspect-action {
+      border-color: CanvasText;
+    }
+
+    .inspect-action.close-inspection {
+      border-style: double;
+      color: LinkText;
+    }
+
+    .history-row button:focus-visible {
+      outline-color: Highlight;
+    }
+  }
 </style>

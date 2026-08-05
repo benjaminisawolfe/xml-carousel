@@ -54,4 +54,23 @@
       padding-block: var(--space-1);
     }
   }
+
+  @media (forced-colors: active) {
+    .side-window-control {
+      border-color: CanvasText;
+      background: ButtonFace;
+      color: ButtonText;
+    }
+
+    .side-window-control:hover {
+      border-style: solid;
+      border-color: Highlight;
+      background: ButtonFace;
+      color: ButtonText;
+    }
+
+    .side-window-control:focus-visible {
+      outline-color: Highlight;
+    }
+  }
 </style>

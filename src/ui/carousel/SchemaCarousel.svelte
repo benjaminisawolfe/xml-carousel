@@ -55,6 +55,11 @@
     resolveImplementedSemanticZoomPresentation,
     type ImplementedSemanticZoomPresentation,
   } from './semanticZoomPresentation';
+  import {
+    createSemanticZoomTransitionController,
+    type SemanticZoomTransitionController,
+    type SemanticZoomTransitionPhase,
+  } from './semanticZoomTransition';
 
   const {
     canNavigateRootward,
@@ -138,6 +143,13 @@
   let carouselReflowFrame: number | undefined;
   let observedEffectiveSemanticZoomLevel: SemanticZoomLevel = 'full';
   let semanticZoomLifecycleMounted = false;
+  let semanticZoomTransitionController:
+    SemanticZoomTransitionController | undefined;
+  let semanticZoomTransitionPhase: SemanticZoomTransitionPhase = 'idle';
+  let semanticZoomTransitionFrom:
+    ImplementedSemanticZoomPresentation | undefined;
+  let semanticZoomTransitionTo: ImplementedSemanticZoomPresentation | undefined;
+  let restoreSemanticZoomControlFocus = false;
 
   $: leafwardPreviewRelationshipId =
     gestureSnapshot.semanticIntent === 'leafward'
@@ -206,6 +218,36 @@
       },
       onSnapshot: handleGestureSnapshot,
     });
+    semanticZoomTransitionController = createSemanticZoomTransitionController({
+      onPhaseChange: (phase, from, to) => {
+        semanticZoomTransitionPhase = phase;
+        semanticZoomTransitionFrom = from;
+        semanticZoomTransitionTo = to;
+      },
+      onSettled: () => {
+        carouselReflowRevision += 1;
+        if (restoreSemanticZoomControlFocus) {
+          restoreSemanticZoomControlFocus = false;
+          queueMicrotask(() => {
+            const activeElement = document.activeElement;
+            if (
+              activeElement !== document.body &&
+              !(
+                activeElement instanceof HTMLElement &&
+                activeElement.closest('[data-semantic-zoom-control]')
+              )
+            ) {
+              return;
+            }
+            gestureSurface
+              ?.querySelector<HTMLInputElement>(
+                '[data-semantic-zoom-control] input[type="range"]',
+              )
+              ?.focus({ preventScroll: true });
+          });
+        }
+      },
+    });
     semanticZoomLifecycleMounted = true;
     semanticZoomStore.setDesktopAvailability(
       semanticZoomQuery?.matches ?? false,
@@ -220,6 +262,7 @@
         gestureSurface.contains(document.activeElement)
           ? document.activeElement
           : undefined;
+      finishSemanticZoomTransitionImmediately();
       semanticZoomStore.setDesktopAvailability(event.matches);
       if (focusedCarouselAction) {
         void preserveCarouselFocusAfterSemanticZoomChange(
@@ -229,6 +272,7 @@
     };
     const handleReducedMotionChange = (event: MediaQueryListEvent): void => {
       prefersReducedMotion = event.matches;
+      if (event.matches) finishSemanticZoomTransitionImmediately();
       if (presentationState.phase !== 'direct-manipulation') {
         finishPresentationImmediately();
       }
@@ -279,6 +323,8 @@
 
     return () => {
       semanticZoomLifecycleMounted = false;
+      semanticZoomTransitionController?.destroy();
+      semanticZoomTransitionController = undefined;
       gestureController?.destroy();
       gestureController = undefined;
       semanticZoomQuery?.removeEventListener(
@@ -352,7 +398,9 @@
       gestureSurface?.contains(document.activeElement)
         ? document.activeElement
         : undefined;
-    resetTransientReflowPresentation();
+    if (semanticZoomTransitionPhase === 'idle') {
+      resetTransientReflowPresentation();
+    }
     carouselReflowRevision += 1;
     if (focusedCarouselAction) {
       void preserveCarouselFocusAfterSemanticZoomChange(focusedCarouselAction);
@@ -409,6 +457,8 @@
 
   function applyCarouselReflow(width: number, height: number): void {
     if (!dimensionsMateriallyChanged(width, height)) return;
+
+    finishSemanticZoomTransitionImmediately();
 
     const focusedSideAction =
       document.activeElement instanceof HTMLElement &&
@@ -704,6 +754,8 @@
       return;
     }
 
+    finishSemanticZoomTransitionImmediately();
+
     switch (event.key) {
       case 'ArrowDown':
         moveKeyboardSelection(1, event);
@@ -744,6 +796,7 @@
     const wasActive = gestureSnapshot.active;
 
     if (snapshot.active && !wasActive) {
+      finishSemanticZoomTransitionImmediately();
       finishPresentationImmediately();
       clearKeyboardSelection(false);
       gestureStartedWithCarouselFocus = hasCarouselNavigationFocus();
@@ -821,7 +874,12 @@
     gestureStartedWithCarouselFocus = false;
   }
 
+  function finishSemanticZoomTransitionImmediately(): void {
+    semanticZoomTransitionController?.cancel();
+  }
+
   function resetLocalPresentationState(): void {
+    finishSemanticZoomTransitionImmediately();
     gestureController?.cancel();
     clearPresentationWork();
     gestureSnapshot = {
@@ -1031,6 +1089,7 @@
   }
 
   function centerRequest(request: NodeCenterRequest): void {
+    finishSemanticZoomTransitionImmediately();
     pendingFocusTransfer = 'always';
     const result = navigationStore.centerNode(request);
     if (!result.applied) {
@@ -1059,6 +1118,7 @@
   }
 
   function navigatePreviousStep(): void {
+    finishSemanticZoomTransitionImmediately();
     pendingFocusTransfer = 'always';
     const result = navigationStore.navigateRootward();
     if (!result.applied) {
@@ -1069,6 +1129,7 @@
   }
 
   function toggleInspection(nodeId: SchemaNodeId): void {
+    finishSemanticZoomTransitionImmediately();
     if ($inspectedNodeId === nodeId) {
       inspectorStore.close();
       return;
@@ -1080,7 +1141,34 @@
   function selectSemanticZoomPresentation(
     presentation: ImplementedSemanticZoomPresentation,
   ): void {
-    semanticZoomStore.setRequestedLevel(presentation);
+    const from = implementedSemanticZoomPresentation;
+    if (presentation === from) return;
+
+    restoreSemanticZoomControlFocus = Boolean(
+      document.activeElement instanceof HTMLButtonElement &&
+      document.activeElement.closest('[data-semantic-zoom-control]') &&
+      (presentation === 'overview' || presentation === 'full'),
+    );
+
+    gestureController?.cancel();
+    finishPresentationImmediately();
+    const controller = semanticZoomTransitionController;
+    if (!controller || !gestureLayer?.isConnected) {
+      semanticZoomStore.setRequestedLevel(presentation);
+      return;
+    }
+
+    void controller.transition({
+      root: gestureLayer,
+      from,
+      to: presentation,
+      reducedMotion: prefersReducedMotion,
+      commit: () => semanticZoomStore.setRequestedLevel(presentation),
+      waitForLayout: async () => {
+        await tick();
+        await tick();
+      },
+    });
   }
 </script>
 
@@ -1093,6 +1181,7 @@
       'compact'}
     class:semantic-zoom-overview={implementedSemanticZoomPresentation ===
       'overview'}
+    class:semantic-zoom-transitioning={semanticZoomTransitionPhase !== 'idle'}
     class="gesture-viewport presentation-{presentationState.phase}"
     data-carousel-gesture-viewport
     data-gesture-phase={gestureSnapshot.phase}
@@ -1107,6 +1196,9 @@
       ? 'true'
       : 'false'}
     data-semantic-zoom-presentation={implementedSemanticZoomPresentation}
+    data-semantic-zoom-transition={semanticZoomTransitionPhase}
+    data-semantic-zoom-transition-from={semanticZoomTransitionFrom}
+    data-semantic-zoom-transition-to={semanticZoomTransitionTo}
     data-keyboard-cursor-state={keyboardSelectedRelationshipId
       ? 'leafward-selection'
       : 'current-focus'}
@@ -1133,6 +1225,7 @@
             reflowRevision={carouselReflowRevision}
             navigationKey={`${$activeProjectStore.project.id}\u0000${$navigationPathIds.join('\u0000')}`}
             isResting={presentationState.phase === 'resting'}
+            transitionPhase={semanticZoomTransitionPhase}
             presentation={implementedSemanticZoomPresentation}
           />
         {/if}
@@ -1496,6 +1589,23 @@
     :global(.presentation-reduced-motion-commit .focus-card) {
       animation: reduced-focus-confirm var(--duration-gesture-reduced)
         var(--ease-standard);
+    }
+  }
+
+  @media (forced-colors: active) {
+    .gesture-viewport {
+      border-color: CanvasText;
+      background: Canvas;
+      color: CanvasText;
+    }
+
+    .spatial-model,
+    .spatial-model strong {
+      color: CanvasText;
+    }
+
+    .gesture-viewport.keyboard-selection-active .carousel-stage {
+      outline-color: Highlight;
     }
   }
 
