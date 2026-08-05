@@ -25,6 +25,7 @@
   import { getSchemaNodeDisplayName } from '../presentation/xsdMetadataPresentation';
   import { buildJourneyRelationshipPresentation } from '../presentation/schemaRelationshipPresentation';
   import type { NavigationState } from '../../app/stores/navigationTypes';
+  import type { ImplementedSemanticZoomPresentation } from './semanticZoomPresentation';
 
   export let relationships: readonly SchemaRelationship[];
   export let focusNodeId: SchemaNodeId | undefined;
@@ -43,6 +44,7 @@
   export let availableWidth: number | undefined = undefined;
   export let availableHeight: number | undefined = undefined;
   export let reflowRevision = 0;
+  export let presentation: ImplementedSemanticZoomPresentation = 'full';
 
   let laneElement: HTMLElement;
   let windowStartIndex = 0;
@@ -238,6 +240,7 @@
 
 <section
   bind:this={laneElement}
+  class:compact={presentation === 'compact'}
   class="context-lane leafward-context"
   aria-label="Leafward destinations"
   data-carousel-side-window="leafward"
@@ -301,6 +304,7 @@
         )}
         onActivate={() => onNavigate(relationship)}
         {onToggleInspection}
+        {presentation}
       />
     {/each}
 
@@ -369,6 +373,23 @@
   .branch-window-range[data-branch-window-large-total] {
     inline-size: 100%;
     max-inline-size: 100%;
+  }
+
+  .context-lane.compact,
+  .context-lane.compact .context-stack {
+    gap: var(--space-1);
+  }
+
+  .context-lane.compact .lane-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   @media (orientation: landscape) and (max-height: 520px) {

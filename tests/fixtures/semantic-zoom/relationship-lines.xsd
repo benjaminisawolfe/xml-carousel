@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:xml-carousel:semantic-zoom-lines"
+  elementFormDefault="qualified">
+  <xs:complexType name="RelationshipLineType">
+    <xs:sequence>
+      <xs:element name="value" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="AlphaType"/>
+  <xs:complexType name="BetaType"/>
+  <xs:complexType name="GammaType"/>
+  <xs:complexType name="DeltaType"/>
+  <xs:complexType name="EpsilonType"/>
+</xs:schema>

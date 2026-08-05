@@ -16,6 +16,7 @@
   import { shouldShowContextNodeKinds } from '../presentation/projectPresentation';
   import SideWindowControl from './SideWindowControl.svelte';
   import { getSchemaNodeDisplayName } from '../presentation/xsdMetadataPresentation';
+  import type { ImplementedSemanticZoomPresentation } from './semanticZoomPresentation';
 
   export let nodes: readonly SchemaNode[];
   export let onNavigatePrevious: () => void;
@@ -32,6 +33,7 @@
   export let earlierPathRows = 2;
   export let availableHeight: number | undefined = undefined;
   export let reflowRevision = 0;
+  export let presentation: ImplementedSemanticZoomPresentation = 'full';
 
   let laneElement: HTMLElement;
   let historyStartIndex = 0;
@@ -134,6 +136,7 @@
 
 <section
   bind:this={laneElement}
+  class:compact={presentation === 'compact'}
   class="context-lane rootward-context"
   aria-label="Rootward journey"
   data-carousel-side-window="rootward"
@@ -156,6 +159,8 @@
             previous.journeyPosition,
             previous.item.id,
           )}
+          journeyPosition={previous.journeyPosition}
+          {presentation}
           onActivate={onNavigatePrevious}
           {onToggleInspection}
         />
@@ -189,6 +194,7 @@
               isInspected={node.id === inspectedNodeId}
               onJump={onJumpEarlier}
               {onToggleInspection}
+              {presentation}
             />
           {/each}
         </ol>
@@ -250,6 +256,29 @@
     padding: 0;
     margin: 0;
     list-style: none;
+  }
+
+  .context-lane.compact,
+  .context-lane.compact .context-stack {
+    gap: var(--space-1);
+  }
+
+  .context-lane.compact .history-group {
+    gap: var(--space-1);
+    padding-top: var(--space-1);
+  }
+
+  .context-lane.compact .lane-label,
+  .context-lane.compact .history-group h3 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   @media (max-width: 699px), (max-height: 699px) {

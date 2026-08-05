@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
@@ -13,6 +13,9 @@ const INPUTS = {
   zip: path.resolve('tests/fixtures/zip/valid-xsd-include.zip'),
   invalid: path.resolve('tests/fixtures/dtd/broken.dtd'),
   cancellation: path.resolve('tests/fixtures/dtd/large-40000.dtd'),
+  relationshipLines: path.resolve(
+    'tests/fixtures/semantic-zoom/relationship-lines.xsd',
+  ),
 };
 
 function parseArguments(argv) {
@@ -22,6 +25,7 @@ function parseArguments(argv) {
     geckodriverPath: undefined,
     hermeticPath: undefined,
     outputPath: undefined,
+    screenshotDirectory: undefined,
     mixedCycles: 30,
     hermeticCycles: 10,
   };
@@ -35,6 +39,7 @@ function parseArguments(argv) {
     else if (name === 'geckodriver-path') options.geckodriverPath = value;
     else if (name === 'hermetic-path') options.hermeticPath = value;
     else if (name === 'output') options.outputPath = value;
+    else if (name === 'screenshot-dir') options.screenshotDirectory = value;
     else if (name === 'mixed-cycles') options.mixedCycles = Number(value);
     else if (name === 'hermetic-cycles') options.hermeticCycles = Number(value);
     else throw new Error(`Unknown argument: ${argument}`);
@@ -284,6 +289,14 @@ class ChromiumDriver {
     });
   }
 
+  async screenshot(outputPath) {
+    const { data } = await this.send('Page.captureScreenshot', {
+      format: 'png',
+      captureBeyondViewport: false,
+    });
+    await writeFile(outputPath, Buffer.from(data, 'base64'));
+  }
+
   async setFile(selector, filePath) {
     const { root } = await this.send('DOM.getDocument', {
       depth: -1,
@@ -497,6 +510,11 @@ class FirefoxDriver {
     // The isolated Firefox profile sets ui.prefersReducedMotion before launch.
   }
 
+  async screenshot(outputPath) {
+    const data = await this.command('GET', '/screenshot');
+    await writeFile(outputPath, Buffer.from(data, 'base64'));
+  }
+
   async evaluate(expression) {
     return this.command('POST', '/execute/sync', {
       script: 'return eval(arguments[0]);',
@@ -668,7 +686,9 @@ async function viewportAudit(driver, width, height) {
     const rect = dialog?.getBoundingClientRect();
     const controls = ['Open DTD', 'Open XSD', 'Open ZIP', 'Open XML Carousel help'];
     const semanticZoomSurface = document.querySelector('[data-semantic-zoom-requested]');
-    const semanticZoomLabels = new Set(['Full detail', 'Compact', 'Overview']);
+    const semanticZoomControl = document.querySelector('[data-semantic-zoom-control]');
+    const semanticZoomRange = semanticZoomControl?.querySelector('input[type="range"]');
+    const controlRect = semanticZoomControl?.getBoundingClientRect();
     return {
       width: innerWidth,
       height: innerHeight,
@@ -682,10 +702,17 @@ async function viewportAudit(driver, width, height) {
         queryMatches: matchMedia('(min-width: 1024px) and (min-height: 600px)').matches,
         requested: semanticZoomSurface?.getAttribute('data-semantic-zoom-requested') ?? null,
         effective: semanticZoomSurface?.getAttribute('data-semantic-zoom-effective') ?? null,
+        presentation: semanticZoomSurface?.getAttribute('data-semantic-zoom-presentation') ?? null,
         available: semanticZoomSurface?.getAttribute('data-semantic-zoom-available') ?? null,
-        visibleControlCount: [...document.querySelectorAll('button')].filter((button) =>
-          semanticZoomLabels.has(button.getAttribute('aria-label') ?? button.textContent?.trim() ?? '')
-        ).length,
+        controlPresent: Boolean(semanticZoomControl),
+        controlContained: !controlRect || (
+          controlRect.left >= 0 && controlRect.top >= 0 &&
+          controlRect.right <= innerWidth && controlRect.bottom <= innerHeight
+        ),
+        rangeMin: semanticZoomRange?.getAttribute('min') ?? null,
+        rangeMax: semanticZoomRange?.getAttribute('max') ?? null,
+        overviewVisible: semanticZoomControl?.textContent?.includes('Overview') ?? false,
+        lineLayerCount: document.querySelectorAll('[data-semantic-zoom-relationship-lines]').length,
       },
     };
   })()`);
@@ -693,34 +720,418 @@ async function viewportAudit(driver, width, height) {
   return result;
 }
 
-async function semanticZoomFoundationAudit(driver, url) {
+async function relationshipLineSnapshot(driver) {
+  return driver.evaluate(`(() => {
+    const stage = document.querySelector('.carousel-stage');
+    const svg = document.querySelector('[data-semantic-zoom-relationship-lines]');
+    const focus = document.querySelector('[data-semantic-zoom-focus-card]');
+    const paths = [...document.querySelectorAll('[data-semantic-zoom-line-key]')];
+    if (!stage || !svg || !focus) return null;
+    const stageRect = stage.getBoundingClientRect();
+    const svgRect = svg.getBoundingClientRect();
+    const focusRect = focus.getBoundingClientRect();
+    const numberAttribute = (element, name) =>
+      Number(element.getAttribute(name));
+    const rectangle = (rect) => ({
+      left: rect.left,
+      top: rect.top,
+      right: rect.right,
+      bottom: rect.bottom,
+      width: rect.width,
+      height: rect.height,
+    });
+    const close = (left, right, allowance = 1) =>
+      Number.isFinite(left) && Number.isFinite(right) &&
+      Math.abs(left - right) <= allowance;
+    const details = paths.map((line) => {
+      const kind = line.getAttribute('data-semantic-zoom-line-kind');
+      const sourceIdentity = line.getAttribute('data-semantic-zoom-line-source') ?? '';
+      const targetIdentity = line.getAttribute('data-semantic-zoom-line-target') ?? '';
+      const from = {
+        x: numberAttribute(line, 'data-semantic-zoom-line-from-x'),
+        y: numberAttribute(line, 'data-semantic-zoom-line-from-y'),
+      };
+      const to = {
+        x: numberAttribute(line, 'data-semantic-zoom-line-to-x'),
+        y: numberAttribute(line, 'data-semantic-zoom-line-to-y'),
+      };
+      let source = focus;
+      let target;
+      if (kind === 'leafward') {
+        const edgeId = targetIdentity.replace(/^leafward:/u, '');
+        target = stage.querySelector(
+          '[data-semantic-zoom-leafward-edge-id="' + CSS.escape(edgeId) + '"]',
+        );
+      } else {
+        const sourcePosition = sourceIdentity.split(':')[1];
+        source = stage.querySelector(
+          '[data-semantic-zoom-rootward-position="' + CSS.escape(sourcePosition ?? '') + '"]',
+        );
+        target = focus;
+      }
+      const sourceRect = source?.getBoundingClientRect();
+      const targetRect = target?.getBoundingClientRect();
+      const pathBox = line.getBBox();
+      const expectedFrom = sourceRect
+        ? {
+            x: sourceRect.right - stageRect.left,
+            y: sourceRect.top + sourceRect.height / 2 - stageRect.top,
+          }
+        : null;
+      const expectedTo = targetRect
+        ? {
+            x: targetRect.left - stageRect.left,
+            y: targetRect.top + targetRect.height / 2 - stageRect.top,
+          }
+        : null;
+      const horizontalGap =
+        sourceRect && targetRect ? targetRect.left - sourceRect.right : null;
+      const minX = Math.min(from.x, to.x);
+      const maxX = Math.max(from.x, to.x);
+      const minY = Math.min(from.y, to.y);
+      const maxY = Math.max(from.y, to.y);
+      const finite = [
+        from.x,
+        from.y,
+        to.x,
+        to.y,
+        pathBox.x,
+        pathBox.y,
+        pathBox.width,
+        pathBox.height,
+      ].every(Number.isFinite) && !/NaN|Infinity/u.test(line.getAttribute('d') ?? '');
+      const endpointsMeetCards = Boolean(
+        expectedFrom && expectedTo &&
+        close(from.x, expectedFrom.x) && close(from.y, expectedFrom.y) &&
+        close(to.x, expectedTo.x) && close(to.y, expectedTo.y),
+      );
+      const boundedCorridor =
+        pathBox.x >= minX - 1 && pathBox.x + pathBox.width <= maxX + 1 &&
+        pathBox.y >= minY - 1 && pathBox.y + pathBox.height <= maxY + 1 &&
+        pathBox.x >= -1 && pathBox.x + pathBox.width <= stageRect.width + 1 &&
+        pathBox.y >= -1 && pathBox.y + pathBox.height <= stageRect.height + 1;
+      const visibleAcrossGap = Boolean(
+        horizontalGap !== null && horizontalGap >= 20 &&
+        pathBox.width >= horizontalGap - 2,
+      );
+      return {
+        key: line.getAttribute('data-semantic-zoom-line-key'),
+        kind,
+        sourceIdentity,
+        targetIdentity,
+        from,
+        to,
+        sourceRect: sourceRect ? rectangle(sourceRect) : null,
+        targetRect: targetRect ? rectangle(targetRect) : null,
+        pathBox: rectangle({
+          left: pathBox.x,
+          top: pathBox.y,
+          right: pathBox.x + pathBox.width,
+          bottom: pathBox.y + pathBox.height,
+          width: pathBox.width,
+          height: pathBox.height,
+        }),
+        horizontalGap,
+        finite,
+        endpointsMeetCards,
+        boundedCorridor,
+        visibleAcrossGap,
+      };
+    });
+    const completeCards = [
+      focus,
+      ...stage.querySelectorAll('[data-semantic-zoom-leafward-edge-id]'),
+      ...stage.querySelectorAll('[data-semantic-zoom-rootward-position]'),
+    ].every((card) => {
+      const rect = card.getBoundingClientRect();
+      return rect.left >= 0 && rect.top >= 0 &&
+        rect.right <= innerWidth && rect.bottom <= innerHeight;
+    });
+    return {
+      focusName: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
+      stage: rectangle(stageRect),
+      svg: rectangle(svgRect),
+      viewBox: svg.getAttribute('viewBox'),
+      stageWidth: Number(svg.getAttribute('data-semantic-zoom-stage-width')),
+      stageHeight: Number(svg.getAttribute('data-semantic-zoom-stage-height')),
+      lineState: svg.getAttribute('data-semantic-zoom-lines-state'),
+      lineCount: details.length,
+      leafwardCount: details.filter(({ kind }) => kind === 'leafward').length,
+      rootwardCount: details.filter(({ kind }) => kind === 'rootward').length,
+      keys: details.map(({ key }) => key),
+      details,
+      completeCards,
+      pointerInert: getComputedStyle(svg).pointerEvents === 'none',
+      ariaHidden: svg.getAttribute('aria-hidden') === 'true',
+      sharedCoordinateSystem:
+        close(stageRect.left, svgRect.left) && close(stageRect.top, svgRect.top) &&
+        close(stageRect.width, svgRect.width) && close(stageRect.height, svgRect.height) &&
+        close(stageRect.width, Number(svg.getAttribute('data-semantic-zoom-stage-width'))) &&
+        close(stageRect.height, Number(svg.getAttribute('data-semantic-zoom-stage-height'))),
+      allCorrect: details.length > 0 && completeCards &&
+        details.every(({ finite, endpointsMeetCards, boundedCorridor, visibleAcrossGap }) =>
+          finite && endpointsMeetCards && boundedCorridor && visibleAcrossGap,
+        ),
+    };
+  })()`);
+}
+
+async function waitForRelationshipLineState(
+  driver,
+  focusName,
+  minimumLeafward,
+  rootwardCount,
+) {
+  let lastSnapshot;
+  try {
+    return await waitUntil(
+      async () => {
+        const snapshot = await relationshipLineSnapshot(driver);
+        lastSnapshot = snapshot;
+        if (
+          snapshot?.focusName !== focusName ||
+          snapshot.leafwardCount < minimumLeafward ||
+          snapshot.rootwardCount !== rootwardCount ||
+          !snapshot.sharedCoordinateSystem ||
+          !snapshot.allCorrect ||
+          !snapshot.pointerInert ||
+          !snapshot.ariaHidden
+        ) {
+          return null;
+        }
+        return snapshot;
+      },
+      `relationship-line geometry for ${focusName}`,
+      15_000,
+    );
+  } catch (error) {
+    throw new Error(
+      `${error instanceof Error ? error.message : String(error)}\nLast snapshot: ${JSON.stringify(lastSnapshot)}`,
+    );
+  }
+}
+
+async function relationshipLineRegression(driver, screenshotDirectory) {
+  await importFile(
+    driver,
+    'xsd',
+    INPUTS.relationshipLines,
+    'relationship-lines.xsd',
+  );
+  const stateA = await waitForRelationshipLineState(
+    driver,
+    'Schema overview',
+    3,
+    0,
+  );
+  const screenshots = {};
+  if (screenshotDirectory) {
+    screenshots.stateA = path.join(
+      screenshotDirectory,
+      'relationship-lines-state-a.png',
+    );
+    await driver.screenshot(screenshots.stateA);
+  }
+
+  await driver.click(
+    '[data-semantic-zoom-leafward-edge-id] [data-carousel-navigation-action]',
+  );
+  const stateB = await waitForRelationshipLineState(
+    driver,
+    'RelationshipLineType',
+    1,
+    1,
+  );
+  if (screenshotDirectory) {
+    screenshots.stateB = path.join(
+      screenshotDirectory,
+      'relationship-lines-state-b.png',
+    );
+    await driver.screenshot(screenshots.stateB);
+  }
+
+  await driver.click(
+    '[data-semantic-zoom-rootward-position] [data-carousel-navigation-action]',
+  );
+  const stateC = await waitForRelationshipLineState(
+    driver,
+    'Schema overview',
+    3,
+    0,
+  );
+  if (screenshotDirectory) {
+    screenshots.stateC = path.join(
+      screenshotDirectory,
+      'relationship-lines-state-c.png',
+    );
+    await driver.screenshot(screenshots.stateC);
+  }
+
+  const noStateBPathsRemain = stateC.keys.every(
+    (key) => !stateB.keys.includes(key),
+  );
+  const stateARestored =
+    JSON.stringify(stateC.keys) === JSON.stringify(stateA.keys);
+  await driver.evaluate(`(() => {
+    const range = document.querySelector('[aria-label="Semantic zoom"]');
+    if (!range) return false;
+    range.value = '2';
+    range.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    return true;
+  })()`);
+  const fullCleared = await waitUntil(
+    () =>
+      driver.evaluate(
+        `document.querySelector('[data-carousel-gesture-viewport]')?.getAttribute('data-semantic-zoom-presentation') === 'full' &&
+       !document.querySelector('[data-semantic-zoom-relationship-lines]')`,
+      ),
+    'relationship lines cleared in Full',
+  );
+  await driver.evaluate(`(() => {
+    const range = document.querySelector('[aria-label="Semantic zoom"]');
+    if (!range) return false;
+    range.value = '1';
+    range.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    return true;
+  })()`);
+  const compactRestored = await waitForRelationshipLineState(
+    driver,
+    'Schema overview',
+    3,
+    0,
+  );
+  return {
+    fixture: INPUTS.relationshipLines,
+    stateA,
+    stateB,
+    stateC,
+    noStateBPathsRemain,
+    stateARestored,
+    fullCleared,
+    compactRestored,
+    screenshots,
+  };
+}
+
+async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
   await driver.setViewport(1440, 900, false);
   await driver.navigate(url);
   await dismissWelcome(driver);
   const initial = await driver.evaluate(`(() => {
     const surface = document.querySelector('[data-carousel-gesture-viewport]');
-    const cardNames = [...document.querySelectorAll('[data-carousel-motion-key]')]
-      .map((element) => element.getAttribute('aria-label') ?? '');
-    const buttonNames = [...(surface?.querySelectorAll('button') ?? [])]
-      .map((button) => button.getAttribute('aria-label') ?? button.textContent?.trim() ?? '');
+    const control = document.querySelector('[data-semantic-zoom-control]');
+    const range = control?.querySelector('input[type="range"]');
     return {
       project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
       currentNode: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
-      text: surface?.textContent ?? '',
-      cardNames,
-      buttonNames,
       requested: surface?.getAttribute('data-semantic-zoom-requested') ?? null,
       effective: surface?.getAttribute('data-semantic-zoom-effective') ?? null,
+      presentation: surface?.getAttribute('data-semantic-zoom-presentation') ?? null,
       available: surface?.getAttribute('data-semantic-zoom-available') ?? null,
       reducedMotion: surface?.getAttribute('data-reduced-motion') ?? null,
-      visibleControlCount: [...document.querySelectorAll('button')].filter((button) =>
-        ['Full detail', 'Compact', 'Overview'].includes(
-          button.getAttribute('aria-label') ?? button.textContent?.trim() ?? ''
-        )
-      ).length,
+      controlPresent: Boolean(control),
+      range: range ? {
+        min: range.getAttribute('min'),
+        max: range.getAttribute('max'),
+        value: range.value,
+        valueText: range.getAttribute('aria-valuetext'),
+      } : null,
+      overviewVisible: control?.textContent?.includes('Overview') ?? false,
+      fullSummaryPresent: Boolean(document.querySelector('[data-focus-card-scroll-region]')),
+      lineLayerCount: document.querySelectorAll('[data-semantic-zoom-relationship-lines]').length,
     };
   })()`);
+
+  await driver.evaluate(`(() => {
+    document.querySelector('[data-focus-card-scroll-region]')?.focus();
+    const range = document.querySelector('[aria-label="Semantic zoom"]');
+    if (!range) return false;
+    range.value = '1';
+    range.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    return true;
+  })()`);
+  await waitUntil(
+    () =>
+      driver.evaluate(
+        `document.querySelector('[data-carousel-gesture-viewport]')?.getAttribute('data-semantic-zoom-presentation') === 'compact'`,
+      ),
+    'Task 14.2 Compact selection',
+  );
+  await waitUntil(
+    () =>
+      driver.evaluate(
+        `document.querySelectorAll('[data-semantic-zoom-line-kind="leafward"]').length > 0`,
+      ),
+    'Task 14.2 initial Compact relationship lines',
+  );
+  const compact = await driver.evaluate(`(() => {
+    const surface = document.querySelector('[data-carousel-gesture-viewport]');
+    const focus = document.querySelector('[data-semantic-zoom-line-role="focus"]');
+    const range = document.querySelector('[aria-label="Semantic zoom"]');
+    return {
+      requested: surface?.getAttribute('data-semantic-zoom-requested') ?? null,
+      effective: surface?.getAttribute('data-semantic-zoom-effective') ?? null,
+      presentation: surface?.getAttribute('data-semantic-zoom-presentation') ?? null,
+      focusName: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
+      focusIsHeading: document.activeElement?.matches?.('[data-focus-card-heading]') ?? false,
+      focusCompact: focus?.classList.contains('compact') ?? false,
+      focusSummaryPresent: Boolean(focus?.querySelector('[data-focus-card-scroll-region]')),
+      focusKindPresent: Boolean(focus?.querySelector('.kind-badge')),
+      inspectPresent: Boolean(focus?.querySelector('[aria-label="Inspect book"]')),
+      rangeValue: range?.value ?? null,
+      rangeValueText: range?.getAttribute('aria-valuetext') ?? null,
+      overviewVisible: document.querySelector('[data-semantic-zoom-control]')?.textContent?.includes('Overview') ?? false,
+      lineCount: document.querySelectorAll('[data-semantic-zoom-line-kind="leafward"]').length,
+    };
+  })()`);
+
   await driver.click('[aria-label="Inspect book.content"]');
+  const inspectionOpened = await waitUntil(
+    () =>
+      driver.evaluate(
+        `document.querySelector('[data-inspector-close]')?.getAttribute('aria-label') === 'Close inspector for book.content'`,
+      ),
+    'Task 14.2 Compact inspection',
+  );
+  await driver.click('[aria-label="Close inspection for book.content"]');
+  const inspectionClosed = await waitUntil(
+    () => driver.evaluate(`!document.querySelector('[data-inspector-close]')`),
+    'Task 14.2 Compact inspection close',
+  );
+
+  await driver.click(
+    '[aria-label="Navigate leafward to book.content, DTD element declaration"]',
+  );
+  await waitUntil(
+    () =>
+      driver.evaluate(
+        `document.querySelector('[data-focus-card-heading]')?.textContent?.trim() === 'book.content'`,
+      ),
+    'Task 14.2 Compact card navigation',
+  );
+  await waitUntil(
+    () =>
+      driver.evaluate(
+        `document.querySelectorAll('[data-semantic-zoom-line-kind="rootward"]').length > 0`,
+      ),
+    'Task 14.2 Compact rootward relationship line',
+  );
+  const compactContext = await driver.evaluate(`(() => {
+    const chapter = document.querySelector('[aria-label="Navigate leafward to chapter+, DTD element declaration"]');
+    const paths = [...document.querySelectorAll('[data-semantic-zoom-line-key]')];
+    return {
+      currentNode: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
+      requested: document.querySelector('[data-carousel-gesture-viewport]')?.getAttribute('data-semantic-zoom-requested') ?? null,
+      chapterOccurrenceVisible: chapter?.textContent?.includes('chapter+') ?? false,
+      chapterDirectionHidden: !chapter?.textContent?.includes('Destination'),
+      chapterInspectPresent: Boolean(document.querySelector('[aria-label="Inspect chapter"]')),
+      rootwardLineCount: paths.filter((path) => path.getAttribute('data-semantic-zoom-line-kind') === 'rootward').length,
+      leafwardLineCount: paths.filter((path) => path.getAttribute('data-semantic-zoom-line-kind') === 'leafward').length,
+      finitePaths: paths.every((path) => !/NaN|Infinity/.test(path.getAttribute('d') ?? '')),
+      uniqueKeys: new Set(paths.map((path) => path.getAttribute('data-semantic-zoom-line-key'))).size === paths.length,
+    };
+  })()`);
+
   await driver.evaluate(
     `document.querySelector('[data-focus-card-heading]')?.focus()`,
   );
@@ -730,13 +1141,10 @@ async function semanticZoomFoundationAudit(driver, url) {
   const leafwardNode = await waitUntil(
     () =>
       driver.evaluate(
-        `document.querySelector('[data-focus-card-heading]')?.textContent?.trim() === 'front.matter'
-        ? 'front.matter' : ''`,
+        `document.querySelector('[data-focus-card-heading]')?.textContent?.trim() === 'chapter'
+        ? 'chapter' : ''`,
       ),
-    'Task 14.1 leafward keyboard navigation',
-  );
-  const inspectorAfterLeafward = await driver.evaluate(
-    `document.querySelector('[data-inspector-close]')?.getAttribute('aria-label') ?? ''`,
+    'Task 14.2 Compact leafward keyboard navigation',
   );
   await driver.evaluate(`document.body.dispatchEvent(new KeyboardEvent('keydown', {
     key: 'ArrowLeft', bubbles: true, cancelable: true
@@ -744,59 +1152,217 @@ async function semanticZoomFoundationAudit(driver, url) {
   const rootwardNode = await waitUntil(
     () =>
       driver.evaluate(
-        `document.querySelector('[data-focus-card-heading]')?.textContent?.trim() === 'book'
-        ? 'book' : ''`,
+        `document.querySelector('[data-focus-card-heading]')?.textContent?.trim() === 'book.content'
+        ? 'book.content' : ''`,
       ),
-    'Task 14.1 rootward keyboard navigation',
+    'Task 14.2 Compact rootward keyboard navigation',
   );
-  const wheel = await driver.evaluate(`(() => {
+
+  await driver.evaluate(`(() => {
+    const search = document.querySelector('[aria-label="Search schema"]');
+    if (!search) return false;
+    search.value = 'chapter';
+    search.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: 'chapter' }));
+    return true;
+  })()`);
+  await waitUntil(
+    () =>
+      driver.evaluate(
+        `Boolean(document.querySelector('[aria-label="Inspect chapter, DTD element declaration"]'))`,
+      ),
+    'Task 14.2 Compact Search results',
+  );
+  await driver.click('[aria-label="Inspect chapter, DTD element declaration"]');
+  const searchInspection = await waitUntil(
+    () =>
+      driver.evaluate(`(() => ({
+        inspected: document.querySelector('[data-inspector-close]')?.getAttribute('aria-label') ?? '',
+        currentNode: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
+        requested: document.querySelector('[data-carousel-gesture-viewport]')?.getAttribute('data-semantic-zoom-requested') ?? null,
+        searchValue: document.querySelector('[aria-label="Search schema"]')?.value ?? '',
+      }))()`),
+    'Task 14.2 Search Inspect state',
+  );
+  await driver.click('[aria-label="Center chapter, DTD element declaration"]');
+  const searchCenter = await waitUntil(
+    () =>
+      driver.evaluate(
+        `document.querySelector('[data-focus-card-heading]')?.textContent?.trim() === 'chapter'`,
+      ),
+    'Task 14.2 Search centre',
+  );
+
+  const compactBranchDirectory = await mkdtemp(
+    path.join(os.tmpdir(), 'xml-carousel-compact-branch-'),
+  );
+  let branchShift;
+  try {
+    const compactBranchPath = path.join(
+      compactBranchDirectory,
+      'compact-branches.dtd',
+    );
+    const childNames = Array.from({ length: 9 }, (_, index) => `child${index}`);
+    await writeFile(
+      compactBranchPath,
+      [
+        `<!ELEMENT branch-root (${childNames.join(',')})>`,
+        ...childNames.map((name) => `<!ELEMENT ${name} EMPTY>`),
+      ].join('\n'),
+      'utf8',
+    );
+    await importFile(driver, 'dtd', compactBranchPath, 'compact-branches.dtd');
+    await waitUntil(
+      () =>
+        driver.evaluate(
+          `Boolean(document.querySelector('[data-carousel-window-direction="leafward-next"]')) &&
+          document.querySelector('[data-carousel-gesture-viewport]')?.getAttribute('data-semantic-zoom-presentation') === 'compact'`,
+        ),
+      'Task 14.2 Compact branch window',
+    );
+    const before = await driver.evaluate(`[
+      ...document.querySelectorAll('[data-semantic-zoom-line-kind="leafward"]'),
+    ].map((line) => line.getAttribute('data-semantic-zoom-line-key'))`);
+    await driver.click('[data-carousel-window-direction="leafward-next"]');
+    const after = await waitUntil(async () => {
+      const current = await driver.evaluate(`[
+        ...document.querySelectorAll('[data-semantic-zoom-line-kind="leafward"]'),
+      ].map((line) => line.getAttribute('data-semantic-zoom-line-key'))`);
+      return JSON.stringify(before) !== JSON.stringify(current)
+        ? current
+        : null;
+    }, 'Task 14.2 Compact branch-window line redraw');
+    branchShift = await driver.evaluate(`(() => ({
+      project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
+      requested: document.querySelector('[data-carousel-gesture-viewport]')?.getAttribute('data-semantic-zoom-requested') ?? null,
+      controlPresent: true,
+    }))()`);
+    branchShift = {
+      ...branchShift,
+      changed: true,
+      before,
+      after,
+    };
+  } finally {
+    await rm(compactBranchDirectory, { recursive: true, force: true });
+  }
+
+  const relationshipLines = await relationshipLineRegression(
+    driver,
+    screenshotDirectory,
+  );
+
+  const importPersistence = [];
+  for (const [format, input, filename] of [
+    ['dtd', INPUTS.dtd, 'library.dtd'],
+    ['xsd', INPUTS.xsd, 'attributes.xsd'],
+    ['zip', INPUTS.zip, 'valid-xsd-include.zip'],
+  ]) {
+    await importFile(driver, format, input, filename);
+    importPersistence.push(
+      await driver.evaluate(`(() => {
+        const surface = document.querySelector('[data-carousel-gesture-viewport]');
+        return {
+          format: ${JSON.stringify(format)},
+          project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
+          requested: surface?.getAttribute('data-semantic-zoom-requested') ?? null,
+          effective: surface?.getAttribute('data-semantic-zoom-effective') ?? null,
+          presentation: surface?.getAttribute('data-semantic-zoom-presentation') ?? null,
+          controlPresent: Boolean(document.querySelector('[data-semantic-zoom-control]')),
+        };
+      })()`),
+    );
+  }
+
+  await driver.navigate(url);
+  await dismissWelcome(driver);
+  const wheel = await driver.evaluate(`(async () => {
     const surface = document.querySelector('[data-carousel-gesture-viewport]');
-    if (!surface) return null;
-    const before = {
-      requested: surface.getAttribute('data-semantic-zoom-requested'),
-      effective: surface.getAttribute('data-semantic-zoom-effective'),
-      text: surface.textContent,
-      cardNames: [...document.querySelectorAll('[data-carousel-motion-key]')]
-        .map((element) => element.getAttribute('aria-label') ?? ''),
-      buttonNames: [...surface.querySelectorAll('button')]
-        .map((button) => button.getAttribute('aria-label') ?? button.textContent?.trim() ?? ''),
-    };
-    const inputs = [
-      { deltaY: 120 },
-      { deltaY: -120 },
-      { deltaY: 120, ctrlKey: true },
-      { deltaY: -120, metaKey: true },
-    ];
-    const events = inputs.map((input) => {
+    const control = document.querySelector('[data-semantic-zoom-control]');
+    if (!surface || !control) return null;
+    const dispatch = (target, input) => {
       const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, ...input });
-      const dispatchResult = surface.dispatchEvent(event);
+      const dispatchResult = target.dispatchEvent(event);
       return { dispatchResult, defaultPrevented: event.defaultPrevented, ...input };
-    });
-    const after = {
-      requested: surface.getAttribute('data-semantic-zoom-requested'),
-      effective: surface.getAttribute('data-semantic-zoom-effective'),
-      text: surface.textContent,
-      cardNames: [...document.querySelectorAll('[data-carousel-motion-key]')]
-        .map((element) => element.getAttribute('aria-label') ?? ''),
-      buttonNames: [...surface.querySelectorAll('button')]
-        .map((button) => button.getAttribute('aria-label') ?? button.textContent?.trim() ?? ''),
     };
+    const down = dispatch(control, { deltaY: 120 });
+    await new Promise((resolve) => setTimeout(resolve, 220));
+    const compactBoundary = dispatch(control, { deltaY: 120 });
+    const compactAfterBoundary = surface.getAttribute('data-semantic-zoom-requested');
+    const up = dispatch(control, { deltaY: -120 });
+    await new Promise((resolve) => setTimeout(resolve, 220));
+    const ctrl = dispatch(control, { deltaY: 120, ctrlKey: true });
+    const meta = dispatch(control, { deltaY: -120, metaKey: true });
+    const ordinary = dispatch(surface, { deltaY: 120 });
     return {
-      events,
-      stateUnchanged: before.requested === after.requested && before.effective === after.effective,
-      presentationUnchanged:
-        before.text === after.text &&
-        JSON.stringify(before.cardNames) === JSON.stringify(after.cardNames) &&
-        JSON.stringify(before.buttonNames) === JSON.stringify(after.buttonNames),
+      down,
+      compactBoundary,
+      up,
+      ctrl,
+      meta,
+      ordinary,
+      compactAfterBoundary,
+      finalRequested: surface.getAttribute('data-semantic-zoom-requested'),
     };
   })()`);
+
+  await driver.evaluate(`(() => {
+    const range = document.querySelector('[aria-label="Semantic zoom"]');
+    range.value = '1';
+    range.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    range.focus();
+  })()`);
+  await driver.setViewport(768, 900, false);
+  const constrained = await waitUntil(
+    () =>
+      driver.evaluate(`(() => {
+        const surface = document.querySelector('[data-carousel-gesture-viewport]');
+        if (surface?.getAttribute('data-semantic-zoom-available') !== 'false') return null;
+        if (!document.activeElement?.matches?.('[data-focus-card-heading]')) return null;
+        return {
+          requested: surface.getAttribute('data-semantic-zoom-requested'),
+          effective: surface.getAttribute('data-semantic-zoom-effective'),
+          presentation: surface.getAttribute('data-semantic-zoom-presentation'),
+          controlPresent: Boolean(document.querySelector('[data-semantic-zoom-control]')),
+          focusIsHeading: document.activeElement?.matches?.('[data-focus-card-heading]') ?? false,
+          lineLayerPresent: Boolean(document.querySelector('[data-semantic-zoom-relationship-lines]')),
+        };
+      })()`),
+    'Task 14.2 constrained fallback',
+  );
+  await driver.setViewport(1440, 900, false);
+  const restored = await waitUntil(
+    () =>
+      driver.evaluate(`(() => {
+        const surface = document.querySelector('[data-carousel-gesture-viewport]');
+        if (surface?.getAttribute('data-semantic-zoom-presentation') !== 'compact') return null;
+        return {
+          requested: surface.getAttribute('data-semantic-zoom-requested'),
+          effective: surface.getAttribute('data-semantic-zoom-effective'),
+          presentation: surface.getAttribute('data-semantic-zoom-presentation'),
+          controlPresent: Boolean(document.querySelector('[data-semantic-zoom-control]')),
+          rangeValue: document.querySelector('[aria-label="Semantic zoom"]')?.value ?? null,
+        };
+      })()`),
+    'Task 14.2 desktop restoration',
+  );
+
   return {
     url,
     initial,
+    compact,
+    inspectionOpened,
+    inspectionClosed,
+    compactContext,
     leafwardNode,
     rootwardNode,
-    inspectorAfterLeafward,
+    searchInspection,
+    searchCenter,
+    branchShift,
+    relationshipLines,
+    importPersistence,
     wheel,
+    constrained,
+    restored,
   };
 }
 
@@ -1139,6 +1705,13 @@ async function rootCandidateAudit(driver, width, height) {
 
 async function main() {
   const options = parseArguments(process.argv.slice(2));
+  const screenshotDirectory =
+    options.browser === 'chrome' && options.screenshotDirectory
+      ? path.resolve(options.screenshotDirectory)
+      : undefined;
+  if (screenshotDirectory) {
+    await mkdir(screenshotDirectory, { recursive: true });
+  }
   const serverRequests = [];
   const server = await startHostileMimeServer({
     host: '127.0.0.1',
@@ -1156,9 +1729,10 @@ async function main() {
         : await ChromiumDriver.launch(path.resolve(options.browserPath));
     driver = launched.driver;
     await driver.setReducedMotion();
-    const semanticZoomFoundation = await semanticZoomFoundationAudit(
+    const compactSemanticZoom = await compactSemanticZoomAudit(
       driver,
       server.rootUrl,
+      screenshotDirectory,
     );
     const root = await smokeDeployment(driver, server.rootUrl);
     const nested = await smokeDeployment(driver, server.nestedUrl);
@@ -1217,7 +1791,7 @@ async function main() {
       generatedAt: new Date().toISOString(),
       browser: options.browser,
       browserVersion: launched.version,
-      semanticZoomFoundation,
+      compactSemanticZoom,
       deployment: { root, nested },
       viewports,
       rootCandidateViewports,
@@ -1277,27 +1851,114 @@ async function main() {
             carouselTop >= topBarBottom &&
             semanticZoom.requested === 'full' &&
             semanticZoom.effective === 'full' &&
+            semanticZoom.presentation === 'full' &&
             semanticZoom.available === String(semanticZoom.queryMatches) &&
-            semanticZoom.visibleControlCount === 0,
+            semanticZoom.controlPresent === semanticZoom.queryMatches &&
+            semanticZoom.controlContained &&
+            semanticZoom.overviewVisible === false &&
+            semanticZoom.lineLayerCount === 0 &&
+            (!semanticZoom.queryMatches ||
+              (semanticZoom.rangeMin === '1' && semanticZoom.rangeMax === '2')),
         ),
-        semanticZoomFoundation:
-          semanticZoomFoundation.initial.project === 'sample.book.dtd' &&
-          semanticZoomFoundation.initial.currentNode === 'book' &&
-          semanticZoomFoundation.initial.requested === 'full' &&
-          semanticZoomFoundation.initial.effective === 'full' &&
-          semanticZoomFoundation.initial.available === 'true' &&
-          semanticZoomFoundation.initial.reducedMotion === 'true' &&
-          semanticZoomFoundation.initial.visibleControlCount === 0 &&
-          semanticZoomFoundation.leafwardNode === 'front.matter' &&
-          semanticZoomFoundation.rootwardNode === 'book' &&
-          semanticZoomFoundation.inspectorAfterLeafward ===
-            'Close inspector for book.content' &&
-          semanticZoomFoundation.wheel?.events.every(
-            ({ dispatchResult, defaultPrevented }) =>
-              dispatchResult && !defaultPrevented,
+        compactSemanticZoom:
+          compactSemanticZoom.initial.project === 'sample.book.dtd' &&
+          compactSemanticZoom.initial.currentNode === 'book' &&
+          compactSemanticZoom.initial.requested === 'full' &&
+          compactSemanticZoom.initial.effective === 'full' &&
+          compactSemanticZoom.initial.presentation === 'full' &&
+          compactSemanticZoom.initial.available === 'true' &&
+          compactSemanticZoom.initial.reducedMotion === 'true' &&
+          compactSemanticZoom.initial.controlPresent &&
+          compactSemanticZoom.initial.range?.min === '1' &&
+          compactSemanticZoom.initial.range?.max === '2' &&
+          compactSemanticZoom.initial.range?.value === '2' &&
+          compactSemanticZoom.initial.range?.valueText === 'Full detail' &&
+          !compactSemanticZoom.initial.overviewVisible &&
+          compactSemanticZoom.initial.fullSummaryPresent &&
+          compactSemanticZoom.initial.lineLayerCount === 0 &&
+          compactSemanticZoom.compact.requested === 'compact' &&
+          compactSemanticZoom.compact.effective === 'compact' &&
+          compactSemanticZoom.compact.presentation === 'compact' &&
+          compactSemanticZoom.compact.focusName === 'book' &&
+          compactSemanticZoom.compact.focusIsHeading &&
+          compactSemanticZoom.compact.focusCompact &&
+          !compactSemanticZoom.compact.focusSummaryPresent &&
+          !compactSemanticZoom.compact.focusKindPresent &&
+          compactSemanticZoom.compact.inspectPresent &&
+          compactSemanticZoom.compact.rangeValue === '1' &&
+          compactSemanticZoom.compact.rangeValueText === 'Compact' &&
+          !compactSemanticZoom.compact.overviewVisible &&
+          compactSemanticZoom.compact.lineCount > 0 &&
+          compactSemanticZoom.inspectionOpened &&
+          compactSemanticZoom.inspectionClosed &&
+          compactSemanticZoom.compactContext.currentNode === 'book.content' &&
+          compactSemanticZoom.compactContext.requested === 'compact' &&
+          compactSemanticZoom.compactContext.chapterOccurrenceVisible &&
+          compactSemanticZoom.compactContext.chapterDirectionHidden &&
+          compactSemanticZoom.compactContext.chapterInspectPresent &&
+          compactSemanticZoom.compactContext.rootwardLineCount > 0 &&
+          compactSemanticZoom.compactContext.leafwardLineCount > 0 &&
+          compactSemanticZoom.compactContext.finitePaths &&
+          compactSemanticZoom.compactContext.uniqueKeys &&
+          compactSemanticZoom.relationshipLines.stateA.leafwardCount >= 3 &&
+          compactSemanticZoom.relationshipLines.stateA.rootwardCount === 0 &&
+          compactSemanticZoom.relationshipLines.stateA.allCorrect &&
+          compactSemanticZoom.relationshipLines.stateB.leafwardCount >= 1 &&
+          compactSemanticZoom.relationshipLines.stateB.rootwardCount === 1 &&
+          compactSemanticZoom.relationshipLines.stateB.allCorrect &&
+          compactSemanticZoom.relationshipLines.stateC.leafwardCount >= 3 &&
+          compactSemanticZoom.relationshipLines.stateC.rootwardCount === 0 &&
+          compactSemanticZoom.relationshipLines.stateC.allCorrect &&
+          compactSemanticZoom.relationshipLines.noStateBPathsRemain &&
+          compactSemanticZoom.relationshipLines.stateARestored &&
+          compactSemanticZoom.relationshipLines.fullCleared &&
+          compactSemanticZoom.relationshipLines.compactRestored.allCorrect &&
+          compactSemanticZoom.leafwardNode === 'chapter' &&
+          compactSemanticZoom.rootwardNode === 'book.content' &&
+          compactSemanticZoom.searchInspection.inspected ===
+            'Close inspector for chapter' &&
+          compactSemanticZoom.searchInspection.currentNode === 'book.content' &&
+          compactSemanticZoom.searchInspection.requested === 'compact' &&
+          compactSemanticZoom.searchInspection.searchValue === 'chapter' &&
+          compactSemanticZoom.searchCenter &&
+          compactSemanticZoom.branchShift.controlPresent &&
+          compactSemanticZoom.branchShift.changed &&
+          compactSemanticZoom.branchShift.project === 'compact-branches.dtd' &&
+          compactSemanticZoom.branchShift.requested === 'compact' &&
+          compactSemanticZoom.importPersistence.length === 3 &&
+          compactSemanticZoom.importPersistence.every(
+            ({ requested, effective, presentation, controlPresent }) =>
+              requested === 'compact' &&
+              effective === 'compact' &&
+              presentation === 'compact' &&
+              controlPresent,
           ) &&
-          semanticZoomFoundation.wheel?.stateUnchanged &&
-          semanticZoomFoundation.wheel?.presentationUnchanged,
+          compactSemanticZoom.wheel &&
+          !compactSemanticZoom.wheel.down.dispatchResult &&
+          compactSemanticZoom.wheel.down.defaultPrevented &&
+          compactSemanticZoom.wheel.compactBoundary.dispatchResult &&
+          !compactSemanticZoom.wheel.compactBoundary.defaultPrevented &&
+          compactSemanticZoom.wheel.compactAfterBoundary === 'compact' &&
+          !compactSemanticZoom.wheel.up.dispatchResult &&
+          compactSemanticZoom.wheel.up.defaultPrevented &&
+          compactSemanticZoom.wheel.ctrl.dispatchResult &&
+          !compactSemanticZoom.wheel.ctrl.defaultPrevented &&
+          compactSemanticZoom.wheel.meta.dispatchResult &&
+          !compactSemanticZoom.wheel.meta.defaultPrevented &&
+          compactSemanticZoom.wheel.ordinary.dispatchResult &&
+          !compactSemanticZoom.wheel.ordinary.defaultPrevented &&
+          compactSemanticZoom.wheel.finalRequested === 'full' &&
+          compactSemanticZoom.constrained.requested === 'compact' &&
+          compactSemanticZoom.constrained.effective === 'full' &&
+          compactSemanticZoom.constrained.presentation === 'full' &&
+          !compactSemanticZoom.constrained.controlPresent &&
+          compactSemanticZoom.constrained.focusIsHeading &&
+          !compactSemanticZoom.constrained.lineLayerPresent &&
+          compactSemanticZoom.restored.requested === 'compact' &&
+          compactSemanticZoom.restored.effective === 'compact' &&
+          compactSemanticZoom.restored.presentation === 'compact' &&
+          compactSemanticZoom.restored.controlPresent &&
+          compactSemanticZoom.restored.rangeValue === '1',
         rootCandidatePresentation: rootCandidateViewports.every(
           (audit, index, audits) =>
             audit.sectionLabelled &&

@@ -4,6 +4,7 @@
   import type { ContextCardStructureSummary } from './contextCardSummary';
   import { formatSchemaNodeKind } from './nodePresentation';
   import NodeKindBadge from './NodeKindBadge.svelte';
+  import type { ImplementedSemanticZoomPresentation } from './semanticZoomPresentation';
 
   export let node: SchemaNode;
   export let displayName = node.name;
@@ -27,6 +28,8 @@
   export let showKind: boolean;
   export let structureSummary: ContextCardStructureSummary | undefined =
     undefined;
+  export let presentation: ImplementedSemanticZoomPresentation = 'full';
+  export let journeyPosition: number | undefined = undefined;
 
   $: isDtdContainment =
     direction === 'leafward' &&
@@ -60,6 +63,7 @@
   class:keyboard-selected={isKeyboardSelected}
   class:terminal-cycle-closure={relationshipDisposition ===
     'terminalCycleClosure'}
+  class:compact={presentation === 'compact'}
   class="context-card"
   aria-label={`${directionLabel} ${visibleName}`}
   data-carousel-gesture-origin
@@ -75,14 +79,32 @@
   data-gesture-preview={isGesturePreview ? 'true' : undefined}
   data-keyboard-selected={isKeyboardSelected ? 'true' : undefined}
   data-carousel-motion-key={motionKey}
+  data-semantic-zoom-leafward-edge-id={direction === 'leafward'
+    ? relationshipId
+    : undefined}
+  data-semantic-zoom-rootward-position={direction === 'rootward'
+    ? journeyPosition
+    : undefined}
+  data-semantic-zoom-line-role={direction}
+  data-semantic-zoom-line-node-id={node.id}
+  data-journey-position={journeyPosition}
+  data-relationship-disposition={relationshipDisposition}
 >
   {#snippet cardBody()}
-    <span class="context-direction">{directionLabel}</span>
+    {#if presentation === 'full'}
+      <span class="context-direction">{directionLabel}</span>
+    {/if}
     <span class="node-name" title={visibleName}>{visibleName}</span>
-    {#if terminalLabel}
+    {#if presentation === 'compact' && relationshipDisposition === 'terminalCycleClosure'}
+      <span
+        class="recursive-marker"
+        title={terminalLabel ?? 'Already present in this path'}
+        aria-hidden="true">↺</span
+      >
+    {:else if terminalLabel}
       <span class="terminal-label">{terminalLabel}</span>
     {/if}
-    {#if showKind}
+    {#if presentation === 'full' && showKind}
       <NodeKindBadge kind={node.kind} />
     {/if}
   {/snippet}
@@ -106,7 +128,7 @@
     </button>
   {/if}
 
-  {#if structureSummary}
+  {#if presentation === 'full' && structureSummary}
     <div
       class="context-structure"
       aria-label={`Structure summary for ${displayName}`}
@@ -187,6 +209,23 @@
     box-shadow: var(--shadow-keyboard-selection);
   }
 
+  .context-card.compact > button,
+  .context-card.compact .context-body {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .context-card.compact .node-name {
+    font-size: var(--font-size-sm);
+    line-height: 1.25;
+  }
+
+  .context-card.compact .card-actions {
+    padding: var(--space-1);
+  }
+
   .context-card > button,
   .context-body {
     display: grid;
@@ -232,6 +271,13 @@
     color: var(--colour-text-muted);
     font-size: var(--font-size-xs);
     font-weight: 600;
+  }
+
+  .recursive-marker {
+    color: var(--colour-metadata);
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    line-height: 1;
   }
 
   .node-name {
