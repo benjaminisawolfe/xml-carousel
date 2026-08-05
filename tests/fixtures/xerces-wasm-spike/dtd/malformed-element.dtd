@@ -1,0 +1,2 @@
+<!ELEMENT catalog (item+>
+<!ELEMENT item (#PCDATA)>

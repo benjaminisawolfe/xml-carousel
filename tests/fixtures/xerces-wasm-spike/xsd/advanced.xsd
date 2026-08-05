@@ -1,0 +1,10 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:advanced" xmlns:a="urn:advanced" elementFormDefault="qualified">
+  <xs:simpleType name="bounded"><xs:restriction base="xs:integer"><xs:minInclusive value="1"/><xs:maxInclusive value="9"/></xs:restriction></xs:simpleType>
+  <xs:simpleType name="tokens"><xs:list itemType="xs:NCName"/></xs:simpleType>
+  <xs:simpleType name="choice"><xs:union memberTypes="a:bounded xs:string"/></xs:simpleType>
+  <xs:complexType name="base"><xs:sequence><xs:any minOccurs="0" processContents="lax"/></xs:sequence></xs:complexType>
+  <xs:complexType name="derived"><xs:complexContent><xs:extension base="a:base"><xs:attribute name="id" type="xs:ID"/></xs:extension></xs:complexContent></xs:complexType>
+  <xs:element name="head" type="a:base" abstract="true"/>
+  <xs:element name="member" type="a:derived" substitutionGroup="a:head"/>
+  <xs:element name="root"><xs:complexType><xs:sequence><xs:element ref="a:member" maxOccurs="unbounded"/></xs:sequence></xs:complexType><xs:key name="memberKey"><xs:selector xpath="a:member"/><xs:field xpath="@id"/></xs:key></xs:element>
+</xs:schema>

@@ -1,0 +1,5 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Preserve the reviewed generated Xerces runtime byte-for-byte.
+src/standards/xerces/runtime/xerces-runtime.js binary

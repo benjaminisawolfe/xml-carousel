@@ -1,0 +1,3 @@
+<!ELEMENT book EMPTY>
+<!ATTLIST book format CDATA #IMPLIED>
+<!ATTLIST book format NMTOKEN #REQUIRED>

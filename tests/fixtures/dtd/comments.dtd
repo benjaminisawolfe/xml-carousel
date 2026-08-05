@@ -1,0 +1,11 @@
+<!-- The root element for the document. -->
+<!ELEMENT book (chapter+)><!-- Book structure. -->
+
+<!-- Chapter prose. -->
+<!-- Text content only. -->
+<!ELEMENT chapter (#PCDATA)>
+
+<!-- Identifier metadata. -->
+<!ATTLIST chapter id ID #IMPLIED>
+
+<!-- Project-level note retained at end of file. -->

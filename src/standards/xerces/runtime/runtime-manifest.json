@@ -1,0 +1,62 @@
+{
+  "engine": "Apache Xerces-C++",
+  "xercesVersion": "3.3.0",
+  "xercesSourceArchive": "xerces-c-3.3.0.zip",
+  "xercesSourceSha256": "c35a6f04e853bde456c65ec38a4496c7ccf60b27c6989ff4e2149db9ea40648c",
+  "emscriptenVersion": "6.0.5",
+  "productionLoading": {
+    "javascriptPackaging": "dynamic-es-module-js",
+    "wasmInstantiation": "prefetched-byte-array"
+  },
+  "buildConfiguration": {
+    "optimization": "-O2",
+    "exceptionHandling": "JavaScript",
+    "lto": false,
+    "filesystem": false,
+    "network": false,
+    "upstreamPatched": false
+  },
+  "virtualProjectResolution": {
+    "canonicalNamespace": "common-root-relative-posix",
+    "referenceBase": "referring-document-directory",
+    "safeParentSegments": "normalize-within-project-root",
+    "qualifiedReferenceNamespace": "project:///",
+    "invalidPercentEncoding": "reject",
+    "queryAndFragmentComponents": "reject",
+    "controlCharacters": "reject-c0-del-c1",
+    "policyDiagnosticCategory": "security",
+    "missingDiagnosticCategory": "blocked-dependency",
+    "externalRetrieval": false
+  },
+  "artifacts": [
+    {
+      "file": "xerces-runtime.js",
+      "rawBytes": 27151,
+      "gzipBytes": 6497,
+      "sha256": "e00a4618d52f24aa24a8d6d49173cfb2a7556627a7c71ef54650dde00923becc"
+    },
+    {
+      "file": "xerces-runtime.wasm",
+      "rawBytes": 2162515,
+      "gzipBytes": 547399,
+      "sha256": "4b12de73b9b8ca974ea9caca2bcf38b7538c4a48fac8f52a98a80cfbdec6ab74"
+    }
+  ],
+  "attributionFiles": [
+    {
+      "file": "LICENSE.xerces.txt",
+      "rawBytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "file": "NOTICE.xerces.txt",
+      "rawBytes": 560,
+      "sha256": "95e5cca2ff3d0801841d9d17f0eec16bfb02dd6893ff7e55da4ec5a5dd30aa52"
+    },
+    {
+      "file": "LICENSE.emscripten.txt",
+      "rawBytes": 1326,
+      "sha256": "99d9a9616fbde3f5ee22a71d8645799a8522d48526130c5ba6dc27ad15ce01f1"
+    }
+  ]
+}

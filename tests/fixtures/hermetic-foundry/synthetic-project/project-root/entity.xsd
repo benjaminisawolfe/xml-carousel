@@ -1,0 +1,15 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:t="urn:xml-carousel:synthetic-hermetic"
+  targetNamespace="urn:xml-carousel:synthetic-hermetic">
+  <xs:include schemaLocation="shared/common.xsd"/>
+  <xs:group name="RuleContent">
+    <xs:sequence><xs:element name="rule" type="xs:string"/></xs:sequence>
+  </xs:group>
+  <xs:complexType name="EntityType">
+    <xs:complexContent>
+      <xs:extension base="t:CommonType">
+        <xs:sequence><xs:group ref="t:RuleContent" minOccurs="0"/></xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+</xs:schema>

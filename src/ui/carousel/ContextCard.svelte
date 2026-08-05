@@ -1,0 +1,401 @@
+<script lang="ts">
+  import type { SchemaEdgeKind, SchemaNode } from '../../schema/model';
+  import { formatOutgoingRelationshipLabel } from '../presentation/schemaRelationshipPresentation';
+  import type { ContextCardStructureSummary } from './contextCardSummary';
+  import { formatSchemaNodeKind } from './nodePresentation';
+  import NodeKindBadge from './NodeKindBadge.svelte';
+
+  export let node: SchemaNode;
+  export let displayName = node.name;
+  export let occurrence = '';
+  export let direction: 'rootward' | 'leafward';
+  export let contextLabel: string | undefined = undefined;
+  export let relationshipId: string | undefined = undefined;
+  export let relationshipKind: SchemaEdgeKind | undefined = undefined;
+  export let relationshipLabel: string | undefined = undefined;
+  export let relationshipDisposition: 'advance' | 'terminalCycleClosure' =
+    'advance';
+  export let terminalLabel: string | undefined = undefined;
+  export let focusedNodeKind: SchemaNode['kind'] | undefined = undefined;
+  export let onActivate: () => void;
+  export let isInspected: boolean;
+  export let onToggleInspection: (nodeId: string) => void;
+  export let visibleOrder: number | undefined = undefined;
+  export let isGesturePreview = false;
+  export let isKeyboardSelected = false;
+  export let motionKey: string;
+  export let showKind: boolean;
+  export let structureSummary: ContextCardStructureSummary | undefined =
+    undefined;
+
+  $: isDtdContainment =
+    direction === 'leafward' &&
+    relationshipKind === 'contains' &&
+    node.kind === 'dtdElement';
+  $: directionLabel =
+    contextLabel ??
+    (direction === 'rootward'
+      ? 'Previous step'
+      : (relationshipLabel ??
+        (isDtdContainment
+          ? 'Destination'
+          : formatOutgoingRelationshipLabel(
+              relationshipKind ?? 'contains',
+              focusedNodeKind,
+              node.kind,
+            ))));
+  $: visibleName = `${displayName}${occurrence}`;
+  $: accessibleName =
+    direction === 'rootward'
+      ? `Navigate rootward to ${visibleName}, ${formatSchemaNodeKind(node.kind)}`
+      : isDtdContainment
+        ? `Navigate leafward to ${visibleName}, ${formatSchemaNodeKind(node.kind)}`
+        : `Navigate leafward through ${directionLabel} to ${visibleName}, ${formatSchemaNodeKind(node.kind)}`;
+</script>
+
+<article
+  class:rootward={direction === 'rootward'}
+  class:leafward={direction === 'leafward'}
+  class:gesture-preview={isGesturePreview}
+  class:keyboard-selected={isKeyboardSelected}
+  class:terminal-cycle-closure={relationshipDisposition ===
+    'terminalCycleClosure'}
+  class="context-card"
+  aria-label={`${directionLabel} ${visibleName}`}
+  data-carousel-gesture-origin
+  data-carousel-leafward-candidate-id={direction === 'leafward'
+    ? node.id
+    : undefined}
+  data-carousel-leafward-candidate-edge-id={direction === 'leafward'
+    ? relationshipId
+    : undefined}
+  data-carousel-visible-order={direction === 'leafward'
+    ? visibleOrder
+    : undefined}
+  data-gesture-preview={isGesturePreview ? 'true' : undefined}
+  data-keyboard-selected={isKeyboardSelected ? 'true' : undefined}
+  data-carousel-motion-key={motionKey}
+>
+  {#snippet cardBody()}
+    <span class="context-direction">{directionLabel}</span>
+    <span class="node-name" title={visibleName}>{visibleName}</span>
+    {#if terminalLabel}
+      <span class="terminal-label">{terminalLabel}</span>
+    {/if}
+    {#if showKind}
+      <NodeKindBadge kind={node.kind} />
+    {/if}
+  {/snippet}
+
+  {#if relationshipDisposition === 'terminalCycleClosure'}
+    <div
+      class="context-body"
+      aria-label={`${directionLabel} ${visibleName}. ${terminalLabel ?? 'Already present in this path'}`}
+      data-carousel-terminal-cycle-closure
+    >
+      {@render cardBody()}
+    </div>
+  {:else}
+    <button
+      type="button"
+      aria-label={accessibleName}
+      data-carousel-navigation-action
+      onclick={onActivate}
+    >
+      {@render cardBody()}
+    </button>
+  {/if}
+
+  {#if structureSummary}
+    <div
+      class="context-structure"
+      aria-label={`Structure summary for ${displayName}`}
+      data-context-card-structure-summary
+    >
+      <span>{structureSummary.visibleText}</span>
+      {#if structureSummary.hiddenDestinationCount > 0}
+        <span
+          class="context-structure-overflow"
+          aria-label={`${structureSummary.hiddenDestinationCount} additional destinations`}
+          data-context-card-destination-overflow
+        >
+          +{structureSummary.hiddenDestinationCount} more
+        </span>
+      {/if}
+    </div>
+  {/if}
+
+  <div class="card-actions">
+    <button
+      class:close-inspection={isInspected}
+      class="inspect-action"
+      type="button"
+      aria-label={isInspected
+        ? `Close inspection for ${displayName}`
+        : `Inspect ${displayName}`}
+      aria-pressed={isInspected}
+      data-inspect-node-id={node.id}
+      data-carousel-gesture-ignore
+      onclick={() => onToggleInspection(node.id)}
+    >
+      {isInspected ? 'Close Inspection' : 'Inspect'}
+    </button>
+  </div>
+</article>
+
+<style>
+  .context-card {
+    min-width: var(--context-card-compact-min-width);
+    border: 1px solid var(--colour-border);
+    border-radius: var(--radius-large);
+    background: var(--colour-panel-raised);
+    box-shadow: var(--shadow-low);
+    overflow: hidden;
+    transform: scale(1);
+    transition:
+      border-color var(--duration-gesture-preview) var(--ease-standard),
+      box-shadow var(--duration-gesture-preview) var(--ease-standard),
+      opacity var(--duration-gesture-preview) var(--ease-standard),
+      transform var(--duration-gesture-preview) var(--ease-standard);
+  }
+
+  .context-card.gesture-preview {
+    z-index: 2;
+    border-color: var(--colour-gesture-preview);
+    box-shadow: var(--shadow-gesture-preview);
+    outline: 3px solid var(--colour-gesture-preview);
+    outline-offset: 2px;
+    transform: scale(var(--gesture-preview-scale));
+  }
+
+  .context-card.rootward {
+    border-left: 3px solid var(--colour-metadata);
+  }
+
+  .context-card.leafward {
+    border-right: 3px solid var(--colour-element);
+  }
+
+  .context-card.terminal-cycle-closure {
+    border-right-color: var(--colour-metadata);
+  }
+
+  .context-card.keyboard-selected {
+    z-index: 2;
+    border-color: var(--colour-keyboard-selection);
+    background: var(--colour-keyboard-selection-soft);
+    box-shadow: var(--shadow-keyboard-selection);
+  }
+
+  .context-card > button,
+  .context-body {
+    display: grid;
+    width: 100%;
+    min-width: var(--control-min-size);
+    min-height: var(--control-min-size);
+    gap: var(--space-1);
+    padding: var(--space-3);
+    border: 0;
+    background: transparent;
+    color: var(--colour-text-secondary);
+    cursor: pointer;
+    text-align: left;
+    transition:
+      background-color var(--duration-instant) var(--ease-standard),
+      color var(--duration-instant) var(--ease-standard);
+  }
+
+  .context-body {
+    cursor: default;
+  }
+
+  .context-card > button:hover {
+    background: var(--colour-accent-soft);
+    color: var(--colour-text);
+  }
+
+  .context-card button:focus-visible {
+    position: relative;
+    z-index: 3;
+    outline-offset: -3px;
+  }
+
+  .context-direction {
+    color: var(--colour-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .terminal-label {
+    color: var(--colour-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+  }
+
+  .node-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--colour-text);
+    font-size: var(--font-size-md);
+    font-weight: 700;
+  }
+
+  :global(.context-card .kind-badge) {
+    justify-self: start;
+    min-height: 22px;
+    padding-inline: var(--space-2);
+    font-size: var(--font-size-xs);
+  }
+
+  .context-structure {
+    display: grid;
+    gap: var(--space-1);
+    padding: 0 var(--space-3) var(--space-3);
+    overflow-wrap: anywhere;
+    color: var(--colour-text-secondary);
+    font-family: var(--font-code);
+    font-size: var(--font-size-xs);
+  }
+
+  .context-structure-overflow {
+    color: var(--colour-text-muted);
+    font-family: var(--font-ui);
+    font-weight: 700;
+  }
+
+  .card-actions {
+    display: flex;
+    min-height: var(--control-min-size);
+    align-items: center;
+    padding: var(--space-1);
+    border-top: 1px solid var(--colour-border-subtle);
+    background: var(--colour-panel-subtle);
+  }
+
+  .inspect-action {
+    width: 100%;
+    min-height: var(--control-min-size);
+    padding: 0 var(--space-2);
+    border: 1px solid var(--colour-accent);
+    border-radius: var(--radius-medium);
+    background: var(--colour-accent);
+    color: var(--colour-text-inverse);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+  }
+
+  .inspect-action:hover {
+    background: var(--colour-accent-hover);
+  }
+
+  .inspect-action:active {
+    background: var(--colour-accent-active);
+  }
+
+  .inspect-action.close-inspection {
+    border-color: var(--colour-danger-action);
+    background: var(--colour-danger-action);
+    color: var(--colour-danger-action-text);
+  }
+
+  .inspect-action.close-inspection:hover {
+    border-color: var(--colour-danger-action-hover);
+    background: var(--colour-danger-action-hover);
+  }
+
+  .inspect-action.close-inspection:active {
+    border-color: var(--colour-danger-action-active);
+    background: var(--colour-danger-action-active);
+  }
+
+  .inspect-action.close-inspection:disabled {
+    border-color: var(--colour-danger-action-disabled);
+    background: var(--colour-danger-action-disabled);
+    color: var(--colour-danger-action-disabled-text);
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 699px), (max-height: 699px) {
+    .context-card > button,
+    .context-body {
+      padding: var(--space-2) var(--space-3);
+    }
+
+    .context-direction,
+    :global(.context-card .kind-badge) {
+      display: none;
+    }
+
+    .context-structure {
+      padding: 0 var(--space-3) var(--space-2);
+    }
+
+    .node-name {
+      max-width: 100%;
+      overflow: visible;
+      overflow-wrap: anywhere;
+      font-size: var(--font-size-sm);
+      white-space: normal;
+      word-break: normal;
+    }
+  }
+
+  @media (orientation: landscape) and (max-height: 520px) {
+    .context-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(60px, auto);
+    }
+
+    .context-card > button,
+    .context-body {
+      grid-column: 1;
+      grid-row: 1;
+      padding: var(--space-2);
+    }
+
+    .context-structure {
+      grid-column: 1;
+      grid-row: 2;
+      padding: 0 var(--space-2) var(--space-2);
+    }
+
+    .card-actions {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      min-height: var(--control-min-size);
+      padding: 0;
+      border-top: 0;
+      border-left: 1px solid var(--colour-border-subtle);
+    }
+
+    .inspect-action {
+      min-height: var(--control-min-size);
+      border-radius: 0;
+    }
+  }
+
+  @container carousel (max-width: 640px) {
+    .node-name {
+      max-width: 100%;
+      overflow: visible;
+      overflow-wrap: anywhere;
+      font-size: var(--font-size-sm);
+      white-space: normal;
+      word-break: normal;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .context-card {
+      transition-duration: var(--duration-instant);
+    }
+
+    .context-card > button {
+      transition-duration: var(--duration-instant);
+    }
+  }
+</style>

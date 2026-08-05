@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Xerces-C++ WebAssembly feasibility harness</title>
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">Task 13.2 · developer-only experiment</p>
+        <h1>Xerces-C++ WebAssembly harness</h1>
+        <p>
+          This isolated page checks supplied files in a dedicated worker. It
+          neither reads nor changes the active XML Carousel project.
+        </p>
+      </header>
+
+      <section aria-labelledby="project-heading">
+        <h2 id="project-heading">Project input</h2>
+        <div class="picker-grid">
+          <label
+            >Files and support files<input
+              id="files"
+              type="file"
+              multiple
+              accept=".xsd,.dtd,.ent,.xml"
+          /></label>
+          <label
+            >Directory<input
+              id="directory"
+              type="file"
+              multiple
+              webkitdirectory
+          /></label>
+          <label
+            >ZIP package<input
+              id="zip"
+              type="file"
+              accept=".zip,application/zip"
+          /></label>
+        </div>
+        <div class="run-grid">
+          <label
+            >Entry file<select id="entry">
+              <option value="">Select project files first</option>
+            </select></label
+          >
+          <label
+            >Format<select id="format">
+              <option value="xsd">XSD 1.0</option>
+              <option value="dtd">Standalone DTD grammar</option>
+            </select></label
+          >
+        </div>
+        <p id="project-summary" class="summary">No project files selected.</p>
+        <div class="actions">
+          <button id="run" type="button" disabled>Run Xerces</button>
+          <button id="cancel" type="button" disabled>Cancel</button>
+          <button id="clear" type="button">Clear</button>
+        </div>
+      </section>
+
+      <section aria-labelledby="result-heading" aria-live="polite">
+        <h2 id="result-heading">Result</h2>
+        <dl class="result-grid">
+          <div>
+            <dt>Engine</dt>
+            <dd id="engine">Not initialized</dd>
+          </div>
+          <div>
+            <dt>Status</dt>
+            <dd id="status">Idle</dd>
+          </div>
+          <div>
+            <dt>Timing</dt>
+            <dd id="timing">—</dd>
+          </div>
+          <div>
+            <dt>Input</dt>
+            <dd id="metrics">—</dd>
+          </div>
+        </dl>
+        <p id="standalone-note" class="note" hidden>
+          Standalone DTD grammar preparsing checks declarations and grammar
+          constraints. It does not validate any XML document instance.
+        </p>
+        <ol id="diagnostics" class="diagnostics">
+          <li>No diagnostics.</li>
+        </ol>
+      </section>
+
+      <section aria-labelledby="security-heading">
+        <h2 id="security-heading">Experiment boundary</h2>
+        <p>
+          Only selected project-relative files are supplied. Network, file URLs,
+          drive paths, UNC paths, and traversal are blocked. Cancelling
+          terminates and recreates the experimental worker.
+        </p>
+      </section>
+    </main>
+    <script type="module" src="/main.ts"></script>
+  </body>
+</html>

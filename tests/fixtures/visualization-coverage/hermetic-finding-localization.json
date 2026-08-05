@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "archive": {
+    "filename": "xml-schemas.zip",
+    "byteLength": 134821,
+    "sha256": "c17ce1c44cd5aa309bcc652bb43f64e30bc993aef52a0347cfbc799a32886a8f"
+  },
+  "findingCount": 0,
+  "findingCountsByCode": {},
+  "findingCountsByMatrixEntry": {},
+  "sourceCount": 0,
+  "orderResults": {
+    "original": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "reversed": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "deterministic-shuffled": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "records": []
+}

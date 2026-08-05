@@ -1,0 +1,7 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:duplicates">
+  <xs:element name="same"/>
+  <xs:element name="same"/>
+  <xs:complexType name="SharedType"/>
+  <xs:simpleType name="SharedType"/>
+</xs:schema>

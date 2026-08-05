@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:t="urn:xml-carousel:task-13.13-package"
+           targetNamespace="urn:xml-carousel:task-13.13-package"
+           elementFormDefault="qualified">
+  <xs:include schemaLocation="base.xsd"/>
+
+  <xs:simpleType name="CrossRestriction">
+    <xs:restriction base="t:SharedAtomic">
+      <xs:minLength value="2"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="CrossList">
+    <xs:list itemType="t:SharedAtomic"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="CrossUnion">
+    <xs:union memberTypes="t:SharedAtomic t:SharedList xs:token"/>
+  </xs:simpleType>
+
+  <xs:complexType name="DerivedRecord">
+    <xs:complexContent>
+      <xs:extension base="t:BaseRecord">
+        <xs:attribute name="aliases" type="t:CrossList"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="record" type="t:DerivedRecord"/>
+</xs:schema>

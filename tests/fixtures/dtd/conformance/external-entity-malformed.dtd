@@ -1,0 +1,2 @@
+<!ENTITY % declarations SYSTEM "malformed-declarations.ent">
+%declarations;

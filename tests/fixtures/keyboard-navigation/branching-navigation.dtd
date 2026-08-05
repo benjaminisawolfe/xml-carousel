@@ -1,0 +1,11 @@
+<!-- Compact Task 11.1 fixture for ordered, bounded keyboard branch selection. -->
+<!ELEMENT catalog (alpha, beta, gamma, delta, epsilon, zeta, eta, leaf, recursive)>
+<!ELEMENT alpha EMPTY>
+<!ELEMENT beta EMPTY>
+<!ELEMENT gamma EMPTY>
+<!ELEMENT delta EMPTY>
+<!ELEMENT epsilon EMPTY>
+<!ELEMENT zeta EMPTY>
+<!ELEMENT eta EMPTY>
+<!ELEMENT leaf EMPTY>
+<!ELEMENT recursive (leaf, recursive?)>

@@ -1,0 +1,18 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:t="urn:mutual"
+  targetNamespace="urn:mutual">
+  <xs:element name="one">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="t:two"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="two">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="t:one"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

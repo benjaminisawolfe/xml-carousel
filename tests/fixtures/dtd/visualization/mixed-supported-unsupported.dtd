@@ -1,0 +1,6 @@
+<!ELEMENT root (child)>
+<!ATTLIST root id ID #IMPLIED>
+<!ELEMENT child EMPTY>
+<!ENTITY author "XML Carousel">
+<!NOTATION png SYSTEM "image/png">
+<!ENTITY logo SYSTEM "logo.png" NDATA png>

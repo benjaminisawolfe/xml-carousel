@@ -1,0 +1,3 @@
+<!ELEMENT book (#PCDATA)>
+<!ATTLIST book id ID #IMPLIED>
+<!ATTLIST book id CDATA #IMPLIED>

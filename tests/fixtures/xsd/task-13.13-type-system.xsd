@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:t="urn:xml-carousel:task-13.13"
+  targetNamespace="urn:xml-carousel:task-13.13"
+  elementFormDefault="qualified"
+  blockDefault="extension"
+  finalDefault="list union">
+
+  <xs:notation name="jpeg" public="image/jpeg" system="urn:media:jpeg"/>
+
+  <xs:simpleType name="Code" final="restriction">
+    <xs:restriction base="xs:token">
+      <xs:minLength value="2"/>
+      <xs:maxLength value="12"/>
+      <xs:pattern value="[A-Z][A-Z0-9]+"/>
+      <xs:pattern value="[^_]+"/>
+      <xs:enumeration value="ALPHA"/>
+      <xs:enumeration value="BETA"/>
+      <xs:whiteSpace value="collapse" fixed="true"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ExactCode">
+    <xs:restriction base="xs:string">
+      <xs:length value="5" fixed="true"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="DecimalWindow">
+    <xs:restriction base="xs:decimal">
+      <xs:minInclusive value="-0001.50"/>
+      <xs:maxInclusive value="0009.90"/>
+      <xs:totalDigits value="6"/>
+      <xs:fractionDigits value="2"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ExclusiveDecimalWindow">
+    <xs:restriction base="xs:decimal">
+      <xs:minExclusive value="-0002.00"/>
+      <xs:maxExclusive value="0010.00"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="NameList">
+    <xs:list itemType="xs:NCName"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="InlineList">
+    <xs:list>
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:minLength value="1"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:list>
+  </xs:simpleType>
+
+  <xs:simpleType name="CodeOrText">
+    <xs:union memberTypes="t:Code xs:string">
+      <xs:simpleType>
+        <xs:restriction base="xs:integer">
+          <xs:minInclusive value="0"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="WideUnion">
+    <xs:union memberTypes="xs:string xs:boolean xs:decimal xs:float xs:double xs:duration xs:dateTime xs:time xs:date xs:anyURI"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="LongPattern">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[A-Z][A-Z0-9._:/-]{0,120}"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ImageFormat">
+    <xs:restriction base="xs:NOTATION">
+      <xs:enumeration value="t:jpeg"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="BaseType" final="restriction">
+    <xs:sequence>
+      <xs:element name="label" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="ExtendedType">
+    <xs:complexContent>
+      <xs:extension base="t:BaseType">
+        <xs:sequence>
+          <xs:element name="detail" type="t:Code" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="mode" type="t:Code" default="ALPHA"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="RestrictableType">
+    <xs:sequence>
+      <xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="2"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="RestrictedType">
+    <xs:complexContent>
+      <xs:restriction base="t:RestrictableType">
+        <xs:sequence>
+          <xs:element name="value" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="TextBase">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="lang" type="xs:language"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="TextExtended">
+    <xs:simpleContent>
+      <xs:extension base="t:TextBase">
+        <xs:attribute name="source" type="xs:anyURI"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="TextRestricted">
+    <xs:simpleContent>
+      <xs:restriction base="t:TextBase">
+        <xs:minLength value="3"/>
+        <xs:attribute name="lang" type="xs:language" use="optional"/>
+      </xs:restriction>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="RecursiveType">
+    <xs:sequence>
+      <xs:element name="child" type="t:RecursiveType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="root" type="t:ExtendedType" block="restriction" final="extension">
+    <xs:key name="itemKey">
+      <xs:selector xpath="t:item"/>
+      <xs:field xpath="@id"/>
+    </xs:key>
+    <xs:unique name="uniqueCode">
+      <xs:selector xpath="t:item"/>
+      <xs:field xpath="@code"/>
+      <xs:field xpath="@scope"/>
+    </xs:unique>
+    <xs:keyref name="itemReference" refer="t:itemKey">
+      <xs:selector xpath="t:ref"/>
+      <xs:field xpath="@item"/>
+    </xs:keyref>
+  </xs:element>
+
+  <xs:element name="fixedCode" type="t:Code" fixed="BETA"/>
+  <xs:attribute name="format" type="t:ImageFormat" fixed="t:jpeg"/>
+  <xs:attribute name="tags" type="xs:NMTOKENS"/>
+</xs:schema>

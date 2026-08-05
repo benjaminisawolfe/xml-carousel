@@ -1,0 +1,2 @@
+<!ENTITY cover SYSTEM "cover.bin" NDATA png>
+<!ELEMENT book EMPTY>

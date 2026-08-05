@@ -1,0 +1,3 @@
+<!ENTITY author "XML Carousel">
+<!NOTATION png SYSTEM "image/png">
+<!ENTITY logo SYSTEM "logo.png" NDATA png>

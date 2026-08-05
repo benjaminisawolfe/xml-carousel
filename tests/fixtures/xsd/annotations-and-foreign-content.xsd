@@ -1,0 +1,10 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:tool="urn:tool"
+  tool:version="2">
+  <xs:annotation>
+    <xs:documentation>Example schema</xs:documentation>
+    <xs:appinfo><tool:setting enabled="true"/></xs:appinfo>
+  </xs:annotation>
+  <tool:panel/>
+  <xs:element name="root" tool:label="Root"/>
+</xs:schema>

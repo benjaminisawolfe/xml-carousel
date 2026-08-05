@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="274" height="48" viewBox="0 0 274 48" role="img" aria-labelledby="title desc">
+  <title id="title">XML Carousel</title>
+  <desc id="desc">The text &lt;xmlcarousel/&gt;, with xml and punctuation in near-black and carousel in a bright blue-to-orange gradient.</desc>
+  <defs>
+    <linearGradient id="carouselGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3269dc"/>
+      <stop offset="28%" stop-color="#654bdc"/>
+      <stop offset="55%" stop-color="#cb44b2"/>
+      <stop offset="78%" stop-color="#f0576b"/>
+      <stop offset="100%" stop-color="#f79937"/>
+    </linearGradient>
+  </defs>
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace"
+     font-size="25px" font-weight="700" dominant-baseline="hanging">
+    <text x="8" y="8" fill="#111827">&lt;xml</text>
+    <text x="68.2" y="8" fill="url(#carouselGradient)">carousel</text>
+    <text x="188.6" y="8" fill="#111827">/&gt;</text>
+  </g>
+</svg>

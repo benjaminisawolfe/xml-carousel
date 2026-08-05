@@ -1,0 +1,16 @@
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:vendor="urn:vendor"
+  targetNamespace="urn:local">
+  <xs:element name="root">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="vendor:ExternalBase">
+          <xs:sequence>
+            <xs:element name="localChild" type="xs:string"/>
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

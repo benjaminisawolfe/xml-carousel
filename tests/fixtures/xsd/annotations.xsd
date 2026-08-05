@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:a="urn:annotations"
+  xmlns:m="urn:annotation-metadata"
+  targetNamespace="urn:annotations"
+  elementFormDefault="qualified"
+>
+  <xs:annotation>
+    <xs:documentation xml:lang='en' source="docs/schema">Defines the <m:em importance="high">persistent identity</m:em>, exactly. <![CDATA[Use <literal> as text.]]> Entity &amp; decoded.<!-- ignored --><?tool ignored?></xs:documentation>
+    <xs:appinfo source='tool/schema'>
+      <m:config enabled="true"><![CDATA[alpha]]><!-- preserved raw --></m:config>
+    </xs:appinfo>
+    <xs:documentation xml:lang="fr">Documentation française.</xs:documentation>
+    <xs:appinfo />
+    <xs:documentation/>
+  </xs:annotation>
+
+  <xs:attribute name="globalCode" type="xs:string">
+    <xs:annotation>
+      <xs:appinfo source="tool/global-attribute">global attribute metadata</xs:appinfo>
+    </xs:annotation>
+  </xs:attribute>
+
+  <xs:simpleType name="StatusType">
+    <xs:annotation>
+      <xs:documentation source="docs/status">Allowed status values.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:annotation>
+        <xs:documentation>Restriction documentation.</xs:documentation>
+      </xs:annotation>
+      <xs:enumeration value="active">
+        <xs:annotation>
+          <xs:appinfo source="tool/active"><m:value key="active"/></xs:appinfo>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="paused"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="BaseType">
+    <xs:annotation>
+      <xs:documentation>Base type documentation.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:annotation>
+        <xs:documentation>Base sequence documentation.</xs:documentation>
+      </xs:annotation>
+      <xs:element name="child">
+        <xs:annotation>
+          <xs:documentation>Local child documentation.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:annotation>
+            <xs:documentation>Anonymous simple type documentation.</xs:documentation>
+          </xs:annotation>
+          <xs:restriction base="xs:string">
+            <xs:annotation>
+              <xs:documentation>Anonymous restriction documentation.</xs:documentation>
+            </xs:annotation>
+            <xs:enumeration value="one">
+              <xs:annotation>
+                <xs:documentation>Anonymous enumeration documentation.</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="localCode" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Local attribute documentation.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="ExtendedType">
+    <xs:annotation>
+      <xs:documentation>Extended type documentation.</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:annotation>
+        <xs:documentation>Complex-content documentation.</xs:documentation>
+      </xs:annotation>
+      <xs:extension base="a:BaseType">
+        <xs:annotation>
+          <xs:documentation>Extension documentation.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+          <xs:element name="extra" type="xs:string"/>
+        </xs:sequence>
+        <xs:attribute name="extensionCode" type="xs:string">
+          <xs:annotation>
+            <xs:appinfo>extension attribute metadata</xs:appinfo>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="RestrictedType">
+    <xs:complexContent>
+      <xs:restriction base="a:BaseType">
+        <xs:annotation>
+          <xs:documentation>Complex restriction documentation.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+          <xs:element name="child" type="xs:string"/>
+        </xs:sequence>
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="root" type="a:ExtendedType">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">Root element documentation.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+</xs:schema>

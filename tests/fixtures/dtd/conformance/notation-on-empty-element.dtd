@@ -1,0 +1,3 @@
+<!NOTATION png SYSTEM "image/png">
+<!ELEMENT image EMPTY>
+<!ATTLIST image preview NOTATION (png) #IMPLIED>

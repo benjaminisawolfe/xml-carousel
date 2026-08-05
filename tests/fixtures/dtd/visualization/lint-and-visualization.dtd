@@ -1,0 +1,4 @@
+<!ELEMENT root EMPTY>
+<!ATTLIST root state (open|closed) "open">
+<!ATTLIST root state (open|closed) "closed">
+<!ENTITY author "XML Carousel">

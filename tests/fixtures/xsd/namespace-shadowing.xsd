@@ -1,0 +1,9 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:t="urn:outer">
+  <xs:complexType name="Outer">
+    <xs:sequence xmlns:t="urn:inner">
+      <xs:element name="inside" type="t:Inside"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="outside" type="t:Outside"/>
+</xs:schema>

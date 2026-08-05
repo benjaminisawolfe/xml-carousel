@@ -1,0 +1,10 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:t="urn:xml-carousel:synthetic-hermetic"
+  targetNamespace="urn:xml-carousel:synthetic-hermetic">
+  <xs:include schemaLocation="../entity.xsd"/>
+  <xs:element name="character" type="t:EntityType">
+    <xs:annotation>
+      <xs:documentation>Nested safe-parent package root.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+</xs:schema>

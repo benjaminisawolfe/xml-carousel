@@ -1,0 +1,4 @@
+<!ENTITY % mode "INCLUDE">
+<![%mode;[
+  <!ELEMENT root EMPTY>
+]]>

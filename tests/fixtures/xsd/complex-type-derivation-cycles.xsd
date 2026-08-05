@@ -1,0 +1,32 @@
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:c="urn:complex-cycles"
+  targetNamespace="urn:complex-cycles">
+  <xs:element name="root" type="c:OrdinaryDerived"/>
+
+  <xs:complexType name="SelfCycle">
+    <xs:complexContent>
+      <xs:extension base="c:SelfCycle"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="CycleA">
+    <xs:complexContent>
+      <xs:extension base="c:CycleB"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="CycleB">
+    <xs:complexContent>
+      <xs:restriction base="c:CycleA"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="OrdinaryBase"/>
+
+  <xs:complexType name="OrdinaryDerived">
+    <xs:complexContent>
+      <xs:extension base="c:OrdinaryBase"/>
+    </xs:complexContent>
+  </xs:complexType>
+</xs:schema>

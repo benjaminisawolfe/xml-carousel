@@ -1,0 +1,11 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:ext="urn:external"
+  xmlns:t="urn:local"
+  targetNamespace="urn:local">
+  <xs:simpleType name="ExternalDerived">
+    <xs:restriction base="ext:ExternalToken">
+      <xs:enumeration value="external-value"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="root" type="t:ExternalDerived"/>
+</xs:schema>

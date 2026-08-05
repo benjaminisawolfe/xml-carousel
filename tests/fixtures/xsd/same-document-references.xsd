@@ -1,0 +1,26 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:graph"
+  xmlns:g="urn:graph"
+  targetNamespace="urn:graph"
+  elementFormDefault="qualified">
+  <xs:element name="root" type="g:RootType"/>
+  <xs:element name="item" type="g:ItemType"/>
+  <xs:complexType name="RootType">
+    <xs:sequence minOccurs="0" maxOccurs="2">
+      <xs:element ref="g:item" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="inline">
+        <xs:complexType>
+          <xs:choice>
+            <xs:element name="code" type="g:CodeType"/>
+          </xs:choice>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ItemType">
+    <xs:choice>
+      <xs:element name="parent" type="g:RootType"/>
+    </xs:choice>
+  </xs:complexType>
+  <xs:simpleType name="CodeType"/>
+</xs:schema>

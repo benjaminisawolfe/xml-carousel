@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:task-13.14:a">
+  <xs:include schemaLocation="shared.xsd"/>
+</xs:schema>

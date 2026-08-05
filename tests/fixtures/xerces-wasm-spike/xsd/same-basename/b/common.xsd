@@ -1,0 +1,1 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:b"><xs:simpleType name="item"><xs:restriction base="xs:integer"/></xs:simpleType></xs:schema>

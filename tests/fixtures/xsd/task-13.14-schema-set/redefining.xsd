@@ -1,0 +1,6 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:a="urn:task-13.14:a" targetNamespace="urn:task-13.14:a">
+  <xs:redefine schemaLocation="redefine-original.xsd">
+    <xs:group name="RedefinedGroup"><xs:sequence><xs:group ref="a:RedefinedGroup"/><xs:element name="added"/></xs:sequence></xs:group>
+  </xs:redefine>
+</xs:schema>

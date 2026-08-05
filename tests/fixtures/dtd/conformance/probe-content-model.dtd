@@ -1,0 +1,2 @@
+<!ELEMENT __xml_carousel_probe__ (required-child)>
+<!ELEMENT required-child EMPTY>

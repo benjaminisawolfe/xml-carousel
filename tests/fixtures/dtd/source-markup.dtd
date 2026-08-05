@@ -1,0 +1,15 @@
+<!-- Book documentation. -->
+<!ELEMENT book (chapter+)><!-- Book trailing note. -->
+
+<!-- Primary book attributes. -->
+<!ATTLIST book
+  id ID #REQUIRED>
+
+<!ELEMENT chapter (#PCDATA)>
+
+<!-- Secondary book attributes. -->
+<!ATTLIST book
+  lang CDATA 'en'>
+
+<!-- Chapter-only attributes. -->
+<!ATTLIST chapter role CDATA #IMPLIED>

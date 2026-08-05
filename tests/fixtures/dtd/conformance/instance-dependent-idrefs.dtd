@@ -1,0 +1,3 @@
+<!ELEMENT library (book*)>
+<!ELEMENT book EMPTY>
+<!ATTLIST book id ID #REQUIRED ref IDREF #IMPLIED>

@@ -1,0 +1,13 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="ChameleonType">
+    <xs:sequence><xs:element name="value" type="xs:string"/></xs:sequence>
+  </xs:complexType>
+  <xs:group name="RecursiveGroup">
+    <xs:choice><xs:group ref="RecursiveGroup" minOccurs="0"/></xs:choice>
+  </xs:group>
+  <xs:element name="includedElement" type="xs:string"/>
+  <xs:attribute name="includedAttribute" type="xs:string"/>
+  <xs:attributeGroup name="IncludedAttributes">
+    <xs:attribute ref="includedAttribute"/>
+  </xs:attributeGroup>
+</xs:schema>

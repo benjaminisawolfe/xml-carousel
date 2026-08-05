@@ -1,0 +1,106 @@
+# Known limitations
+
+This document records current release boundaries. For supported behavior and
+evidence, see [Standards support](standards-support.md).
+
+## Standards scope
+
+Apache Xerces-C++ is authoritative for XML 1.0, standalone DTD grammar
+preparation, and XML Schema 1.0 validity within XML Carousel's controlled
+project architecture. XSD 1.1 is not supported. XML instance documents are not
+an XML Carousel product input, so instance-dependent DTD and XSD constraints
+cannot be evaluated from a standalone grammar alone.
+
+The 221/221 complete-visualization result covers the supported presentation
+contracts enumerated by the repository matrix. It is not proof that every
+version or optional feature of every XML-related standard is implemented.
+Accepted test boundaries remain explicit: unsupported, instance-dependent,
+optional accepted, optional reported, security-blocked, and metadata-disputed.
+
+## Supplied-files-only resolution
+
+Dependencies resolve only from files explicitly supplied by the user. XML
+Carousel does not crawl the host filesystem, inherit disk-folder siblings,
+retrieve remote resources, use remote catalogs, open arbitrary `file:` URLs,
+or use basename fallback between ambiguous paths.
+
+For complete multi-file projects, supply a ZIP preserving relative paths. Safe
+parent-directory references may normalize within the virtual project root;
+absolute paths, schemes, encoded traversal, and traversal beyond the root are
+blocked. Opening `foundry-common.xsd` alone fails when
+`foundry-rich-text.xsd` was not supplied. That failure is intentional security
+and reproducibility behavior.
+
+## Presentation routes
+
+Not every supported construct appears as a carousel card. Some constructs are
+correctly Navigation-, Search-, inspector-, source-, or package-inventory-first.
+An explicit `not-applicable` surface is complete when showing that construct on
+the surface would falsely imply containment or another relationship.
+
+The application is read-only. It does not edit, rewrite, export, or save schema
+source. Source view presents escaped retained text and declaration-oriented
+fragments; it is not a round-trip editor or a line/column source IDE.
+
+## ZIP and resource limits
+
+ZIP processing is bounded:
+
+- at most 20 MiB of archive data;
+- at most 1,000 file entries;
+- at most 250 DTD/XSD members;
+- at most 512 Unicode code points and 32 path segments per entry;
+- at most 5 MiB per extracted schema member;
+- at most 20 MiB total extracted schema content.
+
+Unsafe paths, duplicate canonical paths, unreadable archives, unsupported
+encodings, and unsupported ZIP features fail with diagnostics. Binary and
+ignored entries remain classified in package inventory instead of being parsed.
+Diagnostic details are capped while retaining an explicit uncapped total where
+supported.
+
+## Capacity and persistence
+
+Worker parsing, bounded carousel windows, and indexed presentation reduce
+main-thread work, but usable project size remains dependent on browser memory,
+device performance, compression, relationship density, structured cloning, and
+rendering cost. The committed large fixtures are regression targets, not a
+universal capacity guarantee.
+
+Projects live only in memory for the current page. Reloading restores the
+default sample. The only persisted application preference is whether Welcome
+and Help opens automatically.
+
+## Browser and accessibility evidence
+
+Current automated production-browser evidence covers Chrome 151.0.7922.72 and
+Firefox 153.0.1. Chrome requested viewports are 1440×900, 1280×720, 1024×768,
+768×900, 412×915, 390×844, 915×412, and 844×390. Firefox may enforce a larger
+effective content width for narrow requested viewports.
+
+The repository does not claim Safari/WebKit coverage, physical Samsung-device
+QA, manual Narrator or other screen-reader hardware testing, or browser-chrome
+zoom telemetry. Automated semantics, keyboard, focus, reduced-motion, and
+responsive tests are not a substitute for every assistive-technology/device
+combination.
+
+## Deployment and privacy
+
+Schema contents are processed locally and are not uploaded to an XML Carousel
+backend. There is no backend, analytics, telemetry, account system, update
+check, or schema-retrieval service. Loading a hosted build still downloads the
+application's static assets from its host; hosting providers, browser
+extensions, and the user's environment remain outside XML Carousel's control.
+
+The server must provide ordinary byte-preserving static hosting and a
+JavaScript MIME type for `.js`. The verified WASM path tolerates
+`application/octet-stream`. Root and nested-directory deployments use the same
+portable artifact.
+
+## Licensing release blocker
+
+The current tree stores James Clark's `xmltest` collection only as the verified
+unchanged archive permitted by its embedded terms. Earlier public Git history
+contains two unpacked entries. That unresolved historical redistribution
+requires an explicit repository-history decision before release; Task 13.19
+does not rewrite published history.

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:t="urn:xml-carousel:task-13.13-package"
+           targetNamespace="urn:xml-carousel:task-13.13-package"
+           elementFormDefault="qualified">
+  <xs:simpleType name="SharedAtomic">
+    <xs:restriction base="xs:token">
+      <xs:pattern value="[A-Z]+"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="SharedList">
+    <xs:list itemType="t:SharedAtomic"/>
+  </xs:simpleType>
+
+  <xs:complexType name="BaseRecord">
+    <xs:sequence>
+      <xs:element name="code" type="t:SharedAtomic"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

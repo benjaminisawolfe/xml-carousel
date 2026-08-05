@@ -1,0 +1,11 @@
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+  xmlns:t="urn:default"
+  targetNamespace="urn:default">
+  <element name="root">
+    <complexType>
+      <all>
+        <element name="value" type="string"/>
+      </all>
+    </complexType>
+  </element>
+</schema>

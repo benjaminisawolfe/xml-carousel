@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:t="urn:task-13.12"
+  xmlns:o="urn:other"
+  targetNamespace="urn:task-13.12"
+  elementFormDefault="qualified"
+  attributeFormDefault="unqualified"
+  blockDefault="#all"
+  finalDefault="extension restriction list union"
+  version="1.0">
+  <xs:attribute name="globalCode" type="xs:string" fixed="GLOBAL"/>
+
+  <xs:attributeGroup name="commonAttributes">
+    <xs:attribute ref="t:globalCode" use="required"/>
+    <xs:attribute name="localCode" type="xs:string" default="local" form="qualified"/>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:attributeGroup>
+
+  <xs:element name="shared" type="xs:string"/>
+
+  <xs:group name="contentGroup">
+    <xs:sequence>
+      <xs:element ref="t:shared" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:choice minOccurs="0" maxOccurs="2">
+        <xs:any namespace="##local urn:other" processContents="skip"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:group>
+
+  <xs:simpleType name="CodeType" final="restriction list union">
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+
+  <xs:complexType name="EmptyType" abstract="true" block="extension" final="restriction"/>
+
+  <xs:complexType name="AllType">
+    <xs:all>
+      <xs:element name="allMember" type="xs:string" minOccurs="0"/>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="AnyType">
+    <xs:sequence>
+      <xs:element name="marker" type="xs:string"/>
+      <xs:any namespace="##any" processContents="lax" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="TargetWildcardType">
+    <xs:sequence>
+      <xs:any namespace="##targetNamespace" processContents="strict"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="OtherWildcardType">
+    <xs:sequence>
+      <xs:any namespace="##other" processContents="lax"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="TextType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attributeGroup ref="t:commonAttributes"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="BaseType" mixed="true" final="restriction">
+    <xs:group ref="t:contentGroup" minOccurs="1" maxOccurs="3"/>
+    <xs:attributeGroup ref="t:commonAttributes"/>
+  </xs:complexType>
+
+  <xs:complexType name="DerivedType">
+    <xs:complexContent mixed="true">
+      <xs:extension base="t:BaseType">
+        <xs:sequence>
+          <xs:element name="nested">
+            <xs:complexType>
+              <xs:choice>
+                <xs:element name="anonymousSimpleOwner">
+                  <xs:simpleType>
+                    <xs:restriction base="xs:string"/>
+                  </xs:simpleType>
+                </xs:element>
+              </xs:choice>
+            </xs:complexType>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element
+    name="abstractHead"
+    type="t:BaseType"
+    abstract="true"
+    nillable="true"
+    block="extension restriction substitution"
+    final="extension restriction"/>
+
+  <xs:element name="root" type="t:DerivedType"/>
+  <xs:element name="anyRoot" type="t:AnyType"/>
+  <xs:element name="targetWildcardRoot" type="t:TargetWildcardType"/>
+  <xs:element name="otherWildcardRoot" type="t:OtherWildcardType"/>
+  <xs:element name="defaultRoot" type="t:CodeType" default="default-root"/>
+  <xs:element name="fixedRoot" type="t:CodeType" fixed="fixed-root"/>
+</xs:schema>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:xml-carousel:keyboard-navigation"
+  xmlns:tns="urn:xml-carousel:keyboard-navigation"
+  elementFormDefault="qualified"
+>
+  <xs:element name="catalog" type="tns:CatalogType" />
+  <xs:element name="alpha" type="xs:string" />
+  <xs:element name="beta" type="xs:string" />
+  <xs:element name="gamma" type="xs:string" />
+  <xs:element name="delta" type="xs:string" />
+  <xs:element name="epsilon" type="xs:string" />
+  <xs:element name="zeta" type="xs:string" />
+  <xs:element name="eta" type="xs:string" />
+  <xs:simpleType name="StatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="open" />
+      <xs:enumeration value="closed" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="CatalogType">
+    <xs:sequence>
+      <xs:element name="leaf" type="xs:string" />
+      <xs:element
+        name="recursive"
+        type="tns:CatalogType"
+        minOccurs="0"
+      />
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

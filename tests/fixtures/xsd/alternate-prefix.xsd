@@ -1,0 +1,11 @@
+<s:schema xmlns="urn:extension"
+  xmlns:s="http://www.w3.org/2001/XMLSchema"
+  xmlns:t="urn:alternate"
+  targetNamespace="urn:alternate">
+  <s:element name="root" type="t:RootType"/>
+  <s:complexType name="RootType">
+    <s:choice>
+      <s:element ref="t:item"/>
+    </s:choice>
+  </s:complexType>
+</s:schema>

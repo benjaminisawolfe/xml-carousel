@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:vendor="urn:vendor">
+  <xs:annotation><xs:appinfo><vendor:widget mode="safe">retained</vendor:widget></xs:appinfo></xs:annotation>
+  <xs:element name="root" type="xs:string"/>
+</xs:schema>

@@ -1,0 +1,3 @@
+<!NOTATION png SYSTEM "image/png">
+<!NOTATION png SYSTEM "image/x-png">
+<!ELEMENT image ANY>

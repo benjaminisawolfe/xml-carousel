@@ -1,0 +1,31 @@
+{
+  "suite": "Selected official W3C XML Schema test-suite cases",
+  "repositoryCommit": "7bc3365c652a322f3d762021b3879eb92dae7e30",
+  "cacheDirectory": "tools/xerces-wasm-spike/.cache/w3c",
+  "cases": [
+    {
+      "id": "W3C-XMLSchema-Test-Suite-msxsdtest-identityConstraint-idC001",
+      "expected": "valid",
+      "cacheFile": "idC001.xsd",
+      "source": "https://github.com/w3c/xsdtests/blob/7bc3365c652a322f3d762021b3879eb92dae7e30/msData/identityConstraint/idC001.xsd",
+      "provenance": "W3C XML Schema test suite; Microsoft-contributed accepted schema test; repository 00COPYRIGHT applies",
+      "checksum": "0a8c06d2655f365347fb43a33aa393581b2470f9edfa24c3c5e6b3a01356f9b9"
+    },
+    {
+      "id": "W3C-XMLSchema-Test-Suite-ms-simpleType-stE001",
+      "expected": "valid",
+      "cacheFile": "stE001.xsd",
+      "source": "https://github.com/w3c/xsdtests/blob/7bc3365c652a322f3d762021b3879eb92dae7e30/msData/simpleType/stE001.xsd",
+      "provenance": "W3C XML Schema test suite; Microsoft-contributed accepted schema test; repository 00COPYRIGHT applies",
+      "checksum": "fedec4bb42c7216a1dc0d567de4270b5080829b07a34c78df3953386304f08c3"
+    },
+    {
+      "id": "W3C-XMLSchema-Test-Suite-ms-simpleType-stE002",
+      "expected": "invalid",
+      "cacheFile": "stE002.xsd",
+      "source": "https://github.com/w3c/xsdtests/blob/7bc3365c652a322f3d762021b3879eb92dae7e30/msData/simpleType/stE002.xsd",
+      "provenance": "W3C XML Schema test suite; Microsoft-contributed accepted schema test; repository 00COPYRIGHT applies",
+      "checksum": "9972e933370cb5daf4f4b5fc2f2f5fe7d94520946de62dfbfe5670cf0d32b082"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:recursive" xmlns:r="urn:recursive">
+  <xs:complexType name="node"><xs:sequence><xs:element name="child" type="r:node" minOccurs="0"/></xs:sequence></xs:complexType>
+  <xs:element name="root" type="r:node"/>
+</xs:schema>

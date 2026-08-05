@@ -1,0 +1,2 @@
+<!ELEMENT book EMPTY>
+<!ATTLIST book format (paper|digital) "audio">

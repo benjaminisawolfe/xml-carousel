@@ -1,0 +1,19 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:t="urn:xml-carousel:synthetic-hermetic"
+  xmlns:fixture="urn:xml-carousel:fixture-metadata"
+  targetNamespace="urn:xml-carousel:synthetic-hermetic">
+  <xs:annotation>
+    <xs:documentation>Original synthetic Hermetic-package metadata.</xs:documentation>
+    <xs:appinfo><fixture:purpose>CI regression</fixture:purpose></xs:appinfo>
+  </xs:annotation>
+  <xs:include schemaLocation="rich-text.xsd"/>
+  <xs:attributeGroup name="SharedAttributes">
+    <xs:attribute name="fixture-id" type="xs:ID"/>
+  </xs:attributeGroup>
+  <xs:complexType name="CommonType">
+    <xs:sequence>
+      <xs:element name="body" type="t:RichTextType"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="t:SharedAttributes"/>
+  </xs:complexType>
+</xs:schema>

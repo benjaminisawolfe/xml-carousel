@@ -1,0 +1,2 @@
+<!ELEMENT book EMPTY>
+<!ATTLIST book token NMTOKEN "not a token">

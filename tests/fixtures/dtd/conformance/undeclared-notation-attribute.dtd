@@ -1,0 +1,2 @@
+<!ELEMENT image ANY>
+<!ATTLIST image preview NOTATION (png) #IMPLIED>

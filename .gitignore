@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+.vite/
+*.local
+tools/xerces-wasm-spike/.cache/
+tools/xerces-wasm-spike/.tools/
+tools/xerces-wasm-spike/build/
+tools/xerces-wasm-spike/dist/

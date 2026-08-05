@@ -1,0 +1,5 @@
+<!ELEMENT book (#PCDATA)>
+<!ATTLIST book
+  id ID #REQUIRED
+  lang CDATA "en"
+  status (draft | final) "draft">

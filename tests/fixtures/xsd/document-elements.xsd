@@ -1,0 +1,16 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:t="urn:documents"
+  targetNamespace="urn:documents"
+  elementFormDefault="qualified"
+  attributeFormDefault="unqualified"
+  version="1.0">
+  <xs:element name="catalog" type="t:SharedType"/>
+  <xs:element name="archive" type="t:SharedType"/>
+  <xs:element name="entry"/>
+  <xs:complexType name="SharedType">
+    <xs:sequence>
+      <xs:element ref="t:entry" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="CodeType"/>
+</xs:schema>

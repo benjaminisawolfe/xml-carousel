@@ -1,0 +1,11 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:c="urn:restriction-cycle"
+  targetNamespace="urn:restriction-cycle">
+  <xs:simpleType name="TypeA">
+    <xs:restriction base="c:TypeB"/>
+  </xs:simpleType>
+  <xs:simpleType name="TypeB">
+    <xs:restriction base="c:TypeA"/>
+  </xs:simpleType>
+  <xs:element name="root" type="c:TypeA"/>
+</xs:schema>

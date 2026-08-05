@@ -1,0 +1,2 @@
+<!ELEMENT a (b)>
+<!ELEMENT b (a)>

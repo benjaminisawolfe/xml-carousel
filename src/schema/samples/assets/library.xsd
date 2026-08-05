@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:lib="https://example.com/xml-carousel/library"
+  targetNamespace="https://example.com/xml-carousel/library"
+  elementFormDefault="qualified"
+  version="1.0"
+>
+  <xs:annotation>
+    <xs:documentation>
+      A small library vocabulary for learning XML Carousel.
+    </xs:documentation>
+    <xs:appinfo source="https://example.com/xml-carousel">
+      sample=library
+    </xs:appinfo>
+  </xs:annotation>
+
+  <xs:element name="library" type="lib:LibraryType">
+    <xs:annotation>
+      <xs:documentation>
+        The document element containing the library collection.
+      </xs:documentation>
+      <xs:appinfo>role=document-element</xs:appinfo>
+    </xs:annotation>
+  </xs:element>
+
+  <xs:complexType name="LibraryType">
+    <xs:sequence>
+      <xs:element
+        name="book"
+        type="lib:BookType"
+        minOccurs="1"
+        maxOccurs="unbounded"
+      />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="PublicationType">
+    <xs:sequence>
+      <xs:element name="title" type="xs:string" />
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="BookType">
+    <xs:complexContent>
+      <xs:extension base="lib:PublicationType">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="author" type="xs:string" />
+          <xs:element name="editor" type="xs:string" />
+        </xs:choice>
+        <xs:attribute name="genre" type="lib:GenreType" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:simpleType name="GenreType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="fiction" />
+      <xs:enumeration value="nonfiction" />
+      <xs:enumeration value="reference" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

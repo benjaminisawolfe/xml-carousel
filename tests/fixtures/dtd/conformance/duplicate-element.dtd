@@ -1,0 +1,2 @@
+<!ELEMENT book EMPTY>
+<!ELEMENT book (#PCDATA)>

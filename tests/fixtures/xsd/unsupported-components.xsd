@@ -1,0 +1,16 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="urn:other"/>
+  <xs:include schemaLocation="shared.xsd"/>
+  <xs:simpleType name="Kind">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="one"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Extended">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="id"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+</xs:schema>

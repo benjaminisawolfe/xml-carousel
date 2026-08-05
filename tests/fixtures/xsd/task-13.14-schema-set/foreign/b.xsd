@@ -1,0 +1,5 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:b="urn:task-13.14:b" targetNamespace="urn:task-13.14:b">
+  <xs:complexType name="BType"><xs:sequence/></xs:complexType>
+  <xs:element name="head" type="b:BType" abstract="true"/>
+</xs:schema>

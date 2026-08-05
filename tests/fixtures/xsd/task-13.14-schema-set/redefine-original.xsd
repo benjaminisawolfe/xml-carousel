@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:a="urn:task-13.14:a" targetNamespace="urn:task-13.14:a">
+  <xs:group name="RedefinedGroup"><xs:sequence><xs:element name="original"/></xs:sequence></xs:group>
+</xs:schema>

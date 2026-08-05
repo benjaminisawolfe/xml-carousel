@@ -1,0 +1,10 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  attributeFormDefault="qualified">
+  <xs:attribute name="code"/>
+  <xs:element name="root">
+    <xs:complexType>
+      <xs:attribute ref="code" use="required"/>
+      <xs:attribute name="local"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

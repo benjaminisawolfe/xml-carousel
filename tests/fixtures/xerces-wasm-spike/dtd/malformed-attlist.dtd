@@ -1,0 +1,2 @@
+<!ELEMENT item (#PCDATA)>
+<!ATTLIST item id ID>

@@ -1,0 +1,8 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:task-13.14:security">
+  <xs:include schemaLocation="missing.xsd"/>
+  <xs:include schemaLocation="https://example.invalid/remote.xsd"/>
+  <xs:include schemaLocation="file:///outside.xsd"/>
+  <xs:include schemaLocation="../outside.xsd"/>
+  <xs:include schemaLocation="%2e%2e/outside.xsd"/>
+</xs:schema>

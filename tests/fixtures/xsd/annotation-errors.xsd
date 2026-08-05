@@ -1,0 +1,22 @@
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:m="urn:annotation-errors"
+  targetNamespace="urn:annotation-errors"
+>
+  <xs:documentation>Misplaced schema documentation.</xs:documentation>
+  <xs:appinfo>Misplaced schema appinfo.</xs:appinfo>
+  <xs:annotation>
+    <xs:unsupported/>
+    <m:foreign>preserved</m:foreign>
+  </xs:annotation>
+  <xs:annotation/>
+
+  <xs:complexType name="Late">
+    <xs:sequence/>
+    <xs:annotation>
+      <xs:documentation>Late but preserved.</xs:documentation>
+    </xs:annotation>
+    <xs:documentation>Misplaced component documentation.</xs:documentation>
+    <xs:appinfo>Misplaced component appinfo.</xs:appinfo>
+  </xs:complexType>
+</xs:schema>

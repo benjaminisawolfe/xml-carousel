@@ -1,0 +1,3 @@
+<!ELEMENT first (>
+<!ATTLIST first id ID>
+<!ELEMENT second (missing>

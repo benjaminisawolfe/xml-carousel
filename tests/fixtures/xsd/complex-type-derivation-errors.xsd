@@ -1,0 +1,56 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:simpleType name="SimpleBase">
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+
+  <xs:complexType name="MissingBase">
+    <xs:complexContent>
+      <xs:extension/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="BothDerivations">
+    <xs:complexContent>
+      <xs:extension base="xs:anyType"/>
+      <xs:restriction base="xs:anyType"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="NoDerivation">
+    <xs:complexContent/>
+  </xs:complexType>
+
+  <xs:complexType name="DirectAndDerived">
+    <xs:sequence/>
+    <xs:attribute name="direct"/>
+    <xs:complexContent>
+      <xs:extension base="xs:anyType"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="InvalidBody">
+    <xs:complexContent>
+      <xs:extension base="xs:anyType">
+        <xs:element name="outside"/>
+        <xs:attribute name="tooEarly"/>
+        <xs:sequence/>
+        <xs:choice/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="UnknownBase">
+    <xs:complexContent>
+      <xs:extension base="Missing"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="WrongBaseKind">
+    <xs:complexContent>
+      <xs:restriction base="SimpleBase"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:extension base="xs:anyType"/>
+  <xs:restriction base="xs:anyType"/>
+</xs:schema>

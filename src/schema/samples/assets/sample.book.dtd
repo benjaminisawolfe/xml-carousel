@@ -1,0 +1,26 @@
+<!-- This is just a sample. Click any of the "Open" buttons above to load a file from your local hard drive. We don't store anything on the server side. -->
+<!ELEMENT book (front.matter, book.content, index)>
+<!ATTLIST book
+  isbn ID #REQUIRED
+  edition (first|revised) "first"
+>
+
+<!ELEMENT front.matter (title.page, preface?)>
+<!ELEMENT book.content (chapter+)>
+<!ELEMENT index (index.entry+)>
+
+<!-- Title-page details demonstrate optional and repeated children. -->
+<!ELEMENT title.page (title, subtitle?, author+)>
+<!ELEMENT preface (#PCDATA)>
+<!ELEMENT chapter (title, epigraph?, section*, figure*, note*)>
+<!ATTLIST chapter number CDATA #IMPLIED>
+
+<!ELEMENT title (#PCDATA)>
+<!ELEMENT subtitle (#PCDATA)>
+<!ELEMENT author (#PCDATA)>
+<!ELEMENT epigraph (#PCDATA)>
+<!ELEMENT section (title?, para+)>
+<!ELEMENT figure (#PCDATA)>
+<!ELEMENT note (#PCDATA)>
+<!ELEMENT para (#PCDATA)>
+<!ELEMENT index.entry (#PCDATA)>

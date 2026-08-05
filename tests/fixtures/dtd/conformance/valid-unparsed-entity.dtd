@@ -1,0 +1,4 @@
+<!NOTATION png SYSTEM "image/png">
+<!ENTITY cover SYSTEM "cover.bin" NDATA png>
+<!ELEMENT book EMPTY>
+<!ATTLIST book art ENTITY #IMPLIED>

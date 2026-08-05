@@ -1,0 +1,71 @@
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:d="urn:derivations"
+  targetNamespace="urn:derivations">
+  <xs:element name="root" type="d:BeforeDerived"/>
+
+  <xs:complexType name="BeforeDerived">
+    <xs:complexContent>
+      <xs:extension base="d:BaseLater">
+        <xs:sequence>
+          <xs:element name="beforeChild" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="beforeCode" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="BaseEarlier">
+    <xs:sequence>
+      <xs:element name="baseChild" type="xs:string"/>
+    </xs:sequence>
+    <xs:attribute name="baseCode" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="AfterDerived">
+    <xs:complexContent>
+      <xs:extension base="d:BaseEarlier">
+        <xs:choice>
+          <xs:element name="left" type="xs:string"/>
+          <xs:element name="right" type="xs:string"/>
+        </xs:choice>
+        <xs:attribute name="afterCode" type="xs:string" use="prohibited"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="Restricted">
+    <xs:complexContent>
+      <xs:restriction base="d:BaseEarlier">
+        <xs:all>
+          <xs:element name="limitedChild" type="xs:string" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="limitedCode" type="xs:string"/>
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="AnyTypeDerived">
+    <xs:complexContent>
+      <xs:extension base="xs:anyType"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="anonymousRoot">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="d:BaseEarlier">
+          <xs:sequence>
+            <xs:element name="anonymousChild" type="xs:string"/>
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="BaseLater">
+    <xs:sequence>
+      <xs:element name="laterChild" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

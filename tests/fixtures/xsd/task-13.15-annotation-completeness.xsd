@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- leading schema comment -->
+<?xml-carousel preview="inert"?>
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:t="urn:task-13.15"
+  xmlns:vendor="urn:vendor:annotation"
+  xmlns:h="http://www.w3.org/1999/xhtml"
+  xmlns:svg="http://www.w3.org/2000/svg"
+  xmlns:m="http://www.w3.org/1998/Math/MathML"
+  targetNamespace="urn:task-13.15"
+  elementFormDefault="qualified"
+  vendor:schema-flag="preserved"
+>
+  <xs:annotation vendor:annotation-flag="first">
+    <xs:documentation
+      xml:lang="en-CA"
+      source="urn:docs:overview"
+    >Human <vendor:term vendor:importance="high">documentation</vendor:term>
+      with <![CDATA[<literal> CDATA & entity-like text]]>, &amp; escaped text,
+      <!-- nested documentation comment -->
+      <?doc-preview inert-data?>
+      and preserved whitespace.</xs:documentation>
+    <xs:appinfo source="urn:tool:configuration">
+      <vendor:config enabled="true">
+        <vendor:nested vendor:value="one">machine data</vendor:nested>
+      </vendor:config>
+      <h:script>globalThis.__xmlCarouselExecuted = true</h:script>
+      <h:a href="javascript:alert(1)" onclick="alert(2)">unsafe-looking link</h:a>
+      <svg:svg onload="alert(3)"><svg:title>inert SVG</svg:title></svg:svg>
+      <m:math><m:mi>x</m:mi></m:math>
+      <![CDATA[<script>alert(4)</script> &entityLike;]]>
+    </xs:appinfo>
+  </xs:annotation>
+
+  <xs:element name="root" type="t:RootType" vendor:label="Root">
+    <xs:annotation>
+      <xs:documentation xml:lang="fr">Élément racine.</xs:documentation>
+      <xs:appinfo><vendor:identity key="root"/></xs:appinfo>
+    </xs:annotation>
+    <xs:key name="rootKey">
+      <xs:annotation><xs:documentation>Identity owner.</xs:documentation></xs:annotation>
+      <xs:selector xpath="t:item"/>
+      <xs:field xpath="@code"/>
+    </xs:key>
+  </xs:element>
+
+  <!-- annotation after a declaration is legal at schema level -->
+  <xs:annotation>
+    <xs:documentation source="urn:docs:second">Second schema annotation.</xs:documentation>
+    <xs:appinfo source="urn:tool:second"/>
+  </xs:annotation>
+
+  <xs:complexType name="RootType">
+    <xs:annotation><xs:documentation>Complex type owner.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:annotation><xs:documentation>Compositor owner.</xs:documentation></xs:annotation>
+      <xs:any minOccurs="0" processContents="lax">
+        <xs:annotation><xs:appinfo><vendor:wildcard/></xs:appinfo></xs:annotation>
+      </xs:any>
+    </xs:sequence>
+    <xs:anyAttribute processContents="skip">
+      <xs:annotation><xs:documentation>Attribute wildcard owner.</xs:documentation></xs:annotation>
+    </xs:anyAttribute>
+  </xs:complexType>
+
+  <?inside-schema preserved?>
+  <!-- trailing schema comment -->
+</xs:schema>
+<!-- after-root comment -->
+<?after-root inert?>

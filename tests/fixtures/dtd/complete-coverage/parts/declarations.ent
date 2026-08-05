@@ -1,0 +1,3 @@
+<!-- Project-local external parameter-entity contribution. -->
+<!ELEMENT contributed EMPTY>
+<?contribution source="parts/declarations.ent"?>

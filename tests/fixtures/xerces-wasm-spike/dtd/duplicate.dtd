@@ -1,0 +1,4 @@
+<!ELEMENT item EMPTY>
+<!ELEMENT item (#PCDATA)>
+<!ATTLIST item id ID #IMPLIED>
+<!ATTLIST item id CDATA #IMPLIED>

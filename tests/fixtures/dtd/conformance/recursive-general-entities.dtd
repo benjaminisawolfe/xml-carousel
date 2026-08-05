@@ -1,0 +1,3 @@
+<!ENTITY first "&second;">
+<!ENTITY second "&first;">
+<!ELEMENT book (#PCDATA)>

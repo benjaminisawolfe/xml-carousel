@@ -1,0 +1,4 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:o="urn:other">
+  <xs:import namespace="urn:other" schemaLocation="other.xsd"/>
+  <xs:element name="root" type="o:otherType"/>
+</xs:schema>

@@ -1,0 +1,11 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="root" type="RootType"/>
+  <xs:element name="item"/>
+  <xs:complexType name="RootType">
+    <xs:sequence>
+      <xs:element ref="item"/>
+      <xs:element name="value" type="CodeType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="CodeType"/>
+</xs:schema>

@@ -1,0 +1,2 @@
+<!ELEMENT __xml_carousel_probe__ EMPTY>
+<!ATTLIST __xml_carousel_probe__ id CDATA #REQUIRED>

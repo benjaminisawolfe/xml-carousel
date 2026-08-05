@@ -1,0 +1,5 @@
+<!NOTATION png SYSTEM "image/png">
+<!NOTATION jpeg SYSTEM "image/jpeg">
+<!ELEMENT image ANY>
+<!ATTLIST image preview NOTATION (png|jpeg) #IMPLIED
+                source NOTATION (png|jpeg) #IMPLIED>

@@ -1,0 +1,9 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:ext="urn:external">
+  <xs:element name="root">
+    <xs:complexType>
+      <xs:attribute ref="ext:code" use="optional"/>
+      <xs:attribute name="externalType" type="ext:ExternalSimple"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

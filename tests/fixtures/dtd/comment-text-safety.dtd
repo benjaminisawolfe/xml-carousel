@@ -1,0 +1,2 @@
+<!-- Literal <tag>, A > B, &example;, "quotes", and 'apostrophes'. -->
+<!ELEMENT safe (#PCDATA)>

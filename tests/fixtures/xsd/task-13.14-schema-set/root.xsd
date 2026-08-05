@@ -1,0 +1,18 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:a="urn:task-13.14:a" xmlns:b="urn:task-13.14:b"
+  targetNamespace="urn:task-13.14:a" elementFormDefault="qualified">
+  <xs:include schemaLocation="common/chameleon.xsd"/>
+  <xs:include schemaLocation="shared.xsd"/>
+  <xs:import namespace="urn:task-13.14:b" schemaLocation="foreign/b.xsd"/>
+  <xs:import namespace="urn:task-13.14:c"/>
+  <xs:element name="root" type="a:ChameleonType"/>
+  <xs:element name="member" type="b:BType" substitutionGroup="b:head"/>
+  <xs:complexType name="CrossFileReferences">
+    <xs:sequence>
+      <xs:element ref="a:includedElement"/>
+      <xs:group ref="a:RecursiveGroup" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute ref="a:includedAttribute"/>
+    <xs:attributeGroup ref="a:IncludedAttributes"/>
+  </xs:complexType>
+</xs:schema>

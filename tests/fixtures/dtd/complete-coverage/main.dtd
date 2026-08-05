@@ -1,0 +1,47 @@
+<?xml-carousel complete-dtd-coverage?>
+<!-- Project-level source note. -->
+<!ENTITY % section-mode "INCLUDE">
+<!ENTITY % internal-parameter "safe replacement text">
+<!ENTITY % external-parameter SYSTEM "parts/declarations.ent">
+<!ENTITY copyright "Copyright &amp; contributors">
+<!ENTITY parsed-resource SYSTEM "parts/chapter.xml">
+<!NOTATION gif SYSTEM "image/gif">
+<!NOTATION png PUBLIC "image/png">
+<!ENTITY logo SYSTEM "images/logo.gif" NDATA gif>
+
+<!-- Root declaration documentation. -->
+<!-- Consecutive declaration documentation. -->
+<!ELEMENT root (header, (chapter | appendix)+, footer?, legal-undeclared*)><!-- Root trailing note. -->
+<!ELEMENT header (#PCDATA | emphasis)*>
+<!ELEMENT emphasis (#PCDATA)>
+<!ELEMENT chapter (title, paragraph+)>
+<!ELEMENT appendix ANY>
+<!ELEMENT title (#PCDATA)>
+<!ELEMENT paragraph (#PCDATA | emphasis)*>
+<!ELEMENT footer EMPTY>
+
+<!ATTLIST root
+  id ID #REQUIRED
+  link IDREF #IMPLIED
+  links IDREFS #IMPLIED
+  token NMTOKEN "draft"
+  tokens NMTOKENS #IMPLIED
+  resource ENTITY #IMPLIED
+  resources ENTITIES #IMPLIED
+  mode (draft | final | archived) "draft"
+  format NOTATION (gif | png) #IMPLIED
+  language CDATA #FIXED "en"
+>
+<!ATTLIST root edition CDATA "first">
+<!ATTLIST ghost ghost-attribute CDATA #IMPLIED>
+
+<![INCLUDE[
+  <!ELEMENT included EMPTY>
+]]>
+<![IGNORE[
+  <!ELEMENT ignored EMPTY>
+  <!-- Ignored source remains inert. -->
+]]>
+
+<?catalog prefer="public"?>
+<!-- Unattached final source note. -->

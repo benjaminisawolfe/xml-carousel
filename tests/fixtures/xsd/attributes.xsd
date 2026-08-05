@@ -1,0 +1,26 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:t="urn:attributes"
+  targetNamespace="urn:attributes"
+  elementFormDefault="qualified"
+  attributeFormDefault="unqualified">
+  <xs:attribute name="code" type="xs:string" fixed="GLOBAL"/>
+  <xs:simpleType name="StatusType">
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:element name="root" type="t:RootType"/>
+  <xs:complexType name="RootType">
+    <xs:sequence>
+      <xs:element ref="t:root" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="status" type="t:StatusType" default="active"/>
+    <xs:attribute name="legacy" use="prohibited"/>
+    <xs:attribute name="lang" type="xs:string" form="qualified" fixed="en"/>
+    <xs:attribute ref="t:code"/>
+    <xs:attribute name="rating">
+      <xs:simpleType>
+        <xs:restriction base="xs:decimal"/>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+</xs:schema>
