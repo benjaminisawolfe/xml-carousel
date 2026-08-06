@@ -122,7 +122,6 @@ interface ProjectCase {
 }
 
 let projectCases: readonly ProjectCase[] = [];
-let largeProjectCases: readonly ProjectCase[] = [];
 
 function dtdProject(source: string, filename: string): ProjectCase {
   const result = importDtdSource(source, {
@@ -256,17 +255,7 @@ beforeAll(async () => {
       await hermeticArchiveBytes(),
     ),
   ];
-  largeProjectCases = [
-    dtdProject(
-      await readFile(path.join(fixtureRoot, 'dtd/large-10000.dtd'), 'utf8'),
-      'large-10000.dtd',
-    ),
-    xsdProject(
-      await readFile(path.join(fixtureRoot, 'xsd/large-10000.xsd'), 'utf8'),
-      'large-10000.xsd',
-    ),
-  ];
-}, 60_000);
+}, 30_000);
 
 afterEach(() => {
   restoreSample();
@@ -398,23 +387,63 @@ describe('final semantic zoom acceptance matrix', () => {
       getRootwardWindow(dense, 0, dense.length + 1, dense.length, 'overview')
         .earlierSteps,
     ).toHaveLength(MAX_OVERVIEW_EARLIER_PATH_ROWS);
-
-    expect(largeProjectCases.map(({ format }) => format)).toEqual([
-      'dtd',
-      'xsd',
-    ]);
-    for (const projectCase of largeProjectCases) {
-      expect(projectCase.project.nodes.length).toBeGreaterThanOrEqual(10_000);
-      const projectBefore = projectCase.project;
-      activateProject(projectCase);
-      const pathBefore = [...get(navigationStore.navigationPathIds)];
-      for (const level of SEMANTIC_ZOOM_LEVELS) {
-        semanticZoomStore.setRequestedLevel(level);
-        expect(projectCase.project).toBe(projectBefore);
-        expect(get(navigationStore.navigationPathIds)).toEqual(pathBefore);
-      }
-    }
   });
+
+  it('directly imports the 10,000-node DTD with isolated bounded zoom behaviour', async () => {
+    const filename = 'large-10000.dtd';
+    const projectCase = dtdProject(
+      await readFile(path.join(fixtureRoot, 'dtd', filename), 'utf8'),
+      filename,
+    );
+    expect(projectCase.project.nodes.length).toBeGreaterThanOrEqual(10_000);
+
+    const nodeIds = projectCase.project.nodes.map(({ id }) => id);
+    expect(
+      getBranchWindow(nodeIds, 0, nodeIds.length, 'compact').visible,
+    ).toHaveLength(MAX_LEAFWARD_CARDS);
+    expect(
+      getBranchWindow(nodeIds, 0, nodeIds.length, 'overview').visible,
+    ).toHaveLength(MAX_OVERVIEW_LEAFWARD_CARDS);
+
+    const projectBefore = projectCase.project;
+    activateProject(projectCase);
+    semanticZoomStore.setDesktopAvailability(true);
+    const pathBefore = [...get(navigationStore.navigationPathIds)];
+    for (const level of SEMANTIC_ZOOM_LEVELS) {
+      semanticZoomStore.setRequestedLevel(level);
+      expect(get(semanticZoomStore).effectiveLevel).toBe(level);
+      expect(projectCase.project).toBe(projectBefore);
+      expect(get(navigationStore.navigationPathIds)).toEqual(pathBefore);
+    }
+  }, 120_000);
+
+  it('directly imports the 10,000-node XSD with isolated bounded zoom behaviour', async () => {
+    const filename = 'large-10000.xsd';
+    const projectCase = xsdProject(
+      await readFile(path.join(fixtureRoot, 'xsd', filename), 'utf8'),
+      filename,
+    );
+    expect(projectCase.project.nodes.length).toBeGreaterThanOrEqual(10_000);
+
+    const nodeIds = projectCase.project.nodes.map(({ id }) => id);
+    expect(
+      getBranchWindow(nodeIds, 0, nodeIds.length, 'compact').visible,
+    ).toHaveLength(MAX_LEAFWARD_CARDS);
+    expect(
+      getBranchWindow(nodeIds, 0, nodeIds.length, 'overview').visible,
+    ).toHaveLength(MAX_OVERVIEW_LEAFWARD_CARDS);
+
+    const projectBefore = projectCase.project;
+    activateProject(projectCase);
+    semanticZoomStore.setDesktopAvailability(true);
+    const pathBefore = [...get(navigationStore.navigationPathIds)];
+    for (const level of SEMANTIC_ZOOM_LEVELS) {
+      semanticZoomStore.setRequestedLevel(level);
+      expect(get(semanticZoomStore).effectiveLevel).toBe(level);
+      expect(projectCase.project).toBe(projectBefore);
+      expect(get(navigationStore.navigationPathIds)).toEqual(pathBefore);
+    }
+  }, 120_000);
 
   it('binds corrected A/B/C geometry, duplicate edge identity, gaps, and cycles', () => {
     expect(relationshipLinesFixtureSource).toContain('RelationshipLineType');

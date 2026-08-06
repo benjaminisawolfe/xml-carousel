@@ -215,6 +215,26 @@ digests are:
 - `npm audit --json` and `npm audit --omit=dev --json`: zero vulnerabilities.
 - `npm run format:check`, `git diff --check`, and harness `node --check`: PASS.
 
+## Hosted CI setup correction — 2026-08-06
+
+Task 14.5 initially merged at
+`f665f2709cc5405b5926a5afb03d0809bb67345a`. Hosted CI run `31069936885`
+then failed because the acceptance suite's global `beforeAll` exceeded its
+60-second timeout. The hook had combined the four shared small-format imports
+with both 10,000-node imports; setup did not complete, so all ten acceptance
+tests were skipped. No production semantic-zoom behavior failed.
+
+The corrective test setup keeps only the branching DTD, branching XSD,
+multi-file ZIP, and synthetic public Hermetic Foundry ZIP in a bounded shared
+hook. The 10,000-node DTD and XSD imports now run in two separately attributed
+tests with explicit 120-second per-test budgets. Each large test directly
+imports its fixture and independently proves node count, bounded windowing,
+project identity, navigation identity, and Full/Compact/Overview behavior.
+
+This correction changes no production source or `dist/` output. Final hosted-CI
+closure remains pending until the corrective commit is integrated and CI
+succeeds for its exact merge SHA.
+
 ## Defects, corrections, and limitations
 
 No semantic-zoom product defect was found, so no production UI, parser, resolver,
