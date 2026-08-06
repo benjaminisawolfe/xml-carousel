@@ -13,6 +13,8 @@ const INPUTS = {
   zip: path.resolve('tests/fixtures/zip/valid-xsd-include.zip'),
   invalid: path.resolve('tests/fixtures/dtd/broken.dtd'),
   cancellation: path.resolve('tests/fixtures/dtd/large-40000.dtd'),
+  largeDtd: path.resolve('tests/fixtures/dtd/large-10000.dtd'),
+  largeXsd: path.resolve('tests/fixtures/xsd/large-10000.xsd'),
   relationshipLines: path.resolve(
     'tests/fixtures/semantic-zoom/relationship-lines.xsd',
   ),
@@ -1082,7 +1084,12 @@ async function relationshipLineRegression(
   };
 }
 
-async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
+async function compactSemanticZoomAudit(
+  driver,
+  url,
+  screenshotDirectory,
+  hermeticPath,
+) {
   await driver.setViewport(1440, 900, false);
   await driver.navigate(url);
   await dismissWelcome(driver);
@@ -1399,17 +1406,28 @@ async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
   };
 
   const importPersistence = [];
-  for (const [format, input, filename] of [
-    ['dtd', INPUTS.dtd, 'library.dtd'],
-    ['xsd', INPUTS.xsd, 'attributes.xsd'],
-    ['zip', INPUTS.zip, 'valid-xsd-include.zip'],
-  ]) {
-    await importFile(driver, format, input, filename);
+  const importCases = [
+    ['dtd', INPUTS.dtd, 'library.dtd', 'dtd'],
+    ['xsd', INPUTS.xsd, 'attributes.xsd', 'xsd'],
+    ['zip', INPUTS.zip, 'valid-xsd-include.zip', 'zip'],
+    ...(hermeticPath
+      ? [
+          [
+            'zip',
+            path.resolve(hermeticPath),
+            path.basename(hermeticPath),
+            'hermetic-foundry',
+          ],
+        ]
+      : []),
+  ];
+  for (const [inputFormat, input, filename, evidenceFormat] of importCases) {
+    await importFile(driver, inputFormat, input, filename);
     importPersistence.push(
       await driver.evaluate(`(() => {
         const surface = document.querySelector('[data-carousel-gesture-viewport]');
         return {
-          format: ${JSON.stringify(format)},
+          format: ${JSON.stringify(evidenceFormat)},
           project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
           requested: surface?.getAttribute('data-semantic-zoom-requested') ?? null,
           effective: surface?.getAttribute('data-semantic-zoom-effective') ?? null,
@@ -1418,6 +1436,78 @@ async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
         };
       })()`),
     );
+  }
+
+  const largeSchemas = [];
+  for (const [format, input, filename] of [
+    ['dtd', INPUTS.largeDtd, 'large-10000.dtd'],
+    ['xsd', INPUTS.largeXsd, 'large-10000.xsd'],
+  ]) {
+    const importStartedAt = Date.now();
+    await importFile(driver, format, input, filename);
+    const importDurationMs = Date.now() - importStartedAt;
+    const presentations = [];
+    for (const [presentation, rangeValue] of [
+      ['full', '2'],
+      ['compact', '1'],
+      ['overview', '0'],
+    ]) {
+      await driver.evaluate(`(() => {
+        const range = document.querySelector('input[aria-label="Semantic zoom"]');
+        if (!range) return false;
+        range.value = ${JSON.stringify(rangeValue)};
+        range.dispatchEvent(new InputEvent('input', { bubbles: true }));
+        return true;
+      })()`);
+      await waitForSemanticZoomSettlement(driver, presentation);
+      await driver.evaluate(
+        `new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))`,
+      );
+      presentations.push(
+        await driver.evaluate(`(() => {
+          const surface = document.querySelector('[data-carousel-gesture-viewport]');
+          return {
+            presentation: surface?.getAttribute('data-semantic-zoom-presentation') ?? null,
+            requested: surface?.getAttribute('data-semantic-zoom-requested') ?? null,
+            effective: surface?.getAttribute('data-semantic-zoom-effective') ?? null,
+            project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
+            visibleCarouselCards: document.querySelectorAll(
+              '[data-semantic-zoom-focus-card], .context-card',
+            ).length,
+            totalElements: document.getElementsByTagName('*').length,
+            importPhase: document.querySelector('.app-shell')?.getAttribute('data-schema-import-phase') ?? null,
+            pageOverflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+          };
+        })()`),
+      );
+    }
+    const searchStartedAt = Date.now();
+    await driver.evaluate(`(() => {
+      const search = document.querySelector('[aria-label="Search schema"]');
+      if (!search) return false;
+      search.value = 'node00001';
+      search.dispatchEvent(new InputEvent('input', {
+        bubbles: true,
+        inputType: 'insertText',
+        data: 'node00001',
+      }));
+      return true;
+    })()`);
+    await waitUntil(
+      () =>
+        driver.evaluate(
+          `Boolean(document.querySelector('[aria-label^="Center node00001,"]'))`,
+        ),
+      `Task 14.5 ${filename} Search result`,
+    );
+    largeSchemas.push({
+      format,
+      filename,
+      importDurationMs,
+      searchDurationMs: Date.now() - searchStartedAt,
+      searchResultFound: true,
+      presentations,
+    });
   }
 
   await driver.navigate(url);
@@ -1516,6 +1606,7 @@ async function compactSemanticZoomAudit(driver, url, screenshotDirectory) {
     branchShift,
     relationshipLines,
     importPersistence,
+    largeSchemas,
     wheel,
     constrained,
     restored,
@@ -1721,6 +1812,14 @@ async function semanticZoomUxHardeningAudit(
   await driver.setViewport(1440, 900, false);
   await driver.navigate(url);
   await dismissWelcome(driver);
+  const screenshots = {};
+  if (screenshotDirectory) {
+    screenshots.fullDetail = path.join(
+      screenshotDirectory,
+      'semantic-zoom-full-detail.png',
+    );
+    await driver.screenshot(screenshots.fullDetail);
+  }
 
   const buttonFullToCompact = await semanticZoomAction(
     driver,
@@ -1827,10 +1926,22 @@ async function semanticZoomUxHardeningAudit(
     [1024, 600],
     [1024, 599],
     [1023, 600],
+    [768, 900],
+    [412, 915],
+    [390, 844],
+    [915, 412],
+    [844, 390],
+    [320, 800],
   ]) {
-    responsiveViewports.push(
-      await semanticZoomViewportSnapshot(driver, width, height),
-    );
+    const snapshot = await semanticZoomViewportSnapshot(driver, width, height);
+    responsiveViewports.push(snapshot);
+    if (screenshotDirectory && width === 1024 && height === 600) {
+      screenshots.threshold1024x600 = path.join(
+        screenshotDirectory,
+        'semantic-zoom-threshold-1024x600.png',
+      );
+      await driver.screenshot(screenshots.threshold1024x600);
+    }
   }
 
   await driver.setViewport(1440, 900, false);
@@ -1851,12 +1962,23 @@ async function semanticZoomUxHardeningAudit(
     [200, 720, 450],
     [400, 320, 640],
   ]) {
-    magnificationEquivalent.push(
-      await semanticZoomReflowSnapshot(driver, width, height, 100),
+    const snapshot = await semanticZoomReflowSnapshot(
+      driver,
+      width,
+      height,
+      100,
     );
+    magnificationEquivalent.push(snapshot);
     magnificationEquivalent[
       magnificationEquivalent.length - 1
     ].equivalentScale = scale;
+    if (screenshotDirectory && scale === 400) {
+      screenshots.reflow320CssPx = path.join(
+        screenshotDirectory,
+        'semantic-zoom-reflow-320-css-px.png',
+      );
+      await driver.screenshot(screenshots.reflow320CssPx);
+    }
   }
   await driver.evaluate(
     `document.documentElement.style.removeProperty('font-size')`,
@@ -1891,7 +2013,6 @@ async function semanticZoomUxHardeningAudit(
     forcedColors: true,
   });
   let forcedColours = { supported: false };
-  const screenshots = {};
   if (forcedColourSupport.forcedColors) {
     await driver.navigate(url);
     await dismissWelcome(driver);
@@ -2371,6 +2492,7 @@ async function main() {
       driver,
       server.rootUrl,
       screenshotDirectory,
+      options.hermeticPath,
     );
     const semanticZoomUxHardening = await semanticZoomUxHardeningAudit(
       driver,
@@ -2624,13 +2746,39 @@ async function main() {
           compactSemanticZoom.branchShift.changed &&
           compactSemanticZoom.branchShift.project === 'compact-branches.dtd' &&
           compactSemanticZoom.branchShift.requested === 'compact' &&
-          compactSemanticZoom.importPersistence.length === 3 &&
+          compactSemanticZoom.importPersistence.length ===
+            (options.hermeticPath ? 4 : 3) &&
           compactSemanticZoom.importPersistence.every(
             ({ requested, effective, presentation, controlPresent }) =>
               requested === 'overview' &&
               effective === 'overview' &&
               presentation === 'overview' &&
               controlPresent,
+          ) &&
+          compactSemanticZoom.largeSchemas.length === 2 &&
+          compactSemanticZoom.largeSchemas.every(
+            ({ filename, searchResultFound, presentations }) =>
+              searchResultFound &&
+              presentations.length === 3 &&
+              presentations.every(
+                ({
+                  presentation,
+                  requested,
+                  effective,
+                  project,
+                  visibleCarouselCards,
+                  totalElements,
+                  importPhase,
+                  pageOverflowX,
+                }) =>
+                  presentation === requested &&
+                  presentation === effective &&
+                  project === filename &&
+                  visibleCarouselCards <= 20 &&
+                  totalElements < 5_000 &&
+                  importPhase === null &&
+                  !pageOverflowX,
+              ),
           ) &&
           compactSemanticZoom.wheel &&
           !compactSemanticZoom.wheel.down.dispatchResult &&
