@@ -8,7 +8,9 @@ import type {
 import type { XsdMetadataByNodeId, XsdNodeMetadata } from '../../schema/xsd';
 import {
   isSourceMarkupSyntaxCompatible,
+  presentSourceLocation,
   selectNodeSourceMarkup,
+  selectSourceViewPresentation,
 } from './sourceMarkupPresentation';
 import sourceMarkupPresentationSource from './sourceMarkupPresentation.ts?raw';
 
@@ -306,5 +308,136 @@ describe('source markup presentation selector', () => {
     selectNodeSourceMarkup(project, 'extension', markup, xsdMetadataByNodeId);
 
     expect({ project, markup, xsdMetadataByNodeId }).toEqual(before);
+  });
+});
+
+describe('source view presentation', () => {
+  function state(
+    overrides: Partial<Parameters<typeof selectSourceViewPresentation>[0]> = {},
+  ): Parameters<typeof selectSourceViewPresentation>[0] {
+    return {
+      project,
+      origin: 'imported',
+      sourceFilename: 'fixture.dtd',
+      sourceMarkupByNodeId: markup,
+      xsdMetadataByNodeId,
+      ...overrides,
+    };
+  }
+
+  it('presents a standalone filename and exact retained coordinates', () => {
+    expect(selectSourceViewPresentation(state(), 'dtd-root')).toMatchObject({
+      projectId: project.id,
+      nodeId: 'dtd-root',
+      displayName: 'root',
+      nodeKind: 'dtdElement',
+      sourceIdentity: {
+        kind: 'standaloneFilename',
+        label: 'fixture.dtd',
+      },
+      location: {
+        kind: 'exactLineColumn',
+        label: 'Line 1, column 1 · exact',
+      },
+      syntax: 'dtd',
+      sourceAvailable: true,
+    });
+  });
+
+  it('uses retained package-relative metadata and never exposes an absolute path', () => {
+    const packagePath = `project-root/types/${'very-long-directory/'.repeat(8)}common.xsd`;
+    const presented = selectSourceViewPresentation(
+      state({
+        origin: 'package',
+        sourceFilename: 'E:\\private\\schemas.zip',
+        schemaPackageSources: [
+          {
+            sourceFileId: 'fixture.xsd',
+            archiveEntryId: 'entry',
+            archivePath: `archive/${packagePath}`,
+            packageRelativePath: packagePath,
+            format: 'xsd',
+            sourceOrder: 0,
+            byteLength: 10,
+            nodeCount: 3,
+            rootNodeIds: ['schema'],
+            initialFocusNodeId: 'schema',
+          },
+        ],
+      }),
+      'schema',
+    );
+    expect(presented?.sourceIdentity).toEqual({
+      kind: 'packageRelativePath',
+      label: packagePath,
+    });
+    expect(JSON.stringify(presented)).not.toContain('E:\\private');
+  });
+
+  it('keeps multiple DTD fragments separate and in retained order', () => {
+    const first = '<!ELEMENT root EMPTY>';
+    const second = '<!ATTLIST root id ID #IMPLIED>';
+    const presented = selectSourceViewPresentation(
+      state({
+        sourceMarkupByNodeId: {
+          'dtd-root': {
+            syntax: 'dtd',
+            fragments: [
+              {
+                id: 'first',
+                sourceFileId: 'fixture.dtd',
+                range: range(first, 'fixture.dtd', 10),
+                text: first,
+              },
+              {
+                id: 'second',
+                sourceFileId: 'fixture.dtd',
+                range: range(second, 'fixture.dtd', 200),
+                text: second,
+              },
+            ],
+          },
+        },
+      }),
+      'dtd-root',
+    );
+    expect(presented?.location).toEqual({
+      kind: 'multipleFragments',
+      label: 'Multiple retained source fragments',
+    });
+    expect(presented?.fragments.map(({ id, text }) => ({ id, text }))).toEqual([
+      { id: 'first', text: first },
+      { id: 'second', text: second },
+    ]);
+  });
+
+  it('keeps known identity visible while source and location are unavailable', () => {
+    expect(
+      selectSourceViewPresentation(
+        state({ sourceMarkupByNodeId: {} }),
+        'dtd-root',
+      ),
+    ).toMatchObject({
+      sourceIdentity: { label: 'fixture.dtd' },
+      location: {
+        kind: 'locationUnavailable',
+        label: 'Source file known; declaration location unavailable',
+      },
+      fragments: [],
+      sourceAvailable: false,
+    });
+  });
+
+  it('formats supported weaker precision states without inventing coordinates', () => {
+    expect(
+      presentSourceLocation({ kind: 'exactLine', line: 12 }),
+    ).toMatchObject({
+      kind: 'exactLine',
+      label: 'Line 12 · exact line; column unavailable',
+    });
+    expect(presentSourceLocation({ kind: 'approximateDeclaration' })).toEqual({
+      kind: 'approximateDeclaration',
+      label: 'Declaration-level location · approximate',
+    });
   });
 });

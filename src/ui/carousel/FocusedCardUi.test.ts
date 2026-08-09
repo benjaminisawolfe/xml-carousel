@@ -14,6 +14,7 @@ import { bookDtdNodeIds } from '../../schema/samples/bookDtdProject';
 import FocusCard from './FocusCard.svelte';
 import type { FocusCardSummary } from './focusCardSummary';
 import focusCardSource from './FocusCard.svelte?raw';
+import type { SourceViewPresentation } from '../presentation/sourceMarkupPresentation';
 
 const summaryFixture: FocusCardSummary = {
   nodeId: 'fixture:focus',
@@ -126,7 +127,76 @@ const summaryFixture: FocusCardSummary = {
   leafStateLabel: 'No child structures',
 };
 
+const sourcePresentation: SourceViewPresentation = {
+  projectId: 'fixture',
+  nodeId: summaryFixture.nodeId,
+  displayName: summaryFixture.displayName,
+  nodeKind: summaryFixture.kind,
+  nodeKindLabel: 'DTD element declaration',
+  sourceIdentity: { kind: 'standaloneFilename', label: 'catalog.dtd' },
+  location: {
+    kind: 'exactLineColumn',
+    line: 4,
+    column: 1,
+    label: 'Line 4, column 1 · exact',
+  },
+  syntax: 'dtd',
+  fragments: [
+    {
+      id: 'fragment',
+      text: '<!ELEMENT catalog EMPTY>',
+      location: {
+        kind: 'exactLineColumn',
+        line: 4,
+        column: 1,
+        label: 'Line 4, column 1 · exact',
+      },
+    },
+  ],
+  sourceAvailable: true,
+};
+
 describe('focused-card information architecture', () => {
+  it('limits source details and action to Full zoom and keeps Inspect independent', async () => {
+    const onViewSource = vi.fn();
+    const onToggleInspection = vi.fn();
+    const rendered = render(FocusCard, {
+      props: {
+        summary: summaryFixture,
+        sourcePresentation,
+        isInspected: false,
+        motionKey: 'fixture:source',
+        onToggleInspection,
+        onCenterNode: vi.fn(),
+        onViewSource,
+        presentation: 'full',
+      },
+    });
+    const sourceAction = screen.getByRole('button', {
+      name: 'View source for catalog',
+    });
+    await fireEvent.click(sourceAction);
+    expect(onViewSource).toHaveBeenCalledWith(sourceAction);
+    expect(onToggleInspection).not.toHaveBeenCalled();
+
+    await rendered.rerender({
+      summary: summaryFixture,
+      sourcePresentation,
+      isInspected: false,
+      motionKey: 'fixture:source',
+      onToggleInspection,
+      onCenterNode: vi.fn(),
+      onViewSource,
+      presentation: 'compact',
+    });
+    expect(
+      screen.queryByRole('button', { name: 'View source for catalog' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Line 4, column 1 · exact'),
+    ).not.toBeInTheDocument();
+  });
+
   beforeEach(() => {
     navigationStore.initializeAt(bookDtdNodeIds.book);
     inspectorStore.close();
@@ -153,6 +223,7 @@ describe('focused-card information architecture', () => {
         .map((button) => button.getAttribute('aria-label')),
     ).toEqual([
       'Inspect book',
+      'View source for book',
       'Center front.matter',
       'Center book.content',
       'Center index',
@@ -163,7 +234,10 @@ describe('focused-card information architecture', () => {
       }),
     ).not.toBeInTheDocument();
     expect(within(card).queryByText('3 children')).not.toBeInTheDocument();
-    expect(within(card).queryByText('book.dtd')).not.toBeInTheDocument();
+    expect(within(card).getByText('sample.book.dtd')).toBeVisible();
+    expect(
+      within(card).getByText(/Line \d+, column \d+ · exact/),
+    ).toBeVisible();
     expect(within(card).queryByText(/used by/i)).not.toBeInTheDocument();
     expect(within(card).queryByText('Current focus')).not.toBeInTheDocument();
     expect(card.querySelector('.card-topline')).toHaveProperty(
@@ -689,6 +763,7 @@ describe('focused-card information architecture', () => {
         .map((button) => button.getAttribute('aria-label')),
     ).toEqual([
       'Inspect chapter',
+      'View source for chapter',
       'Center title',
       'Center epigraph?',
       'Center section*',
@@ -700,7 +775,7 @@ describe('focused-card information architecture', () => {
     );
     expect(within(card).queryByText('+2 more')).not.toBeInTheDocument();
     expect(within(card).queryByText('5 children')).not.toBeInTheDocument();
-    expect(within(card).queryByText('book.dtd')).not.toBeInTheDocument();
+    expect(within(card).getByText('sample.book.dtd')).toBeVisible();
     expect(
       within(card).getByRole('button', { name: 'Center figure*' }),
     ).toBeVisible();

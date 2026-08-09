@@ -294,7 +294,9 @@ describe('welcome, Help, and built-in sample integration', () => {
     ).toBeVisible();
     const focusCard = screen.getByRole('article', { name: 'book' });
     expect(within(focusCard).getByText(sampleComment)).toBeVisible();
-    expect(within(focusCard).queryByText(/line \d+/i)).not.toBeInTheDocument();
+    expect(
+      within(focusCard).getByText('Line 1, column 1 · exact'),
+    ).toBeVisible();
 
     await fireEvent.click(screen.getByRole('button', { name: 'Inspect book' }));
     const inspector = screen.getByRole('complementary', {
@@ -317,13 +319,20 @@ describe('welcome, Help, and built-in sample integration', () => {
         inspector.querySelector<HTMLElement>('[data-inspector-comments]')!,
       ).getByText(sampleComment),
     ).toBeVisible();
-    expect(within(inspector).getByText(/sample\.book\.dtd/)).toBeVisible();
-    const markup = within(inspector).getByText('View source markup');
-    await fireEvent.click(markup);
-    expect(within(inspector).getByText(/<!ELEMENT book/)).toBeVisible();
-    expect(within(inspector).getByText(/<!ATTLIST book/)).toBeVisible();
-    expect(inspector.querySelector('details code')).toHaveTextContent(
-      sampleComment,
+    expect(
+      within(inspector).getAllByText(/sample\.book\.dtd/).length,
+    ).toBeGreaterThan(0);
+    await fireEvent.click(
+      within(inspector).getByRole('button', { name: 'View source for book' }),
+    );
+    const sourceDialog = await screen.findByRole('dialog', { name: 'book' });
+    expect(within(sourceDialog).getByText(/<!ELEMENT book/)).toBeVisible();
+    expect(within(sourceDialog).getByText(/<!ATTLIST book/)).toBeVisible();
+    expect(sourceDialog.querySelector('code')).toHaveTextContent(sampleComment);
+    await fireEvent.click(
+      within(sourceDialog).getByRole('button', {
+        name: 'Close source for book',
+      }),
     );
 
     const search = screen.getByRole('searchbox', { name: 'Search schema' });

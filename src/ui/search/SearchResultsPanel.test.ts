@@ -44,12 +44,14 @@ function renderPanel(
     readonly currentFocusNodeId?: string;
     readonly inspectedNodeId?: string;
     readonly actionError?: string;
+    readonly sourceViewable?: boolean;
   } = {},
 ) {
   const onClose = vi.fn();
   const onCenterResult = vi.fn();
   const onInspectResult = vi.fn();
   const onOpenPackageEntry = vi.fn();
+  const onViewSource = vi.fn();
   const presentation = buildProjectSearchPresentation(query, results);
   const rendered = render(SearchResultsPanel, {
     props: {
@@ -61,6 +63,8 @@ function renderPanel(
       onCenterResult,
       onInspectResult,
       onOpenPackageEntry,
+      canViewSource: () => options.sourceViewable ?? false,
+      onViewSource,
       onClose,
     },
   });
@@ -70,6 +74,7 @@ function renderPanel(
     onCenterResult,
     onInspectResult,
     onOpenPackageEntry,
+    onViewSource,
     onClose,
   };
 }
@@ -163,6 +168,29 @@ describe('search results panel', () => {
     expect(within(article).queryByRole('link')).not.toBeInTheDocument();
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(screen.queryByRole('option')).not.toBeInTheDocument();
+  });
+
+  it('adds a distinct source action only for retained source without invoking primary actions', async () => {
+    const viewable = renderPanel('Base', [result()], {
+      sourceViewable: true,
+    });
+    const sourceAction = screen.getByRole('button', {
+      name: 'View source for BaseType',
+    });
+    await fireEvent.click(sourceAction);
+    expect(viewable.onViewSource).toHaveBeenCalledWith(
+      expect.objectContaining({ nodeId: 'type-1' }),
+      sourceAction,
+    );
+    expect(viewable.onCenterResult).not.toHaveBeenCalled();
+    expect(viewable.onInspectResult).not.toHaveBeenCalled();
+    expect(screen.getByRole('heading', { name: 'BaseType' })).toBeVisible();
+
+    viewable.unmount();
+    renderPanel('Base', [result()], { sourceViewable: false });
+    expect(
+      screen.queryByRole('button', { name: 'View source for BaseType' }),
+    ).not.toBeInTheDocument();
   });
 
   it('inspects source-oriented records without fabricating a carousel action', async () => {

@@ -101,6 +101,23 @@ async function waitUntilSettled(
   return button;
 }
 
+async function openInspectorSource(name: string): Promise<HTMLElement> {
+  const inspector = screen.getByRole('complementary', {
+    name: 'Schema inspector',
+  });
+  await fireEvent.click(
+    within(inspector).getByRole('button', { name: `View source for ${name}` }),
+  );
+  return screen.findByRole('dialog', { name });
+}
+
+async function closeSource(dialog: HTMLElement, name: string): Promise<void> {
+  await fireEvent.click(
+    within(dialog).getByRole('button', { name: `Close source for ${name}` }),
+  );
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+}
+
 function currentSession() {
   return {
     active: get(activeProjectStore),
@@ -214,7 +231,9 @@ describe('rendered local XSD import success flow', () => {
     ).toBeVisible();
     expect(within(documentation).getByText('Language')).toBeVisible();
     expect(within(documentation).getByText('en')).toBeVisible();
-    expect(screen.getAllByText('View source markup')).toHaveLength(1);
+    expect(
+      within(inspector).getByRole('button', { name: 'View source for root' }),
+    ).toBeVisible();
     expect(screen.queryByText('View raw XML')).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'AppInfo' })).toBeNull();
     expect(get(navigationStore).navigationPath).toEqual(path);
@@ -300,7 +319,7 @@ describe('rendered local XSD import success flow', () => {
     ).toBeVisible();
     expect(documentation.querySelector('details')).toBeNull();
     expect(appInfo.querySelector('details')).toBeNull();
-    expect(document.querySelectorAll('details')).toHaveLength(1);
+    expect(document.querySelectorAll('details')).toHaveLength(0);
     expect(document.querySelectorAll('details[open]')).toHaveLength(0);
     expect(within(documentation).queryByRole('link')).not.toBeInTheDocument();
     expect(within(appInfo).queryByRole('link')).not.toBeInTheDocument();
@@ -308,17 +327,15 @@ describe('rendered local XSD import success flow', () => {
     const navigationBefore = get(navigationStore);
     const inspectorBefore = get(inspectorStore);
     const announcementBefore = screen.getByRole('status').textContent;
-    const disclosure = screen.getByText('View source markup');
-    await disclosure.click();
-    expect(disclosure.closest('details')).toHaveAttribute('open');
+    const sourceDialog = await openInspectorSource('Schema overview');
     const schemaMetadata = active.xsdMetadataByNodeId![schemaId]!;
     const exactSchemaMarkup = annotationsXsd.slice(
       schemaMetadata.sourceRange.start.offset,
       schemaMetadata.sourceRange.end.offset,
     );
-    expect(
-      document.querySelector('[data-node-inspector] pre code')?.textContent,
-    ).toBe(exactSchemaMarkup);
+    expect(sourceDialog.querySelector('pre code')?.textContent).toBe(
+      exactSchemaMarkup,
+    );
     expect(exactSchemaMarkup).toMatch(/^<xs:schema[\s\S]*<\/xs:schema>$/);
     expect(exactSchemaMarkup).toContain(
       `<xs:documentation xml:lang='en' source="docs/schema">`,
@@ -328,6 +345,7 @@ describe('rendered local XSD import success flow', () => {
     expect(document.querySelector('script')).toBeNull();
     expect(documentation.querySelector('img')).toBeNull();
     expect(appInfo.querySelector('img')).toBeNull();
+    await closeSource(sourceDialog, 'Schema overview');
     expect(get(navigationStore)).toEqual(navigationBefore);
     expect(get(inspectorStore)).toEqual(inspectorBefore);
     expect(screen.getByRole('status')).toHaveTextContent(
@@ -512,7 +530,11 @@ describe('rendered local XSD import success flow', () => {
           ).getByText(text),
         ).toBeVisible(),
       );
-      expect(screen.getAllByText('View source markup')).toHaveLength(1);
+      expect(
+        within(inspector).getByRole('button', {
+          name: /^View source for /,
+        }),
+      ).toBeVisible();
       expect(screen.queryByText('View raw XML')).not.toBeInTheDocument();
     };
 
@@ -535,21 +557,22 @@ describe('rendered local XSD import success flow', () => {
       'Documentation',
       'Extension documentation.',
     );
-    await fireEvent.click(screen.getByText('View source markup'));
+    let sourceDialog = await openInspectorSource(extensionNode.name);
     const extensionMetadata = active.xsdMetadataByNodeId![extensionNode.id]!;
     const exactExtensionMarkup = annotationsXsd.slice(
       extensionMetadata.sourceRange.start.offset,
       extensionMetadata.sourceRange.end.offset,
     );
-    expect(
-      document.querySelector('[data-node-inspector] pre code')?.textContent,
-    ).toBe(exactExtensionMarkup);
+    expect(sourceDialog.querySelector('pre code')?.textContent).toBe(
+      exactExtensionMarkup,
+    );
     expect(exactExtensionMarkup).toContain('base="a:BaseType"');
     expect(exactExtensionMarkup).toContain('Extension documentation.');
     expect(exactExtensionMarkup).toContain('<xs:sequence>');
     expect(exactExtensionMarkup).toContain('name="extra"');
     expect(exactExtensionMarkup).toContain('name="extensionCode"');
     expect(exactExtensionMarkup).toContain('extension attribute metadata');
+    await closeSource(sourceDialog, extensionNode.name);
 
     const statusRestriction = nodeWithText('Restriction documentation.');
     expect(inspectorStore.inspect(statusRestriction.id).applied).toBe(true);
@@ -563,20 +586,21 @@ describe('rendered local XSD import success flow', () => {
         ).getByText('tool/active'),
       ).toBeVisible(),
     );
-    await fireEvent.click(screen.getByText('View source markup'));
+    sourceDialog = await openInspectorSource(statusRestriction.name);
     const restrictionMetadata =
       active.xsdMetadataByNodeId![statusRestriction.id]!;
     const exactRestrictionMarkup = annotationsXsd.slice(
       restrictionMetadata.sourceRange.start.offset,
       restrictionMetadata.sourceRange.end.offset,
     );
-    expect(
-      document.querySelector('[data-node-inspector] pre code')?.textContent,
-    ).toBe(exactRestrictionMarkup);
+    expect(sourceDialog.querySelector('pre code')?.textContent).toBe(
+      exactRestrictionMarkup,
+    );
     expect(exactRestrictionMarkup).toContain('<xs:enumeration value="active">');
     expect(exactRestrictionMarkup).toContain(
       '<xs:appinfo source="tool/active">',
     );
+    await closeSource(sourceDialog, statusRestriction.name);
 
     const extendedType = nodeWithText('Extended type documentation.');
     expect(inspectorStore.inspect(extendedType.id).applied).toBe(true);
@@ -599,18 +623,19 @@ describe('rendered local XSD import success flow', () => {
     expect(
       within(extendedDocumentation).queryByText('Root element documentation.'),
     ).not.toBeInTheDocument();
-    await fireEvent.click(screen.getByText('View source markup'));
+    sourceDialog = await openInspectorSource(extendedType.name);
     const extendedMetadata = active.xsdMetadataByNodeId![extendedType.id]!;
     const exactExtendedMarkup = annotationsXsd.slice(
       extendedMetadata.sourceRange.start.offset,
       extendedMetadata.sourceRange.end.offset,
     );
-    expect(
-      document.querySelector('[data-node-inspector] pre code')?.textContent,
-    ).toBe(exactExtendedMarkup);
+    expect(sourceDialog.querySelector('pre code')?.textContent).toBe(
+      exactExtendedMarkup,
+    );
     expect(exactExtendedMarkup).toContain('<xs:complexContent>');
     expect(exactExtendedMarkup).toContain('Complex-content documentation.');
     expect(exactExtendedMarkup).toContain('<xs:extension base="a:BaseType">');
+    await closeSource(sourceDialog, extendedType.name);
 
     const globalAttribute = nodeWithText('global attribute metadata');
     await inspectAndExpect(
@@ -624,20 +649,20 @@ describe('rendered local XSD import success flow', () => {
       'AppInfo',
       'extension attribute metadata',
     );
-    const attributeDisclosure = screen.getByText('View source markup');
-    await fireEvent.click(attributeDisclosure);
+    sourceDialog = await openInspectorSource(extensionAttribute.name);
     const attributeMetadata =
       active.xsdMetadataByNodeId![extensionAttribute.id]!;
     const exactAttributeMarkup = annotationsXsd.slice(
       attributeMetadata.sourceRange.start.offset,
       attributeMetadata.sourceRange.end.offset,
     );
-    expect(
-      document.querySelector('[data-node-inspector] pre code')?.textContent,
-    ).toBe(exactAttributeMarkup);
+    expect(sourceDialog.querySelector('pre code')?.textContent).toBe(
+      exactAttributeMarkup,
+    );
     expect(exactAttributeMarkup).toMatch(
       /^<xs:attribute name="extensionCode"[\s\S]*<\/xs:attribute>$/,
     );
+    await closeSource(sourceDialog, extensionAttribute.name);
   });
 
   it('clears annotation sections when an ordinary XSD replaces the annotated project', async () => {
@@ -868,7 +893,11 @@ describe('rendered local XSD import success flow', () => {
     expect(
       within(inspector).queryByRole('region', { name: 'Allowed values' }),
     ).toBeNull();
-    expect(screen.getByText('View source markup')).toBeVisible();
+    expect(
+      within(inspector).getByRole('button', {
+        name: 'View source for Restriction of Restricted',
+      }),
+    ).toBeVisible();
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
@@ -962,7 +991,11 @@ describe('rendered local XSD import success flow', () => {
         screen.getByRole('navigation', { name: 'Schema navigation' }),
       ).queryByRole('heading', { name: /enumerations?/i }),
     ).toBeNull();
-    expect(screen.getByText('View source markup')).toBeVisible();
+    expect(
+      within(inspector).getByRole('button', {
+        name: 'View source for Restriction of StatusType',
+      }),
+    ).toBeVisible();
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
@@ -1064,7 +1097,11 @@ describe('rendered local XSD import success flow', () => {
           ),
       ),
     ).toBe(true);
-    expect(screen.getByText('View source markup')).toBeVisible();
+    expect(
+      within(inspector).getByRole('button', {
+        name: 'View source for Schema overview',
+      }),
+    ).toBeVisible();
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
@@ -1130,7 +1167,9 @@ describe('rendered local XSD import success flow', () => {
       }),
     ).toBeVisible();
     expect(within(schemaCard).queryByText('Schema')).not.toBeInTheDocument();
-    expect(within(schemaCard).getByText('basic-structure.xsd')).toBeVisible();
+    expect(
+      within(schemaCard).getAllByText('basic-structure.xsd').length,
+    ).toBeGreaterThan(0);
     expect(within(schemaCard).getByText('urn:books')).toBeVisible();
     expect(
       within(schemaCard).getByRole('button', {
@@ -1173,7 +1212,11 @@ describe('rendered local XSD import success flow', () => {
       }),
     ).toBeVisible();
     expect(get(inspectorStore).inspectedNodeId).toBe(schemaNodeId);
-    expect(screen.getByText('View source markup')).toBeVisible();
+    expect(
+      within(inspector).getByRole('button', {
+        name: 'View source for Schema overview',
+      }),
+    ).toBeVisible();
     expect(screen.queryByRole('region', { name: 'Attributes' })).toBeNull();
     expect(screen.queryByRole('alert')).toBeNull();
   });
@@ -1493,8 +1536,8 @@ describe('rendered local XSD import success flow', () => {
     });
     expect(overviewCard).not.toHaveTextContent('Kind: Schema');
     expect(
-      within(overviewCard).getByText('document-elements.xsd'),
-    ).toBeVisible();
+      within(overviewCard).getAllByText('document-elements.xsd').length,
+    ).toBeGreaterThan(0);
     expect(within(overviewCard).getByText('urn:documents')).toBeVisible();
     expect(
       within(overviewCard).getByRole('button', {
@@ -1989,7 +2032,11 @@ describe('rendered coordinated DTD/XSD replacement', () => {
         { name: 'Inspect book' },
       ),
     );
-    expect(screen.getByText('View source markup')).toBeVisible();
+    expect(
+      within(
+        screen.getByRole('complementary', { name: 'Schema inspector' }),
+      ).getByRole('button', { name: 'View source for book' }),
+    ).toBeVisible();
   });
 
   it('prevents a stale DTD read from replacing a newer XSD', async () => {

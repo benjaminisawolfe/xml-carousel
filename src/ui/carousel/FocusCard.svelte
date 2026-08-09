@@ -4,6 +4,8 @@
   import type { ImplementedSemanticZoomPresentation } from './semanticZoomPresentation';
   import NodeKindBadge from './NodeKindBadge.svelte';
   import { formatSchemaNodeKind } from './nodePresentation';
+  import type { SourceViewPresentation } from '../presentation/sourceMarkupPresentation';
+  import SourceOrientation from '../source/SourceOrientation.svelte';
 
   export let summary: FocusCardSummary;
   export let isInspected: boolean;
@@ -12,6 +14,8 @@
   export let motionKey: string;
   export let presentation: ImplementedSemanticZoomPresentation = 'full';
   export let journeyPosition = 0;
+  export let sourcePresentation: SourceViewPresentation | undefined = undefined;
+  export let onViewSource: (origin: HTMLButtonElement) => void = () => {};
 
   let heading: HTMLHeadingElement;
   let summaryScrollPointerId: number | undefined;
@@ -109,6 +113,9 @@
       onpointerup={endSummaryPointerScroll}
       onpointercancel={endSummaryPointerScroll}
     >
+      {#if sourcePresentation && (sourcePresentation.sourceIdentity || sourcePresentation.sourceAvailable)}
+        <SourceOrientation presentation={sourcePresentation} {onViewSource} />
+      {/if}
       <section
         class="structure"
         aria-label={summary.kind === 'schema' ? 'Declarations' : 'Structure'}

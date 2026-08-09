@@ -7,12 +7,14 @@ import {
 } from '@testing-library/svelte';
 import JSZip from 'jszip';
 import { get } from 'svelte/store';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import App from '../app/App.svelte';
 import { inspectorStore } from '../app/stores/inspectorStore';
 import { navigationStore } from '../app/stores/navigationStore';
+import { semanticZoomStore } from '../app/stores/semanticZoomStore';
 import { replaceProjectSession } from '../app/stores/projectSession';
 import {
+  bookDtdImportResult,
   bookDtdNodeIds,
   bookDtdProject,
 } from '../schema/samples/bookDtdProject';
@@ -27,7 +29,17 @@ function restoreSampleProject(): void {
   const result = replaceProjectSession({
     project: bookDtdProject,
     initialFocusNodeId: bookDtdNodeIds.book,
-    metadata: { origin: 'sample', sourceFilename: 'sample.book.dtd' },
+    metadata: {
+      origin: 'sample',
+      sourceFilename: 'sample.book.dtd',
+      ...(bookDtdImportResult.status === 'success'
+        ? {
+            sourceMarkupByNodeId: bookDtdImportResult.sourceMarkupByNodeId,
+            commentsByNodeId: bookDtdImportResult.commentsByNodeId,
+            dtdAttributesByNodeId: bookDtdImportResult.dtdAttributesByNodeId,
+          }
+        : {}),
+    },
   });
   if (!result.applied) throw new Error('Expected sample restoration to apply.');
 }
@@ -49,6 +61,118 @@ async function zipBytes(): Promise<ArrayBuffer> {
 }
 
 describe('application shell', () => {
+  it('opens source outside the inert shell and restores focus without mutating app state', async () => {
+    restoreSampleProject();
+    const request = vi.spyOn(globalThis, 'fetch');
+    const { container } = render(App);
+    const beforeNavigation = get(navigationStore);
+    const beforeInspector = get(inspectorStore);
+    const beforeZoom = get(semanticZoomStore);
+    const sourceAction = screen.getByRole('button', {
+      name: 'View source for book',
+    });
+
+    await fireEvent.click(sourceAction);
+
+    const dialog = await screen.findByRole('dialog', { name: 'book' });
+    const shell = container.querySelector('.app-shell');
+    expect(shell).toHaveProperty('inert', true);
+    expect(dialog.closest('.app-shell')).toBeNull();
+    expect(dialog).toHaveTextContent('sample.book.dtd');
+    expect(dialog).toHaveTextContent('Line 1, column 1 · exact');
+    expect(get(navigationStore)).toEqual(beforeNavigation);
+    expect(get(inspectorStore)).toEqual(beforeInspector);
+    expect(get(semanticZoomStore)).toEqual(beforeZoom);
+    expect(request).not.toHaveBeenCalled();
+
+    await fireEvent.click(
+      within(dialog).getByRole('button', { name: 'Close source for book' }),
+    );
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(sourceAction).toHaveFocus();
+    expect(shell).toHaveProperty('inert', false);
+    request.mockRestore();
+  });
+
+  it('restores Inspector-origin focus while focus and inspection remain independent', async () => {
+    restoreSampleProject();
+    render(App);
+    const navigationPath = get(navigationStore).navigationPath;
+    const focusedNodeId = navigationPath[navigationPath.length - 1];
+    expect(inspectorStore.inspect(bookDtdNodeIds.chapter).applied).toBe(true);
+    const inspectedNodeId = get(inspectorStore).inspectedNodeId;
+    const sourceAction = await screen.findByRole('button', {
+      name: 'View source for chapter',
+    });
+    await fireEvent.click(sourceAction);
+    const dialog = await screen.findByRole('dialog', { name: 'chapter' });
+
+    let currentPath = get(navigationStore).navigationPath;
+    expect(currentPath[currentPath.length - 1]).toBe(focusedNodeId);
+    expect(get(inspectorStore).inspectedNodeId).toBe(inspectedNodeId);
+    await fireEvent.click(
+      within(dialog).getByRole('button', {
+        name: 'Close source for chapter',
+      }),
+    );
+    await waitFor(() => expect(sourceAction).toHaveFocus());
+    currentPath = get(navigationStore).navigationPath;
+    expect(currentPath[currentPath.length - 1]).toBe(focusedNodeId);
+    expect(get(inspectorStore).inspectedNodeId).toBe(inspectedNodeId);
+  });
+
+  it('preserves Search beneath source view and restores the exact result action', async () => {
+    restoreSampleProject();
+    render(App);
+    const beforeNavigation = get(navigationStore);
+    const beforeInspector = get(inspectorStore);
+    const searchbox = screen.getByRole('searchbox', { name: 'Search schema' });
+    await fireEvent.input(searchbox, { target: { value: 'chapter' } });
+    const sourceAction = screen.getByRole('button', {
+      name: 'View source for chapter',
+    });
+    await fireEvent.click(sourceAction);
+    const dialog = await screen.findByRole('dialog', { name: 'chapter' });
+
+    expect(searchbox).toHaveValue('chapter');
+    expect(
+      screen.getByRole('heading', { name: 'Search results' }),
+    ).toBeInTheDocument();
+    expect(get(navigationStore)).toEqual(beforeNavigation);
+    expect(get(inspectorStore)).toEqual(beforeInspector);
+    await fireEvent.click(
+      within(dialog).getByRole('button', {
+        name: 'Close source for chapter',
+      }),
+    );
+    await waitFor(() => expect(sourceAction).toHaveFocus());
+    expect(searchbox).toHaveValue('chapter');
+    expect(
+      screen.getByRole('heading', { name: 'Search results' }),
+    ).toBeVisible();
+  });
+
+  it('clears an open source target before publishing a replacement project', async () => {
+    restoreSampleProject();
+    const { container } = render(App);
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'View source for book' }),
+    );
+    await screen.findByRole('dialog', { name: 'book' });
+
+    const result = replaceProjectSession({
+      project: bookDtdProject,
+      initialFocusNodeId: bookDtdNodeIds.chapter,
+      metadata: { origin: 'sample', sourceFilename: 'replacement.dtd' },
+    });
+    expect(result.applied).toBe(true);
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(container.querySelector('.app-shell')).not.toHaveAttribute('inert');
+    expect(screen.queryByText('<!ELEMENT book')).not.toBeInTheDocument();
+    restoreSampleProject();
+  });
+
   it('renders the four required semantic regions', () => {
     render(App);
 

@@ -9,6 +9,7 @@
   import xmlCarouselLogo from '../../assets/xml-carousel-logo.svg';
   import { PROBLEM_REPORT_DIALOG_ID } from '../problems/problemReportPresentation';
   import SchemaSearch from '../search/SchemaSearch.svelte';
+  import type { SourceViewOrigin } from '../../app/stores/sourceViewStore';
 
   export let projectIdentity: string;
   export let projectStatus: string | undefined = undefined;
@@ -30,6 +31,11 @@
   export let retainedProblemFilename: string | undefined = undefined;
   export let onOpenProblems: (origin: HTMLElement) => void = () => {};
   export let onOpenHelp: () => void = () => {};
+  export let onOpenSource: (
+    nodeId: string,
+    origin: SourceViewOrigin,
+    originElement: HTMLElement,
+  ) => void = () => {};
 
   let dtdOpenButton: HTMLButtonElement;
   let xsdOpenButton: HTMLButtonElement;
@@ -209,7 +215,7 @@
   </div>
 
   <div class="search-owner" role="presentation" onpointerdown={onSearchIntent}>
-    <SchemaSearch />
+    <SchemaSearch {onOpenSource} />
   </div>
 
   {#if retainedProblemAccessibleName && retainedProblemCount !== undefined}

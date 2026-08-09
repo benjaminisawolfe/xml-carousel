@@ -8,6 +8,14 @@
   import type { NodeCenterRequest } from '../../app/stores/navigationCentering';
   import { buildInspectorSummary } from '../inspector/inspectorSummary';
   import NodeInspector from '../inspector/NodeInspector.svelte';
+  import type { SourceViewOrigin } from '../../app/stores/sourceViewStore';
+  import { selectSourceViewPresentation } from '../presentation/sourceMarkupPresentation';
+
+  export let onOpenSource: (
+    nodeId: string,
+    origin: SourceViewOrigin,
+    originElement: HTMLElement,
+  ) => void = () => {};
 
   const { inspectedNodeId, hasTarget } = inspectorStore;
   const { currentFocusNodeId } = navigationStore;
@@ -29,6 +37,9 @@
     observedInspectedNodeId = $inspectedNodeId;
     if ($inspectedNodeId) void focusOverlayInspectorEntry();
   }
+  $: sourcePresentation = $inspectedNodeId
+    ? selectSourceViewPresentation($activeProjectStore, $inspectedNodeId)
+    : undefined;
   $: childListResetKey = `${$activeProjectStore.project.id}\u0000${$projectSessionResetStore.revision}\u0000${$inspectedNodeId ?? ''}`;
 
   onMount(() => {
@@ -124,10 +135,13 @@
   {#if inspectorSummary}
     <NodeInspector
       summary={inspectorSummary}
+      {sourcePresentation}
       isCurrentFocus={inspectorSummary.nodeId === $currentFocusNodeId}
       onCenter={() => void centerInspectedNode()}
       onCenterNode={centerNode}
       onClose={() => void close()}
+      onViewSource={(originElement) =>
+        onOpenSource(inspectorSummary.nodeId, 'inspector', originElement)}
       {childListResetKey}
     />
   {:else}

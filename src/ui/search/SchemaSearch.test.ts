@@ -25,7 +25,11 @@ import {
   type NavigationStore,
 } from '../../app/stores/navigationStore';
 import type { SchemaProject } from '../../schema/model';
-import { bookDtdProject } from '../../schema/samples/bookDtdProject';
+import {
+  bookDtdImportResult,
+  bookDtdProject,
+} from '../../schema/samples/bookDtdProject';
+import type { SourceViewOrigin } from '../../app/stores/sourceViewStore';
 import schemaSearchSource from './SchemaSearch.svelte?raw';
 import SchemaSearch from './SchemaSearch.svelte';
 import { SEARCH_GUIDANCE_TEXT } from '../presentation/projectSearchPresentation';
@@ -68,6 +72,11 @@ function renderSearch(
     readonly inspector?: InspectorStore;
     readonly indexBuilder?: typeof buildProjectSearchIndex;
     readonly searchEngine?: typeof searchProjectIndex;
+    readonly onOpenSource?: (
+      nodeId: string,
+      origin: SourceViewOrigin,
+      originElement: HTMLElement,
+    ) => void;
   } = {},
 ) {
   useViewport(options.compact ?? false);
@@ -94,6 +103,7 @@ function renderSearch(
       inspector,
       ...(options.indexBuilder ? { indexBuilder: options.indexBuilder } : {}),
       ...(options.searchEngine ? { searchEngine: options.searchEngine } : {}),
+      ...(options.onOpenSource ? { onOpenSource: options.onOpenSource } : {}),
     },
   });
   return { ...rendered, projectStore, navigation, inspector };
@@ -131,6 +141,42 @@ afterEach(() => {
 });
 
 describe('schema search controller', () => {
+  it('opens retained source without changing or closing Search', async () => {
+    if (bookDtdImportResult.status !== 'success') {
+      throw new Error('Expected the built-in DTD sample to import.');
+    }
+    const onOpenSource = vi.fn();
+    const { navigation, inspector } = renderSearch({
+      state: {
+        ...initialState(),
+        sourceMarkupByNodeId: bookDtdImportResult.sourceMarkupByNodeId,
+      },
+      onOpenSource,
+    });
+    const beforeNavigation = get(navigation);
+    const beforeInspector = get(inspector);
+    const searchbox = screen.getByRole('searchbox', { name: 'Search schema' });
+    await fireEvent.input(searchbox, { target: { value: 'chapter' } });
+    const sourceAction = screen.getByRole('button', {
+      name: 'View source for chapter',
+    });
+
+    await fireEvent.click(sourceAction);
+
+    expect(onOpenSource).toHaveBeenCalledWith(
+      'dtd:element:chapter',
+      'search-result',
+      sourceAction,
+    );
+    expect(get(navigation)).toEqual(beforeNavigation);
+    expect(get(inspector)).toEqual(beforeInspector);
+    expect(searchbox).toHaveValue('chapter');
+    expect(
+      screen.getByRole('heading', { name: 'Search results' }),
+    ).toBeVisible();
+    expect(sourceAction).toBeVisible();
+  });
+
   it('renders one enabled desktop searchbox with the required attributes', async () => {
     renderSearch();
     const searchbox = await screen.findByRole('searchbox', {

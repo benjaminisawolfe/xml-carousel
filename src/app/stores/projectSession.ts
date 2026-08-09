@@ -25,6 +25,7 @@ import {
   projectSessionResetStore,
   type ProjectSessionResetStore,
 } from './projectSessionResetStore';
+import { sourceViewStore, type SourceViewStore } from './sourceViewStore';
 
 export interface ProjectSessionReplacement {
   readonly project: SchemaProject;
@@ -61,6 +62,7 @@ export interface ProjectSessionDependencies {
   readonly activeProject: ActiveProjectStore;
   readonly navigation: Pick<NavigationStore, 'resetForProject'>;
   readonly inspector: Pick<InspectorStore, 'resetForProject'>;
+  readonly sourceView?: Pick<SourceViewStore, 'resetForProject'>;
   readonly presentation: ProjectSessionResetStore;
   readonly validateProject?: typeof validateActiveProjectCandidate;
 }
@@ -111,6 +113,7 @@ export function createProjectSession(
       replacement.initialFocusNodeId,
     );
     dependencies.inspector.resetForProject(replacement.project.id);
+    dependencies.sourceView?.resetForProject(replacement.project.id);
     const projectResult = dependencies.activeProject.replaceValidated(
       replacement.project,
       replacement.metadata,
@@ -245,6 +248,7 @@ export const projectSession = createProjectSession({
   activeProject: activeProjectStore,
   navigation: navigationStore,
   inspector: inspectorStore,
+  sourceView: sourceViewStore,
   presentation: projectSessionResetStore,
 });
 

@@ -9,11 +9,17 @@
   } from '../../app/import/schemaFileImportController';
   import { activeProjectStore } from '../../app/stores/projectStore';
   import { projectSessionResetStore } from '../../app/stores/projectSessionResetStore';
+  import {
+    sourceViewStore,
+    type SourceViewOrigin,
+  } from '../../app/stores/sourceViewStore';
   import { activateBuiltInSample } from '../../app/samples/sampleActivation';
   import { createWelcomePreference } from '../../app/welcome/welcomePreference';
   import type { BuiltInSampleId } from '../../schema/samples/sampleCatalog';
   import WelcomeHelpDialog from '../help/WelcomeHelpDialog.svelte';
   import ProblemReportDialog from '../problems/ProblemReportDialog.svelte';
+  import { selectSourceViewPresentation } from '../presentation/sourceMarkupPresentation';
+  import SourceViewDialog from '../source/SourceViewDialog.svelte';
   import { formatSchemaPackageStatus } from '../presentation/schemaSetOutlinePresentation';
   import { presentSchemaImportProgress } from '../presentation/schemaImportProgressPresentation';
   import CarouselRegion from './CarouselRegion.svelte';
@@ -40,6 +46,7 @@
   let problemReportAttemptId: string | undefined;
   let problemReportOrigin: HTMLElement | undefined;
   let problemReportFormat: SchemaFileFormat | undefined;
+  let sourceViewOriginElement: HTMLElement | undefined;
 
   $: projectIdentity =
     $activeProjectStore.origin === 'package'
@@ -76,6 +83,7 @@
   $: if ($projectSessionResetStore.revision !== observedProjectResetRevision) {
     observedProjectResetRevision = $projectSessionResetStore.revision;
     isNavigationOpen = false;
+    if (!$sourceViewStore.nodeId) sourceViewOriginElement = undefined;
   }
   $: if (
     isProblemReportOpen &&
@@ -83,6 +91,13 @@
       $diagnosticReport.attemptId !== problemReportAttemptId)
   ) {
     void closeProblemReport(true);
+  }
+  $: sourceViewPresentation = $sourceViewStore.nodeId
+    ? selectSourceViewPresentation($activeProjectStore, $sourceViewStore.nodeId)
+    : undefined;
+  $: if ($sourceViewStore.nodeId && !sourceViewPresentation?.sourceAvailable) {
+    sourceViewOriginElement = undefined;
+    sourceViewStore.close();
   }
 
   onMount(() => {
@@ -112,6 +127,45 @@
     problemReportOrigin = origin;
     problemReportFormat = $diagnosticReport.format;
     isProblemReportOpen = true;
+  }
+
+  function openSourceView(
+    nodeId: string,
+    origin: SourceViewOrigin,
+    originElement: HTMLElement,
+  ): void {
+    if (isHelpOpen || isProblemReportOpen) return;
+    const presentation = selectSourceViewPresentation(
+      $activeProjectStore,
+      nodeId,
+    );
+    if (!presentation?.sourceAvailable) return;
+    const result = sourceViewStore.open(presentation, origin);
+    if (!result.applied) return;
+    sourceViewOriginElement = originElement;
+  }
+
+  async function closeSourceView(restoreFocus: boolean): Promise<void> {
+    if (!$sourceViewStore.nodeId) return;
+    const origin = sourceViewOriginElement;
+    const sourceOrigin = $sourceViewStore.origin;
+    sourceViewStore.close();
+    sourceViewOriginElement = undefined;
+    await tick();
+    if (!restoreFocus) return;
+    if (origin?.isConnected) {
+      origin.focus({ preventScroll: true });
+      return;
+    }
+    const fallbackSelector =
+      sourceOrigin === 'inspector'
+        ? '[data-inspector-close]'
+        : sourceOrigin === 'search-result'
+          ? '#schema-search-input'
+          : '[data-focus-card-heading]';
+    document
+      .querySelector<HTMLElement>(fallbackSelector)
+      ?.focus({ preventScroll: true });
   }
 
   async function closeProblemReport(restoreFocus: boolean): Promise<void> {
@@ -273,7 +327,9 @@
 <div
   class="app-shell"
   data-schema-import-phase={currentImportPhase}
-  inert={isHelpOpen || isProblemReportOpen}
+  inert={isHelpOpen ||
+    isProblemReportOpen ||
+    $sourceViewStore.nodeId !== undefined}
 >
   <TopBar
     bind:this={topBar}
@@ -295,6 +351,7 @@
       : undefined}
     onOpenProblems={openProblemReport}
     onOpenHelp={openHelp}
+    onOpenSource={openSourceView}
   />
   {#if importProgressPresentation}
     <ImportProgress
@@ -332,8 +389,8 @@
     onRequestClose={closeNavigation}
     onOverlayAction={(kind) => void handleNavigationAction(kind)}
   />
-  <CarouselRegion />
-  <InspectorPanel />
+  <CarouselRegion onOpenSource={openSourceView} />
+  <InspectorPanel onOpenSource={openSourceView} />
 </div>
 
 <WelcomeHelpDialog
@@ -350,6 +407,12 @@
   report={$diagnosticReport}
   hasActiveProject={$activeProjectStore.project !== undefined}
   onClose={() => void closeProblemReport(true)}
+/>
+
+<SourceViewDialog
+  open={$sourceViewStore.nodeId !== undefined}
+  presentation={sourceViewPresentation}
+  onClose={() => void closeSourceView(true)}
 />
 
 <style>

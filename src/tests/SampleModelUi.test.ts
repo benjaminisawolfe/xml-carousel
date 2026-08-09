@@ -60,7 +60,7 @@ describe('read-only sample-model presentation', () => {
       within(carousel)
         .getAllByRole('button')
         .map((button) => button.textContent),
-    ).toHaveLength(10);
+    ).toHaveLength(11);
     expect(within(carousel).queryByRole('link')).not.toBeInTheDocument();
   });
 

@@ -12,7 +12,6 @@ import NodeInspector from './NodeInspector.svelte';
 import NodeOverview from './NodeOverview.svelte';
 import NodeRelatedDefinitions from './NodeRelatedDefinitions.svelte';
 import NodeRelationships from './NodeRelationships.svelte';
-import NodeSourceMarkup from './NodeSourceMarkup.svelte';
 import NodeStructure from './NodeStructure.svelte';
 import inspectorNodeRowSource from './InspectorNodeRow.svelte?raw';
 import nodeInspectorSource from './NodeInspector.svelte?raw';
@@ -22,8 +21,48 @@ import nodeAppInfoSource from './NodeAppInfo.svelte?raw';
 import nodeCommentsSource from './NodeComments.svelte?raw';
 import nodeDocumentationSource from './NodeDocumentation.svelte?raw';
 import nodeEnumerationValuesSource from './NodeEnumerationValues.svelte?raw';
-import nodeSourceMarkupSource from './NodeSourceMarkup.svelte?raw';
 import type { InspectorSummary } from './inspectorSummary';
+import type { SourceViewPresentation } from '../presentation/sourceMarkupPresentation';
+
+function sourcePresentation(
+  nodeId: string,
+  displayName: string,
+  text: string,
+  syntax: 'dtd' | 'xsd' = 'dtd',
+): SourceViewPresentation {
+  return {
+    projectId: 'project',
+    nodeId,
+    displayName,
+    nodeKind: syntax === 'dtd' ? 'dtdElement' : 'extension',
+    nodeKindLabel:
+      syntax === 'dtd' ? 'DTD element declaration' : 'Extension derivation',
+    sourceIdentity: {
+      kind: 'standaloneFilename',
+      label: syntax === 'dtd' ? 'book.dtd' : 'schema.xsd',
+    },
+    location: {
+      kind: 'exactLineColumn',
+      line: 1,
+      column: 1,
+      label: 'Line 1, column 1 · exact',
+    },
+    syntax,
+    fragments: [
+      {
+        id: `${nodeId}:0`,
+        text,
+        location: {
+          kind: 'exactLineColumn',
+          line: 1,
+          column: 1,
+          label: 'Line 1, column 1 · exact',
+        },
+      },
+    ],
+    sourceAvailable: true,
+  };
+}
 
 const summary: InspectorSummary = {
   nodeId: 'chapter',
@@ -892,7 +931,7 @@ describe('inspector presentation components', () => {
     expect(document.querySelector('button summary')).toBeNull();
   });
 
-  it('renders source fragments in a collapsed native disclosure before sections', async () => {
+  it('replaces the inline source disclosure with source orientation and a modal action', async () => {
     const onCenter = vi.fn();
     const onCenterNode = vi.fn();
     const onClose = vi.fn();
@@ -913,95 +952,36 @@ describe('inspector presentation components', () => {
     };
     const { container } = render(NodeInspector, {
       summary: { ...summary, sourceMarkup },
+      sourcePresentation: sourcePresentation(
+        'chapter',
+        'chapter',
+        sourceMarkup.fragments[0]!.text,
+      ),
       isCurrentFocus: true,
       onCenter,
       onCenterNode,
       onClose,
     });
 
-    const disclosure = container.querySelector('details');
-    const disclosureSummary = screen.getByText('View source markup');
+    const viewSource = screen.getByRole('button', {
+      name: 'View source for chapter',
+    });
     const firstSection = screen.getByRole('region', { name: 'Overview' });
 
-    expect(disclosure).not.toHaveAttribute('open');
-    expect(disclosureSummary).toHaveProperty('tagName', 'SUMMARY');
-    expect(disclosure?.compareDocumentPosition(firstSection)).toBe(
+    expect(container.querySelector('details')).toBeNull();
+    expect(screen.queryByText(sourceMarkup.fragments[0]!.text)).toBeNull();
+    expect(viewSource.compareDocumentPosition(firstSection)).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
-
-    disclosureSummary.focus();
-    disclosureSummary.click();
-    expect(disclosure).toHaveAttribute('open');
-    expect(document.activeElement).toBe(disclosureSummary);
-    expect(screen.getByText(sourceMarkup.fragments[0]!.text)).toHaveProperty(
-      'tagName',
-      'CODE',
-    );
+    expect(screen.getAllByText('book.dtd')).toHaveLength(1);
+    expect(screen.getByText('Line 1, column 1 · exact')).toBeVisible();
+    viewSource.click();
     expect(onCenter).not.toHaveBeenCalled();
     expect(onCenterNode).not.toHaveBeenCalled();
     expect(onClose).not.toHaveBeenCalled();
   });
 
-  it('renders discontinuous markup as safe, noninteractive text fragments', () => {
-    const hostile = '</code><script>unsafe()</script>\n<!ELEMENT safe EMPTY>';
-    render(NodeSourceMarkup, {
-      nodeId: 'safe',
-      nodeName: 'safe',
-      sourceMarkup: {
-        syntax: 'dtd',
-        fragments: [
-          {
-            id: 'safe:0',
-            sourceFileId: 'safe.dtd',
-            range: {
-              start: { offset: 0, line: 1, column: 1 },
-              end: {
-                offset: hostile.length,
-                line: 2,
-                column: 22,
-              },
-              sourceId: 'safe.dtd',
-            },
-            text: hostile,
-          },
-          {
-            id: 'safe:1',
-            sourceFileId: 'safe.dtd',
-            range: {
-              start: { offset: 100, line: 4, column: 1 },
-              end: { offset: 122, line: 4, column: 23 },
-              sourceId: 'safe.dtd',
-            },
-            text: '<!ATTLIST safe id ID>',
-          },
-        ],
-      },
-    });
-
-    const codeBlocks = document.querySelectorAll('pre > code');
-    expect(codeBlocks).toHaveLength(2);
-    expect(codeBlocks[0]?.textContent).toBe(hostile);
-    expect(document.querySelector('script')).toBeNull();
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
-    expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
-    expect(document.querySelector('pre [tabindex]')).toBeNull();
-    expect(nodeSourceMarkupSource).not.toContain('@html');
-    expect(nodeSourceMarkupSource).not.toContain('aria-live');
-    expect(nodeSourceMarkupSource).toContain('white-space: pre-wrap');
-    expect(nodeSourceMarkupSource).toContain('overflow-wrap: anywhere');
-    expect(nodeSourceMarkupSource).toContain('max-height:');
-    expect(nodeSourceMarkupSource).toContain('overflow: auto');
-    expect(nodeSourceMarkupSource).toContain(
-      'min-height: var(--control-min-size)',
-    );
-    expect(nodeSourceMarkupSource).toContain('summary:focus-visible');
-    expect(nodeSourceMarkupSource).not.toContain('animation:');
-    expect(nodeSourceMarkupSource).not.toContain('transition:');
-    expect(nodeSourceMarkupSource).not.toContain('…');
-  });
-
-  it('renders one exact XSD View Markup disclosure outside annotation sections', () => {
+  it('renders one exact XSD View source action outside annotation sections', () => {
     const hostile = `<xs:extension base="a:BaseType">
   <xs:annotation><xs:documentation>Readable</xs:documentation></xs:annotation>
   <script>alert(1)</script>
@@ -1048,18 +1028,25 @@ describe('inspector presentation components', () => {
     };
     const { container } = render(NodeInspector, {
       summary: xsdSummary,
+      sourcePresentation: sourcePresentation(
+        'extension',
+        'Extension of ExtendedType',
+        hostile,
+        'xsd',
+      ),
       isCurrentFocus: true,
       onCenter: vi.fn(),
       onCenterNode: vi.fn(),
       onClose: vi.fn(),
     });
 
-    const markupSummaries = screen.getAllByText('View source markup');
-    expect(markupSummaries).toHaveLength(1);
+    const viewSource = screen.getAllByRole('button', {
+      name: 'View source for Extension of ExtendedType',
+    });
+    expect(viewSource).toHaveLength(1);
     expect(screen.queryByText('View raw XML')).not.toBeInTheDocument();
-    const details = markupSummaries[0]!.closest('details');
-    expect(details).not.toHaveAttribute('open');
-    expect(container.querySelector('pre code')?.textContent).toBe(hostile);
+    expect(container.querySelector('details')).toBeNull();
+    expect(container.querySelector('pre code')).toBeNull();
     expect(container.querySelector('script')).toBeNull();
     expect(container.querySelector('img')).toBeNull();
     expect(
@@ -1068,48 +1055,11 @@ describe('inspector presentation components', () => {
         .map((heading) => heading.textContent),
     ).toEqual(['Overview', 'Structure', 'Documentation', 'AppInfo', 'Used by']);
     expect(
-      details?.compareDocumentPosition(
+      viewSource[0]?.compareDocumentPosition(
         screen.getByRole('region', { name: 'Overview' }),
       ),
     ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(document.querySelector('summary button')).toBeNull();
-    expect(nodeSourceMarkupSource).toContain('white-space: pre');
-    expect(nodeSourceMarkupSource).toContain('overflow: auto');
-    expect(nodeSourceMarkupSource).toContain('max-height:');
-    expect(nodeSourceMarkupSource).not.toContain('{@html');
-    expect(nodeSourceMarkupSource).not.toContain('innerHTML');
-  });
-
-  it('preserves disclosure state for the same node and collapses for a new node', () => {
-    const sourceMarkup = {
-      syntax: 'xsd' as const,
-      fragments: [
-        {
-          id: 'node:0',
-          sourceFileId: 'schema.xsd',
-          range: {
-            start: { offset: 0, line: 1, column: 1 },
-            end: { offset: 21, line: 1, column: 22 },
-            sourceId: 'schema.xsd',
-          },
-          text: '<xs:element name="node"/>',
-        },
-      ],
-    };
-    const { container, rerender } = render(NodeSourceMarkup, {
-      nodeId: 'first',
-      nodeName: 'first',
-      sourceMarkup,
-    });
-    const details = container.querySelector('details');
-    screen.getByText('View source markup').click();
-    expect(details).toHaveAttribute('open');
-
-    rerender({ nodeId: 'first', nodeName: 'first', sourceMarkup });
-    expect(details).toHaveAttribute('open');
-
-    rerender({ nodeId: 'second', nodeName: 'second', sourceMarkup });
-    expect(details).not.toHaveAttribute('open');
   });
 
   it('composes sections in order and limits header actions by focus state', () => {

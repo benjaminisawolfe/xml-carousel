@@ -18,6 +18,7 @@ import {
   type ActiveProjectState,
 } from './projectStore';
 import { createProjectSessionResetStore } from './projectSessionResetStore';
+import { createSourceViewStore } from './sourceViewStore';
 import externalReferences from '../../../tests/fixtures/xsd/external-references.xsd?raw';
 import sameDocumentReferences from '../../../tests/fixtures/xsd/same-document-references.xsd?raw';
 import {
@@ -89,14 +90,25 @@ function fixture() {
     projectId: bookDtdProject.id,
   });
   const presentation = createProjectSessionResetStore();
+  const sourceView = createSourceViewStore(project, {
+    projectId: bookDtdProject.id,
+  });
   const session = createProjectSession({
     activeProject,
     navigation,
     inspector,
+    sourceView,
     presentation,
   });
 
-  return { activeProject, navigation, inspector, presentation, session };
+  return {
+    activeProject,
+    navigation,
+    inspector,
+    sourceView,
+    presentation,
+    session,
+  };
 }
 
 async function importedPackage() {
@@ -146,6 +158,14 @@ describe('project session replacement', () => {
     const context = fixture();
     context.navigation.initializeAt(bookDtdNodeIds.chapter);
     context.inspector.inspect(bookDtdNodeIds.section);
+    context.sourceView.open(
+      {
+        projectId: bookDtdProject.id,
+        nodeId: bookDtdNodeIds.book,
+        sourceAvailable: true,
+      },
+      'focused-card',
+    );
     const result = context.session.activateImportedProject(
       importSource(librarySource),
     );
@@ -163,6 +183,7 @@ describe('project session replacement', () => {
       navigationPath: ['dtd:element:library'],
     });
     expect(get(context.inspector)).toEqual({ projectId: 'test:library' });
+    expect(get(context.sourceView)).toEqual({ projectId: 'test:library' });
     expect(get(context.navigation).navigationPath).not.toContain(
       bookDtdNodeIds.chapter,
     );
