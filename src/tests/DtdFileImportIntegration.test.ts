@@ -85,6 +85,25 @@ async function waitUntilImportSettles(): Promise<HTMLButtonElement> {
   return button;
 }
 
+async function openSource(
+  scope: HTMLElement,
+  name: string,
+): Promise<HTMLElement> {
+  await fireEvent.click(
+    await within(scope).findByRole('button', {
+      name: `View source for ${name}`,
+    }),
+  );
+  return screen.findByRole('dialog', { name });
+}
+
+async function closeSource(dialog: HTMLElement, name: string): Promise<void> {
+  await fireEvent.click(
+    within(dialog).getByRole('button', { name: `Close source for ${name}` }),
+  );
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+}
+
 function deferred<T>(): {
   readonly promise: Promise<T>;
   readonly resolve: (value: T) => void;
@@ -234,8 +253,9 @@ describe('rendered local DTD import success flow', () => {
     expect(
       within(inspector).getByText('Undeclared element name'),
     ).toBeVisible();
-    await fireEvent.click(within(inspector).getByText('View source markup'));
-    expect(inspector).toHaveTextContent('<!ATTLIST book id ID #IMPLIED>');
+    const sourceDialog = await openSource(inspector, 'ATTLIST book');
+    expect(sourceDialog).toHaveTextContent('<!ATTLIST book id ID #IMPLIED>');
+    await closeSource(sourceDialog, 'ATTLIST book');
     const projectBeforeDismiss = get(activeProjectStore);
     const navigationBeforeDismiss = get(navigationStore);
     const inspectorBeforeDismiss = get(inspectorStore);
@@ -277,9 +297,10 @@ describe('rendered local DTD import success flow', () => {
       name: 'Schema inspector',
     });
     expect(within(inspector).getByText('ID · Implied')).toBeVisible();
-    await fireEvent.click(within(inspector).getByText('View source markup'));
-    expect(inspector).toHaveTextContent('<!ATTLIST book id ID #IMPLIED>');
-    expect(inspector).toHaveTextContent('<!ATTLIST book id CDATA #IMPLIED>');
+    const sourceDialog = await openSource(inspector, 'book');
+    expect(sourceDialog).toHaveTextContent('<!ATTLIST book id ID #IMPLIED>');
+    expect(sourceDialog).toHaveTextContent('<!ATTLIST book id CDATA #IMPLIED>');
+    await closeSource(sourceDialog, 'book');
   });
 
   it('presents attached comments on focused cards and in the inspector only', async () => {
@@ -313,17 +334,14 @@ describe('rendered local DTD import success flow', () => {
     const comments = within(inspector).getByRole('region', {
       name: 'DTD comments',
     });
-    const bookMarkupSummary = within(inspector).getByText('View source markup');
-    const bookMarkupDisclosure = bookMarkupSummary.closest('details');
-    expect(bookMarkupDisclosure).not.toHaveAttribute('open');
-    await fireEvent.click(bookMarkupSummary);
-    expect(bookMarkupDisclosure).toHaveAttribute('open');
-    expect(
-      bookMarkupDisclosure?.querySelector('pre > code')?.textContent,
-    ).toContain('<!ELEMENT book (chapter+)><!-- Book structure. -->');
-    expect(bookMarkupDisclosure?.textContent).not.toContain(
+    const sourceDialog = await openSource(inspector, 'book');
+    expect(sourceDialog.querySelector('pre > code')?.textContent).toContain(
+      '<!ELEMENT book (chapter+)><!-- Book structure. -->',
+    );
+    expect(sourceDialog.textContent).not.toContain(
       'Project-level note retained at end of file.',
     );
+    await closeSource(sourceDialog, 'book');
     expect(within(comments).getAllByRole('listitem')).toHaveLength(2);
     expect(
       within(comments).getByText('The root element for the document.'),
@@ -343,11 +361,7 @@ describe('rendered local DTD import success flow', () => {
     await fireEvent.click(
       within(catalogCard).getByRole('button', { name: 'Inspect book' }),
     );
-    expect(
-      within(screen.getByRole('complementary', { name: 'Schema inspector' }))
-        .getByText('View source markup')
-        .closest('details'),
-    ).not.toHaveAttribute('open');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
     navigationStore.initializeAt('dtd:element:chapter');
     const itemCard = await screen.findByRole('article', { name: 'chapter' });
@@ -364,10 +378,10 @@ describe('rendered local DTD import success flow', () => {
       name: 'DTD comments',
     });
     expect(
-      within(chapterInspector)
-        .getByText('View source markup')
-        .closest('details'),
-    ).not.toHaveAttribute('open');
+      within(chapterInspector).getByRole('button', {
+        name: 'View source for chapter',
+      }),
+    ).toBeVisible();
     expect(within(chapterComments).getAllByRole('listitem')).toHaveLength(3);
     expect(within(chapterComments).getByText('Chapter prose.')).toBeVisible();
     expect(
@@ -738,10 +752,10 @@ describe('rendered local DTD import success flow', () => {
         { name: 'Inspect library' },
       ),
     );
-    await fireEvent.click(screen.getByText('View source markup'));
-    expect(
-      screen.getByText('View source markup').closest('details'),
-    ).toHaveAttribute('open');
+    const libraryInspector = screen.getByRole('complementary', {
+      name: 'Schema inspector',
+    });
+    await openSource(libraryInspector, 'library');
 
     await selectFile(container, dtdFile('cycle.dtd', cycleSource));
     await waitUntilImportSettles();
@@ -755,15 +769,17 @@ describe('rendered local DTD import success flow', () => {
     });
     expect(within(navigation).queryByText('library')).toBeNull();
     expect(within(navigation).queryByText('shelf')).toBeNull();
-    expect(screen.queryByText('View source markup')).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await fireEvent.click(
       within(screen.getByRole('article', { name: 'a' })).getByRole('button', {
         name: 'Inspect a',
       }),
     );
     expect(
-      screen.getByText('View source markup').closest('details'),
-    ).not.toHaveAttribute('open');
+      within(
+        screen.getByRole('complementary', { name: 'Schema inspector' }),
+      ).getByRole('button', { name: 'View source for a' }),
+    ).toBeVisible();
     expect(
       JSON.stringify(get(activeProjectStore).sourceMarkupByNodeId),
     ).not.toContain('<!ELEMENT library');
@@ -834,10 +850,10 @@ describe('rendered local DTD import failure flow', () => {
     await waitUntilImportSettles();
     navigationStore.initializeAt('dtd:element:chapter');
     inspectorStore.inspect('dtd:element:chapter');
-    const disclosureSummary = await screen.findByText('View source markup');
-    await fireEvent.click(disclosureSummary);
-    const disclosure = disclosureSummary.closest('details');
-    expect(disclosure).toHaveAttribute('open');
+    const sourceDialog = await openSource(
+      screen.getByRole('complementary', { name: 'Schema inspector' }),
+      'chapter',
+    );
     const before = {
       active: get(activeProjectStore),
       navigation: get(navigationStore),
@@ -859,7 +875,7 @@ describe('rendered local DTD import failure flow', () => {
     expect(get(navigationStore)).toBe(before.navigation);
     expect(get(inspectorStore)).toBe(before.inspector);
     expect(get(projectSessionResetStore)).toBe(before.presentation);
-    expect(disclosure).toHaveAttribute('open');
+    expect(sourceDialog).toBeVisible();
     expect(
       within(screen.getByRole('article', { name: 'chapter' })).getByRole(
         'heading',
@@ -867,6 +883,8 @@ describe('rendered local DTD import failure flow', () => {
       ),
     ).toBeVisible();
     expect(screen.getByRole('region', { name: 'DTD comments' })).toBeVisible();
+
+    await closeSource(sourceDialog, 'chapter');
 
     await fireEvent.click(
       screen.getByRole('button', { name: 'Dismiss import error' }),

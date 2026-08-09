@@ -44,10 +44,8 @@ describe('functional schema carousel', () => {
       '(front.matter, book.content, index)',
     );
     expect(within(focus).queryByText('3 children')).not.toBeInTheDocument();
-    expect(
-      within(focus).queryByText('sample.book.dtd'),
-    ).not.toBeInTheDocument();
-    expect(within(focus).getAllByRole('button')).toHaveLength(4);
+    expect(within(focus).getByText('sample.book.dtd')).toBeVisible();
+    expect(within(focus).getAllByRole('button')).toHaveLength(5);
     expect(
       within(focus).getByRole('button', { name: 'Inspect book' }),
     ).toBeVisible();

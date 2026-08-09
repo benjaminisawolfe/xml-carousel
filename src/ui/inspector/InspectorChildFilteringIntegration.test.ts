@@ -6,9 +6,12 @@ import { importDtdSource } from '../../schema/dtd';
 import { importXsdSource } from '../../schema/xsd';
 import NodeInspector from './NodeInspector.svelte';
 import { buildInspectorSummary } from './inspectorSummary';
+import type { SourceViewPresentation } from '../presentation/sourceMarkupPresentation';
+import { selectSourceViewPresentation } from '../presentation/sourceMarkupPresentation';
 
 function renderSummary(
   summary: NonNullable<ReturnType<typeof buildInspectorSummary>>,
+  sourcePresentation?: SourceViewPresentation,
 ) {
   return render(NodeInspector, {
     props: {
@@ -18,6 +21,7 @@ function renderSummary(
       onCenterNode: vi.fn(),
       onClose: vi.fn(),
       childListResetKey: `integration:${summary.nodeId}`,
+      sourcePresentation,
     },
   });
 }
@@ -142,11 +146,24 @@ describe('inspector child filtering integration', () => {
       result.unresolvedReferences,
     )!;
 
-    renderSummary(summary);
+    const sourcePresentation = selectSourceViewPresentation(
+      {
+        project: result.project,
+        origin: 'package',
+        sourceFilename: result.manifest.archiveFilename,
+        schemaPackageSources: result.sources,
+        sourceMarkupByNodeId: result.sourceMarkupByNodeId,
+        xsdMetadataByNodeId: result.xsdMetadataByNodeId,
+      },
+      schema.id,
+    );
+    renderSummary(summary, sourcePresentation);
     expect(
       screen.getByRole('searchbox', { name: 'Filter declarations' }),
     ).toBeVisible();
     expect(screen.getAllByText('root.xsd').length).toBeGreaterThan(0);
-    expect(screen.getByText('View source markup')).toBeVisible();
+    expect(
+      screen.getByRole('button', { name: 'View source for Schema overview' }),
+    ).toBeVisible();
   });
 });

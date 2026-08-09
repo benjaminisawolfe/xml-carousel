@@ -1,9 +1,16 @@
 <script lang="ts">
+  import type { SourceViewOrigin } from '../../app/stores/sourceViewStore';
   import SchemaCarousel from '../carousel/SchemaCarousel.svelte';
+
+  export let onOpenSource: (
+    nodeId: string,
+    origin: SourceViewOrigin,
+    originElement: HTMLElement,
+  ) => void = () => {};
 </script>
 
 <main class="carousel-region" aria-label="Schema carousel">
-  <SchemaCarousel />
+  <SchemaCarousel {onOpenSource} />
 </main>
 
 <style>

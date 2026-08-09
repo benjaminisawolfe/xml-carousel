@@ -30,6 +30,8 @@
     type SearchPresentationState,
   } from '../presentation/projectSearchPresentation';
   import SearchResultsPanel from './SearchResultsPanel.svelte';
+  import type { SourceViewOrigin } from '../../app/stores/sourceViewStore';
+  import { selectSourceViewPresentation } from '../presentation/sourceMarkupPresentation';
 
   type SearchIndexBuilder = (
     input: ProjectSearchIndexInput,
@@ -45,6 +47,11 @@
   export let inspector: InspectorStore = inspectorStore;
   export let indexBuilder: SearchIndexBuilder = buildProjectSearchIndex;
   export let searchEngine: SearchEngine = searchProjectIndex;
+  export let onOpenSource: (
+    nodeId: string,
+    origin: SourceViewOrigin,
+    originElement: HTMLElement,
+  ) => void = () => {};
 
   const panelId = 'schema-search-results';
   const compactMediaQuery = '(max-width: 899px)';
@@ -362,6 +369,24 @@
       .querySelector<HTMLElement>('summary')
       ?.focus({ preventScroll: true });
   }
+
+  function canViewSource(result: ProjectSearchResultPresentation): boolean {
+    return Boolean(
+      result.nodeId &&
+      selectSourceViewPresentation(state, result.nodeId)?.sourceAvailable,
+    );
+  }
+
+  function viewSource(
+    result: ProjectSearchResultPresentation,
+    originElement: HTMLButtonElement,
+  ): void {
+    if (!result.nodeId || !canViewSource(result)) {
+      actionError = unavailableResultMessage;
+      return;
+    }
+    onOpenSource(result.nodeId, 'search-result', originElement);
+  }
 </script>
 
 <svelte:window onkeydown={handleWindowKeydown} />
@@ -433,6 +458,8 @@
       onCenterResult={(result) => void centerResult(result)}
       onInspectResult={(result) => void inspectResult(result)}
       onOpenPackageEntry={(result) => void openPackageEntry(result)}
+      {canViewSource}
+      onViewSource={viewSource}
       onClose={() => void restoreOpeningFocus(openOrigin)}
     />
   {/if}

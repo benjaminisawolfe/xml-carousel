@@ -10,12 +10,13 @@
   import NodeOverview from './NodeOverview.svelte';
   import NodeRelationships from './NodeRelationships.svelte';
   import NodeRelatedDefinitions from './NodeRelatedDefinitions.svelte';
-  import NodeSourceMarkup from './NodeSourceMarkup.svelte';
   import NodeStructure from './NodeStructure.svelte';
   import NodeUnresolvedReferences from './NodeUnresolvedReferences.svelte';
   import type { InspectorSummary } from './inspectorSummary';
   import { formatSchemaNodeKind } from '../carousel/nodePresentation';
   import { schemaNodeReachability } from '../presentation/schemaReachability';
+  import type { SourceViewPresentation } from '../presentation/sourceMarkupPresentation';
+  import SourceOrientation from '../source/SourceOrientation.svelte';
 
   export let summary: InspectorSummary;
   export let isCurrentFocus: boolean;
@@ -23,13 +24,19 @@
   export let onCenterNode: (request: NodeCenterRequest) => void;
   export let onClose: () => void;
   export let childListResetKey = summary.nodeId;
+  export let sourcePresentation: SourceViewPresentation | undefined = undefined;
+  export let onViewSource: (origin: HTMLButtonElement) => void = () => {};
+
+  $: overviewProperties = summary.overviewProperties.filter(
+    ({ id }) => id !== 'source-file',
+  );
 </script>
 
 <div class="node-inspector" data-node-inspector>
   <InspectorHeader
     nodeName={summary.displayName}
     nodeKindLabel={formatSchemaNodeKind(summary.kind)}
-    sourceFilename={summary.sourceFilename}
+    sourceFilename={sourcePresentation?.sourceIdentity?.label}
     showCenterAction={!isCurrentFocus &&
       schemaNodeReachability(summary.kind).carousel.action === 'center'}
     {onCenter}
@@ -37,15 +44,15 @@
   />
 
   <div class="inspector-content" data-inspector-scroll-body>
-    {#if summary.sourceMarkup}
-      <NodeSourceMarkup
-        nodeId={summary.nodeId}
-        nodeName={summary.displayName}
-        sourceMarkup={summary.sourceMarkup}
+    {#if sourcePresentation && (sourcePresentation.sourceIdentity || sourcePresentation.sourceAvailable)}
+      <SourceOrientation
+        presentation={sourcePresentation}
+        {onViewSource}
+        compact
       />
     {/if}
-    {#if summary.overviewProperties.length > 0}
-      <NodeOverview properties={summary.overviewProperties} />
+    {#if overviewProperties.length > 0}
+      <NodeOverview properties={overviewProperties} />
     {/if}
     <NodeUnresolvedReferences references={summary.unresolvedReferences} />
     {#if summary.isSchemaOverview}

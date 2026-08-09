@@ -21,6 +21,8 @@
   import SemanticZoomControl from './SemanticZoomControl.svelte';
   import SemanticZoomRelationshipLines from './SemanticZoomRelationshipLines.svelte';
   import { buildFocusCardSummary } from './focusCardSummary';
+  import type { SourceViewOrigin } from '../../app/stores/sourceViewStore';
+  import { selectSourceViewPresentation } from '../presentation/sourceMarkupPresentation';
   import RootwardPath from './RootwardPath.svelte';
   import {
     measureRenderedLeafwardCandidates,
@@ -60,6 +62,12 @@
     type SemanticZoomTransitionController,
     type SemanticZoomTransitionPhase,
   } from './semanticZoomTransition';
+
+  export let onOpenSource: (
+    nodeId: string,
+    origin: SourceViewOrigin,
+    originElement: HTMLElement,
+  ) => void = () => {};
 
   const {
     canNavigateRootward,
@@ -167,6 +175,9 @@
         $activeProjectStore.xsdMetadataByNodeId,
         $navigationStore,
       )
+    : undefined;
+  $: focusSourcePresentation = $currentFocusNode
+    ? selectSourceViewPresentation($activeProjectStore, $currentFocusNode.id)
     : undefined;
   $: actionableLeafwardRelationships = getActionableLeafwardRelationships(
     $activeProjectStore.project,
@@ -1256,6 +1267,7 @@
               <FocusCard
                 bind:this={focusCard}
                 summary={focusCardSummary}
+                sourcePresentation={focusSourcePresentation}
                 isInspected={$currentFocusNode.id === $inspectedNodeId}
                 motionKey={buildJourneyMotionKey(
                   $navigationPathIds.length - 1,
@@ -1263,6 +1275,12 @@
                 )}
                 onCenterNode={centerRequest}
                 onToggleInspection={toggleInspection}
+                onViewSource={(originElement) =>
+                  onOpenSource(
+                    focusCardSummary.nodeId,
+                    'focused-card',
+                    originElement,
+                  )}
                 presentation={implementedSemanticZoomPresentation}
                 journeyPosition={$navigationPathIds.length - 1}
               />

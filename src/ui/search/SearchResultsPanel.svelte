@@ -16,6 +16,13 @@
     result: ProjectSearchResultPresentation,
   ) => void;
   export let onClose: () => void;
+  export let canViewSource: (
+    result: ProjectSearchResultPresentation,
+  ) => boolean = () => false;
+  export let onViewSource: (
+    result: ProjectSearchResultPresentation,
+    originElement: HTMLButtonElement,
+  ) => void = () => {};
 </script>
 
 <section
@@ -169,6 +176,20 @@
                       onclick={() => onInspectResult(result)}
                     >
                       Inspect
+                    </button>
+                  {/if}
+                  {#if canViewSource(result)}
+                    <button
+                      class="view-source-result"
+                      type="button"
+                      aria-label={`View source for ${result.name}`}
+                      aria-haspopup="dialog"
+                      aria-controls="source-view-dialog"
+                      data-view-source-search-result
+                      onclick={(event) =>
+                        onViewSource(result, event.currentTarget)}
+                    >
+                      View source
                     </button>
                   {/if}
                 </article>
@@ -350,7 +371,8 @@
   }
 
   .center-result,
-  .inspect-result {
+  .inspect-result,
+  .view-source-result {
     min-width: var(--control-min-size);
     min-height: var(--control-min-size);
     border-radius: var(--radius-medium);
@@ -392,6 +414,21 @@
     font-weight: 700;
   }
 
+  .view-source-result {
+    grid-column: 2;
+    padding-inline: var(--space-3);
+    border: 1px solid var(--colour-border);
+    background: var(--colour-panel);
+    color: var(--colour-text);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+  }
+
+  .view-source-result:hover {
+    border-color: var(--colour-accent);
+    color: var(--colour-accent);
+  }
+
   .inspect-result:hover {
     background: var(--colour-accent-soft);
   }
@@ -402,7 +439,8 @@
   }
 
   .center-result:focus-visible,
-  .inspect-result:focus-visible {
+  .inspect-result:focus-visible,
+  .view-source-result:focus-visible {
     position: relative;
     z-index: 1;
     outline: 3px solid var(--colour-focus-ring);
@@ -507,6 +545,11 @@
     }
 
     .inspect-result {
+      width: 100%;
+    }
+
+    .view-source-result {
+      grid-column: 1;
       width: 100%;
     }
   }
