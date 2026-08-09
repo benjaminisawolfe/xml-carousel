@@ -84,9 +84,9 @@ old result from replacing a newer project.
 
 Worker results are structured-clone data. `src/app/stores/projectSession.ts`
 validates a replacement, primes query indexes, resets ID-only navigation and
-inspector state, adopts the project into the active-project store, and then
-signals presentation reset. This order prevents old-project IDs from being
-observed against a new project.
+inspector state, clears the independent source-view target, adopts the project
+into the active-project store, and then signals presentation reset. This order
+prevents old-project IDs from being observed against a new project.
 
 The active project owns the normalized model and format metadata. Replacing a
 session is atomic from the application’s perspective: projects are not merged
@@ -150,10 +150,35 @@ combination.
 ## Source markup and safe text
 
 DTD and XSD importers retain declaration-oriented source excerpts keyed by
-normalized node ID. Presentation helpers classify excerpts and render them as
-text in Svelte components; schema content is not injected as executable HTML.
-Ranges are parser offsets intended to identify a declaration, not a
-full-featured source editor or line-number service.
+normalized node ID. `sourceMarkupPresentation.ts` is the central presentation
+boundary for source identity, explicit location precision, and safe fragment
+selection. It uses a supplied standalone filename or a package-relative path,
+rejects absolute paths, and omits identity or coordinates when the retained
+evidence cannot support them.
+
+`sourceViewStore.ts` owns only the active project ID, source node ID, and
+opening origin. It is independent of journey, Inspector, Search, and semantic
+zoom state and is cleared synchronously during project replacement.
+`SourceViewDialog.svelte` renders selected retained fragments as inert,
+whitespace-preserving text in a dedicated modal; schema content is not
+injected as executable HTML. Its explicit source-copy actions pass exactly one
+retained fragment to the narrow `copyText(...)` Clipboard API boundary.
+Discontiguous DTD fragments remain separate rather than being synthetically
+joined.
+
+The Inspector's explicit `Copy node summary` action uses the same Clipboard
+boundary with the separate, deterministic plain-text output of
+`formatNodeSummary(...)`. That pure formatter consumes bounded Inspector
+presentation data, reuses truthful source presentation, and does not traverse
+the graph or read journey, Search, modal, browser, clock, or persistence state.
+Opening source or copying either payload does not navigate, change the
+Inspector target, or change Search state.
+
+Clipboard writes stay local to the browser: the source and summary paths do
+not fetch, persist, upload, or log their payloads. These presentation and copy
+features do not add parser, resolver, model, validation, or standards
+authority. Retained ranges identify declarations; they do not provide source
+editing, round-trip serialization, or a general line-number service.
 
 ## Tests
 
