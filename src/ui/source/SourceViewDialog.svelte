@@ -1,17 +1,31 @@
 <script lang="ts">
   import { tick } from 'svelte';
   import type { SourceViewPresentation } from '../presentation/sourceMarkupPresentation';
+  import { copyText, type CopyText } from './copyText';
 
   export const SOURCE_VIEW_DIALOG_ID = 'source-view-dialog';
 
   export let open = false;
   export let presentation: SourceViewPresentation | undefined = undefined;
   export let onClose: (reason: 'close' | 'escape') => void = () => {};
+  export let copySourceText: CopyText = copyText;
 
   let dialog: HTMLDialogElement;
   let closeButton: HTMLButtonElement;
+  let copyFeedback = '';
+  let copyOperationRevision = 0;
+  let observedTargetKey: string | undefined;
 
   $: if (dialog) void synchronizeDialog(open && presentation !== undefined);
+  $: currentTargetKey =
+    open && presentation?.sourceAvailable
+      ? `${presentation.projectId}:${presentation.nodeId}`
+      : undefined;
+  $: if (currentTargetKey !== observedTargetKey) {
+    observedTargetKey = currentTargetKey;
+    copyFeedback = '';
+    copyOperationRevision += 1;
+  }
 
   async function synchronizeDialog(shouldOpen: boolean): Promise<void> {
     if (shouldOpen && !dialog.open) {
@@ -87,6 +101,25 @@
     event.preventDefault();
     onClose('escape');
   }
+
+  async function handleCopySource(text: string): Promise<void> {
+    const operationRevision = ++copyOperationRevision;
+    const targetKey = currentTargetKey;
+    const result = await copySourceText(text);
+    if (
+      operationRevision !== copyOperationRevision ||
+      targetKey !== currentTargetKey ||
+      !open ||
+      !presentation?.sourceAvailable
+    ) {
+      return;
+    }
+    copyFeedback = result.succeeded
+      ? 'Copied source'
+      : result.reason === 'unavailable'
+        ? 'Copy unavailable'
+        : "Couldn't copy source";
+  }
 </script>
 
 <dialog
@@ -110,15 +143,28 @@
           <h2 id="source-view-title">{presentation.displayName}</h2>
           <p class="node-kind">{presentation.nodeKindLabel}</p>
         </div>
-        <button
-          bind:this={closeButton}
-          class="close-action"
-          type="button"
-          aria-label={`Close source for ${presentation.displayName}`}
-          onclick={() => onClose('close')}
-        >
-          Close
-        </button>
+        <div class="dialog-actions">
+          {#if presentation.fragments.length === 1}
+            <button
+              class="copy-action"
+              type="button"
+              data-copy-source
+              onclick={() =>
+                void handleCopySource(presentation.fragments[0]!.text)}
+            >
+              Copy source
+            </button>
+          {/if}
+          <button
+            bind:this={closeButton}
+            class="close-action"
+            type="button"
+            aria-label={`Close source for ${presentation.displayName}`}
+            onclick={() => onClose('close')}
+          >
+            Close
+          </button>
+        </div>
       </header>
 
       <div class="dialog-content">
@@ -139,6 +185,15 @@
           </p>
         </section>
 
+        <p
+          class="copy-status"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {copyFeedback}
+        </p>
+
         <div class="source-fragments">
           {#each presentation.fragments as fragment, index (fragment.id)}
             <section
@@ -146,12 +201,25 @@
               aria-labelledby={`source-fragment-${index + 1}`}
             >
               <header class="fragment-header">
-                <h3 id={`source-fragment-${index + 1}`}>
-                  {presentation.fragments.length === 1
-                    ? 'Retained declaration'
-                    : `Retained fragment ${index + 1}`}
-                </h3>
-                <p>{fragment.location.label}</p>
+                <div>
+                  <h3 id={`source-fragment-${index + 1}`}>
+                    {presentation.fragments.length === 1
+                      ? 'Retained declaration'
+                      : `Retained fragment ${index + 1}`}
+                  </h3>
+                  <p>{fragment.location.label}</p>
+                </div>
+                {#if presentation.fragments.length > 1}
+                  <button
+                    class="copy-action fragment-copy-action"
+                    type="button"
+                    data-copy-source-fragment={index + 1}
+                    aria-label={`Copy source fragment ${index + 1} for ${presentation.displayName}`}
+                    onclick={() => void handleCopySource(fragment.text)}
+                  >
+                    Copy source
+                  </button>
+                {/if}
               </header>
               <!-- svelte-ignore a11y_no_noninteractive_tabindex (the retained source reading region must be keyboard-scrollable) -->
               <pre
@@ -191,6 +259,14 @@
     height: 100%;
     max-height: inherit;
     overflow: hidden;
+  }
+
+  .dialog-actions {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--space-2);
   }
 
   .dialog-header {
@@ -237,7 +313,8 @@
     font-size: var(--font-size-sm);
   }
 
-  .close-action {
+  .close-action,
+  .copy-action {
     flex: 0 0 auto;
     min-width: var(--control-min-size);
     min-height: var(--control-min-size);
@@ -250,12 +327,14 @@
     cursor: pointer;
   }
 
-  .close-action:hover {
+  .close-action:hover,
+  .copy-action:hover {
     border-color: var(--colour-accent);
     color: var(--colour-accent);
   }
 
   .close-action:focus-visible,
+  .copy-action:focus-visible,
   pre:focus-visible {
     outline: 3px solid var(--colour-focus-ring);
     outline-offset: 2px;
@@ -263,10 +342,17 @@
 
   .dialog-content {
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
     gap: var(--space-4);
     padding: var(--space-5);
     overflow: hidden;
+  }
+
+  .copy-status {
+    min-height: 1.25em;
+    color: var(--colour-text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
   }
 
   .source-summary {
@@ -308,12 +394,18 @@
 
   .fragment-header {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
     padding: var(--space-2) var(--space-3);
     border-bottom: 1px solid var(--colour-border);
     background: var(--colour-panel-subtle);
+  }
+
+  .fragment-header > div {
+    display: grid;
+    min-width: 0;
+    gap: var(--space-1);
   }
 
   .fragment-header h3 {
@@ -324,6 +416,10 @@
     color: var(--colour-text-secondary);
     font-size: var(--font-size-xs);
     text-align: right;
+  }
+
+  .fragment-copy-action {
+    flex: 0 0 auto;
   }
 
   pre {
@@ -360,10 +456,15 @@
 
     .dialog-header {
       align-items: flex-start;
+      flex-wrap: wrap;
     }
 
     .fragment-header {
       display: grid;
+    }
+
+    .fragment-copy-action {
+      justify-self: start;
     }
 
     .fragment-header p {
@@ -406,13 +507,15 @@
       color: CanvasText;
     }
 
-    .close-action {
+    .close-action,
+    .copy-action {
       border-color: ButtonText;
       background: ButtonFace;
       color: ButtonText;
     }
 
     .close-action:focus-visible,
+    .copy-action:focus-visible,
     pre:focus-visible {
       outline-color: Highlight;
     }
