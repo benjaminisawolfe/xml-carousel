@@ -10,11 +10,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../app/App.svelte';
 import { inspectorStore } from '../app/stores/inspectorStore';
 import { navigationStore } from '../app/stores/navigationStore';
+import { activeProjectStore } from '../app/stores/projectStore';
 import { replaceProjectSession } from '../app/stores/projectSession';
 import {
   SEMANTIC_ZOOM_DESKTOP_MEDIA_QUERY,
   semanticZoomStore,
 } from '../app/stores/semanticZoomStore';
+import { sourceViewStore } from '../app/stores/sourceViewStore';
 import type { SchemaProject } from '../schema/model';
 import {
   bookDtdNodeIds,
@@ -129,16 +131,19 @@ afterEach(() => {
 });
 
 describe('Overview semantic zoom integration', () => {
-  it('renders genuine names-only focus and context cards with truthful navigation', async () => {
+  it('renders focused Inspect with names-only relationship cards and truthful navigation', async () => {
     installMatchMedia();
     render(App);
     await selectLevel('0');
 
     const focus = screen.getByRole('article', { name: 'book' });
     expect(focus).toHaveClass('overview');
-    expect(focus.textContent?.trim()).toBe('book');
+    expect(focus).toHaveTextContent(/book\s+Inspect/u);
     expect(within(focus).getByRole('heading', { name: 'book' })).toBeVisible();
-    expect(within(focus).queryByRole('button')).not.toBeInTheDocument();
+    expect(
+      within(focus).getByRole('button', { name: 'Inspect book' }),
+    ).toBeVisible();
+    expect(within(focus).getAllByRole('button')).toHaveLength(1);
 
     const destination = screen.getByRole('article', {
       name: 'Destination book.content',
@@ -151,9 +156,15 @@ describe('Overview semantic zoom integration', () => {
     ).toBeVisible();
     expect(within(destination).queryByText('Destination')).toBeNull();
     expect(
-      surface().querySelector('[data-inspect-node-id]'),
-    ).not.toBeInTheDocument();
+      within(destination).queryByRole('button', {
+        name: /Inspect|Close inspection|View source|Copy source|Copy node summary/u,
+      }),
+    ).toBeNull();
+    expect(surface().querySelectorAll('[data-inspect-node-id]')).toHaveLength(
+      1,
+    );
 
+    const zoomBeforeNavigation = get(semanticZoomStore);
     await fireEvent.click(
       within(destination).getByRole('button', { name: /Navigate leafward/u }),
     );
@@ -162,6 +173,7 @@ describe('Overview semantic zoom integration', () => {
         bookDtdNodeIds.bookContent,
       ),
     );
+    expect(get(semanticZoomStore)).toEqual(zoomBeforeNavigation);
     const chapter = screen.getByRole('article', {
       name: 'Destination chapter+',
     });
@@ -171,9 +183,102 @@ describe('Overview semantic zoom integration', () => {
         name: 'Navigate leafward to chapter+, DTD element declaration',
       }),
     ).toBeVisible();
+    expect(
+      within(chapter).queryByRole('button', {
+        name: /Inspect|Close inspection|View source|Copy source|Copy node summary/u,
+      }),
+    ).toBeNull();
   });
 
-  it('moves disappearing Inspect focus to stable navigation targets', async () => {
+  it('toggles the focused Overview Inspector target without mutating zoom, navigation, Search, source, or project', async () => {
+    installMatchMedia();
+    render(App);
+    await selectLevel('0');
+    const search = screen.getByRole('searchbox', { name: 'Search schema' });
+    await fireEvent.input(search, { target: { value: 'chapter' } });
+    inspectorStore.inspect(bookDtdNodeIds.index);
+
+    const beforeProject = get(activeProjectStore);
+    const beforeNavigation = get(navigationStore);
+    const beforeJourney = [...get(navigationStore.navigationPathIds)];
+    const beforeZoom = get(semanticZoomStore);
+    const beforeSource = get(sourceViewStore);
+    const focus = screen.getByRole('article', { name: 'book' });
+    const inspect = within(focus).getByRole('button', {
+      name: 'Inspect book',
+    });
+    expect(inspect).toHaveAttribute('aria-pressed', 'false');
+    expect(surface()).toHaveAttribute(
+      'data-keyboard-cursor-state',
+      'current-focus',
+    );
+
+    inspect.focus();
+    await fireEvent.click(inspect);
+
+    expect(get(inspectorStore.inspectedNodeId)).toBe(bookDtdNodeIds.book);
+    expect(get(semanticZoomStore)).toEqual(beforeZoom);
+    expect(get(navigationStore)).toEqual(beforeNavigation);
+    expect(get(navigationStore.navigationPathIds)).toEqual(beforeJourney);
+    expect(get(activeProjectStore)).toBe(beforeProject);
+    expect(get(sourceViewStore)).toEqual(beforeSource);
+    expect(search).toHaveValue('chapter');
+    expect(surface()).toHaveAttribute(
+      'data-semantic-zoom-effective',
+      'overview',
+    );
+    expect(surface()).toHaveAttribute(
+      'data-semantic-zoom-requested',
+      'overview',
+    );
+    const close = within(focus).getByRole('button', {
+      name: 'Close inspection for book',
+    });
+    expect(close).toHaveAttribute('aria-pressed', 'true');
+    expect(close).toHaveFocus();
+
+    await fireEvent.click(close);
+
+    expect(get(inspectorStore.inspectedNodeId)).toBeUndefined();
+    expect(get(semanticZoomStore)).toEqual(beforeZoom);
+    expect(get(navigationStore)).toEqual(beforeNavigation);
+    expect(get(navigationStore.navigationPathIds)).toEqual(beforeJourney);
+    expect(get(activeProjectStore)).toBe(beforeProject);
+    expect(get(sourceViewStore)).toEqual(beforeSource);
+    expect(search).toHaveValue('chapter');
+    expect(
+      within(focus).getByRole('button', { name: 'Inspect book' }),
+    ).toHaveFocus();
+  });
+
+  it('preserves native Enter and Space activation without carousel click-through', async () => {
+    installMatchMedia();
+    render(App);
+    await selectLevel('0');
+    const beforeJourney = [...get(navigationStore.navigationPathIds)];
+    const inspect = screen.getByRole('button', { name: 'Inspect book' });
+    inspect.focus();
+    await fireEvent.keyDown(inspect, { key: 'Enter' });
+    await fireEvent.click(inspect);
+    await fireEvent.keyUp(inspect, { key: 'Enter' });
+    expect(get(inspectorStore.inspectedNodeId)).toBe(bookDtdNodeIds.book);
+
+    const close = screen.getByRole('button', {
+      name: 'Close inspection for book',
+    });
+    await fireEvent.keyDown(close, { key: ' ' });
+    await fireEvent.keyUp(close, { key: ' ' });
+    await fireEvent.click(close);
+    expect(get(inspectorStore.inspectedNodeId)).toBeUndefined();
+    expect(get(navigationStore.navigationPathIds)).toEqual(beforeJourney);
+    expect(get(navigationStore.currentFocusNodeId)).toBe(bookDtdNodeIds.book);
+    expect(get(semanticZoomStore)).toMatchObject({
+      requestedLevel: 'overview',
+      effectiveLevel: 'overview',
+    });
+  });
+
+  it('moves disappearing context Inspect focus while retaining focused Overview Inspect focus', async () => {
     installMatchMedia();
     render(App);
     await selectLevel('1');
@@ -196,7 +301,9 @@ describe('Overview semantic zoom integration', () => {
     focusInspect.focus();
     await selectLevel('0');
     await waitFor(() =>
-      expect(screen.getByRole('heading', { name: 'book' })).toHaveFocus(),
+      expect(
+        screen.getByRole('button', { name: 'Inspect book' }),
+      ).toHaveFocus(),
     );
     expect(document.activeElement).not.toBe(document.body);
   });
@@ -209,8 +316,11 @@ describe('Overview semantic zoom integration', () => {
     });
     summary.focus();
     await selectLevel('0');
+    const focusedCard = screen.getByRole('article', { name: 'book' });
     await waitFor(() =>
-      expect(screen.getByRole('heading', { name: 'book' })).toHaveFocus(),
+      expect(
+        within(focusedCard).getByRole('heading', { name: 'book' }),
+      ).toHaveFocus(),
     );
 
     navigationStore.navigateLeafward(bookDtdNodeIds.bookContent);
@@ -299,7 +409,10 @@ describe('Overview semantic zoom integration', () => {
 
     restoreSample();
     expect(get(semanticZoomStore).requestedLevel).toBe('overview');
+    expect(get(inspectorStore.inspectedNodeId)).toBeUndefined();
     expect(search).toHaveValue('chapter');
+    await fireEvent.click(screen.getByRole('button', { name: 'Inspect book' }));
+    expect(get(inspectorStore.inspectedNodeId)).toBe(bookDtdNodeIds.book);
 
     const range = screen.getByRole('slider', { name: 'Semantic zoom' });
     range.focus();
@@ -308,8 +421,12 @@ describe('Overview semantic zoom integration', () => {
       expect(surface()).toHaveAttribute('data-semantic-zoom-effective', 'full'),
     );
     expect(get(semanticZoomStore).requestedLevel).toBe('overview');
+    expect(get(inspectorStore.inspectedNodeId)).toBe(bookDtdNodeIds.book);
+    const responsiveFocusedCard = screen.getByRole('article', { name: 'book' });
     await waitFor(() =>
-      expect(screen.getByRole('heading', { name: 'book' })).toHaveFocus(),
+      expect(
+        within(responsiveFocusedCard).getByRole('heading', { name: 'book' }),
+      ).toHaveFocus(),
     );
     media.setMatches(true);
     await waitFor(() =>
@@ -318,6 +435,9 @@ describe('Overview semantic zoom integration', () => {
         'overview',
       ),
     );
+    expect(
+      screen.getByRole('button', { name: 'Close inspection for book' }),
+    ).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('uses the higher bounded Overview window while preserving the selected relationship', async () => {
@@ -443,7 +563,11 @@ describe('Overview semantic zoom integration', () => {
         name: 'Jump to a-very-long-earlier-node-name-that-must-wrap, earlier in the current path',
       }),
     ).toBeVisible();
-    expect(screen.queryByRole('button', { name: /Inspect/u })).toBeNull();
+    expect(
+      within(row!).queryByRole('button', {
+        name: /Inspect|Close inspection|View source|Copy source|Copy node summary/u,
+      }),
+    ).toBeNull();
     expect(document.querySelector('.kind-badge')).not.toBeInTheDocument();
   });
 

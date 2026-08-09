@@ -63,6 +63,40 @@ describe('carousel long-name containment', () => {
     expect(focusSource).toContain('overflow-wrap: anywhere');
   });
 
+  it('keeps the complete focused Overview name and Inspect action at equivalent 200% text scale', () => {
+    const previousFontSize = document.documentElement.style.fontSize;
+    document.documentElement.style.fontSize = '200%';
+    try {
+      const { container } = render(FocusCard, {
+        props: {
+          summary,
+          isInspected: false,
+          onToggleInspection: vi.fn(),
+          onCenterNode: vi.fn(),
+          motionKey: 'long-overview',
+          presentation: 'overview',
+        },
+      });
+      container.style.width = '180px';
+      const card = screen.getByRole('article', { name: longName });
+      expect(
+        screen.getByRole('heading', { level: 2, name: longName }),
+      ).toHaveTextContent(longName);
+      expect(
+        screen.getByRole('button', { name: `Inspect ${longName}` }),
+      ).toBeVisible();
+      expect(card.querySelector('.card-topline')).not.toBeNull();
+      expect(focusSource).toContain('.focus-card.overview .card-topline');
+      expect(focusSource).toContain('flex-wrap: wrap');
+      expect(focusSource).toContain('flex: 1 1 10rem');
+      expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
+        document.documentElement.clientWidth,
+      );
+    } finally {
+      document.documentElement.style.fontSize = previousFontSize;
+    }
+  });
+
   it('uses the same bounded focused-title treatment for DTD nodes', () => {
     const dtdSummary: FocusCardSummary = {
       ...summary,
