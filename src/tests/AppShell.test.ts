@@ -12,7 +12,9 @@ import App from '../app/App.svelte';
 import { inspectorStore } from '../app/stores/inspectorStore';
 import { navigationStore } from '../app/stores/navigationStore';
 import { semanticZoomStore } from '../app/stores/semanticZoomStore';
+import { activeProjectStore } from '../app/stores/projectStore';
 import { replaceProjectSession } from '../app/stores/projectSession';
+import { sourceViewStore } from '../app/stores/sourceViewStore';
 import {
   bookDtdImportResult,
   bookDtdNodeIds,
@@ -42,6 +44,20 @@ function restoreSampleProject(): void {
     },
   });
   if (!result.applied) throw new Error('Expected sample restoration to apply.');
+}
+
+function installClipboard(
+  writeText: (text: string) => Promise<void>,
+): () => void {
+  const descriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+  Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText },
+  });
+  return () => {
+    if (descriptor) Object.defineProperty(navigator, 'clipboard', descriptor);
+    else delete (navigator as { clipboard?: Clipboard }).clipboard;
+  };
 }
 
 async function zipBytes(): Promise<ArrayBuffer> {
@@ -92,6 +108,47 @@ describe('application shell', () => {
     expect(sourceAction).toHaveFocus();
     expect(shell).toHaveProperty('inert', false);
     request.mockRestore();
+  });
+
+  it('copies only exact retained source without mutating application state or requesting a network resource', async () => {
+    restoreSampleProject();
+    const writeText = vi.fn(() => Promise.resolve());
+    const restoreClipboard = installClipboard(writeText);
+    const request = vi.spyOn(globalThis, 'fetch');
+    try {
+      render(App);
+      const beforeProject = get(activeProjectStore);
+      const beforeNavigation = get(navigationStore);
+      const beforeInspector = get(inspectorStore);
+      const beforeZoom = get(semanticZoomStore);
+      await fireEvent.click(
+        screen.getByRole('button', { name: 'View source for book' }),
+      );
+      const dialog = await screen.findByRole('dialog', { name: 'book' });
+      const beforeSourceView = get(sourceViewStore);
+      const retained = within(dialog).getByLabelText(
+        'Retained source for book',
+      ).textContent;
+
+      await fireEvent.click(
+        within(dialog).getByRole('button', { name: 'Copy source' }),
+      );
+
+      expect(writeText).toHaveBeenCalledOnce();
+      expect(writeText).toHaveBeenCalledWith(retained);
+      expect(within(dialog).getByRole('status')).toHaveTextContent(
+        'Copied source',
+      );
+      expect(get(activeProjectStore)).toBe(beforeProject);
+      expect(get(navigationStore)).toEqual(beforeNavigation);
+      expect(get(inspectorStore)).toEqual(beforeInspector);
+      expect(get(semanticZoomStore)).toEqual(beforeZoom);
+      expect(get(sourceViewStore)).toEqual(beforeSourceView);
+      expect(request).not.toHaveBeenCalled();
+    } finally {
+      request.mockRestore();
+      restoreClipboard();
+    }
   });
 
   it('restores Inspector-origin focus while focus and inspection remain independent', async () => {
@@ -152,25 +209,48 @@ describe('application shell', () => {
     ).toBeVisible();
   });
 
-  it('clears an open source target before publishing a replacement project', async () => {
+  it('clears an open source target during a pending copy and ignores its stale result after project replacement', async () => {
     restoreSampleProject();
-    const { container } = render(App);
-    await fireEvent.click(
-      screen.getByRole('button', { name: 'View source for book' }),
+    let resolveCopy!: () => void;
+    const writeText = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveCopy = resolve;
+        }),
     );
-    await screen.findByRole('dialog', { name: 'book' });
+    const restoreClipboard = installClipboard(writeText);
+    try {
+      const { container } = render(App);
+      await fireEvent.click(
+        screen.getByRole('button', { name: 'View source for book' }),
+      );
+      const dialog = await screen.findByRole('dialog', { name: 'book' });
+      await fireEvent.click(
+        within(dialog).getByRole('button', { name: 'Copy source' }),
+      );
+      expect(writeText).toHaveBeenCalledOnce();
 
-    const result = replaceProjectSession({
-      project: bookDtdProject,
-      initialFocusNodeId: bookDtdNodeIds.chapter,
-      metadata: { origin: 'sample', sourceFilename: 'replacement.dtd' },
-    });
-    expect(result.applied).toBe(true);
+      const result = replaceProjectSession({
+        project: bookDtdProject,
+        initialFocusNodeId: bookDtdNodeIds.chapter,
+        metadata: { origin: 'sample', sourceFilename: 'replacement.dtd' },
+      });
+      expect(result.applied).toBe(true);
+      expect(get(activeProjectStore).sourceFilename).toBe('replacement.dtd');
 
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    expect(container.querySelector('.app-shell')).not.toHaveAttribute('inert');
-    expect(screen.queryByText('<!ELEMENT book')).not.toBeInTheDocument();
-    restoreSampleProject();
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+      resolveCopy();
+      await Promise.resolve();
+      expect(container.querySelector('.app-shell')).not.toHaveAttribute(
+        'inert',
+      );
+      expect(screen.queryByText('<!ELEMENT book')).not.toBeInTheDocument();
+      expect(screen.queryByText('Copied source')).not.toBeInTheDocument();
+      expect(get(sourceViewStore).nodeId).toBeUndefined();
+    } finally {
+      restoreClipboard();
+      restoreSampleProject();
+    }
   });
 
   it('renders the four required semantic regions', () => {
