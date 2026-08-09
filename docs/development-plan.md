@@ -2774,3 +2774,623 @@ The Codex instructions must then use:
 * exact artifact-size reporting;  
 * an unstaged and uncommitted completion state.
 
+# **28\. Approved Post-Semantic-Zoom Milestone**
+
+## **28.1 Current Completed Baseline**
+
+XML Carousel `0.1.0` is complete as the first public alpha.
+
+The following major post-alpha development work is also complete:
+
+* Tasks 13.1–13.17, including the Xerces-C++ WebAssembly standards boundary, normalized diagnostics, tolerant visualization, complete problem reporting, persistent Problems access, package presentation, visualization coverage, and release-gap audits.  
+* Tasks 14.1–14.5, including Full, Compact, and Overview semantic zoom, semantic relationship lines, responsive fallback, accessible transitions, forced-colour support, and final semantic-zoom acceptance.  
+* The Task 14.5 hosted-CI correction.  
+* Final semantic-zoom milestone acceptance and exact-SHA hosted CI.
+
+Future work begins from the latest clean, synchronized `main` branch and must preserve the accepted standards, privacy, accessibility, responsive, performance, and local-first boundaries.
+
+The next approved milestone is:
+
+> **Developer Handoff Utilities**
+
+Approval date: **2026-08-06**
+
+---
+
+## **28.2 Developer Handoff Utilities**
+
+### **Goal**
+
+Help users transfer trustworthy information from XML Carousel into editors, issue reports, technical documentation, email, chat, and other developer workflows.
+
+This milestone must improve access to retained source and node information without turning XML Carousel into:
+
+* a schema editor;  
+* a source-code IDE;  
+* a serializer;  
+* a round-trip authoring tool;  
+* a project export system.
+
+XML Carousel remains a read-only, local-first schema exploration application.
+
+### **Core Boundaries**
+
+The following rules are non-negotiable:
+
+* XML Carousel does not edit, rewrite, save, or replace schema source.  
+* Xerces remains the authoritative standards parser and validator.  
+* No new parser, resolver, or schema-model authority is introduced.  
+* Source display and copying use retained source text whenever available.  
+* XML or DTD declarations must not be reconstructed from the normalized graph and presented as original source.  
+* Source identity and source location must be truthful.  
+* Exact line or column values must never be fabricated.  
+* Approximate, declaration-level, or unavailable locations must be labelled honestly.  
+* Copied node summaries are deterministic plain text intended for human communication.  
+* Copied summaries are not a serialization or interchange format.  
+* Clipboard writes occur only after an explicit user action.  
+* Copied source and summaries remain local to the browser.  
+* XML Carousel does not transmit clipboard content to an application backend.  
+* This milestone does not imply a version change, release, or deployment.
+
+---
+
+## **28.3 Source View Modal**
+
+The existing source-view presentation is too constrained for comfortable reading.
+
+Source should therefore open in a dedicated modal rather than being confined to a small inspector section or compact inline view.
+
+### **Goal**
+
+Provide a large, readable, focused source-viewing surface while preserving the independence of:
+
+* carousel focus;  
+* inspector target;  
+* navigation journey;  
+* Search state;  
+* active project;  
+* semantic zoom level.
+
+Opening or closing source view must not change any of those states.
+
+### **Opening Source View**
+
+Source view must require a deliberate, visible action, such as:
+
+View source
+
+The control may appear in appropriate places such as:
+
+* the focused card;  
+* the inspector;  
+* Search results where a declaration has retained source;  
+* package inventory or source-oriented views where applicable.
+
+Activating **View source** opens the modal for the selected declaration or source record.
+
+It must not:
+
+* centre the node;  
+* navigate the carousel;  
+* change the inspector target;  
+* copy anything automatically;  
+* open source for an unrelated declaration.
+
+### **Modal Presentation**
+
+The source modal should provide:
+
+* a clear title identifying the declaration or node;  
+* source filename or package-relative path;  
+* truthful source location information;  
+* the retained source fragment or declaration;  
+* a large, scrollable reading area;  
+* monospaced text;  
+* safe escaped rendering;  
+* preserved whitespace;  
+* readable line spacing;  
+* visible line numbers where trustworthy line boundaries are retained;  
+* horizontal scrolling for long source lines;  
+* optional line wrapping if it can be implemented without obscuring source fidelity;  
+* a **Copy source** action where retained source is available;  
+* a clear **Close** action.
+
+The modal should use substantially more screen space than the current source presentation.
+
+On desktop, it may occupy most of the available viewport while retaining visible margins.
+
+On narrow screens, it should use an appropriately contained near-full-screen layout without introducing document-level horizontal overflow.
+
+### **Readability Requirements**
+
+The source modal must favour reading and inspection over compactness.
+
+Requirements include:
+
+* source text must not be reduced to an unusually small font;  
+* long lines must remain accessible;  
+* indentation and significant whitespace must be preserved;  
+* XML markup must remain visually distinguishable;  
+* source must never be rendered through unsafe `innerHTML`;  
+* focus indicators must remain visible;  
+* modal controls must remain reachable at 200% text scaling;  
+* source text must remain usable in forced-colour and reduced-motion environments.
+
+Syntax colouring may be used only if:
+
+* the uncoloured text remains readable;  
+* colour is not the only means of distinguishing content;  
+* source fidelity is not changed;  
+* unsafe HTML is not introduced.
+
+### **Modal Accessibility**
+
+The source modal must:
+
+* use appropriate dialog semantics;  
+* have an accessible name;  
+* move focus into the modal when opened;  
+* trap focus while open;  
+* support Escape to close;  
+* restore focus to the control that opened it;  
+* keep source text keyboard-scrollable;  
+* provide accessible names for Copy and Close;  
+* announce copy success or failure without moving focus unnecessarily;  
+* avoid background carousel keyboard navigation while open.
+
+### **Source Truth Rules**
+
+The modal must show the most accurate retained source representation available.
+
+Possible source-location states include:
+
+Exact line and column
+
+Exact line only
+
+Declaration-level or approximate location
+
+Source identity with no retained location
+
+The UI must distinguish these states honestly.
+
+It must not display misleading information such as:
+
+Line 1
+
+when line 1 is merely a default, placeholder, or inferred value rather than a retained source location.
+
+When exact location is unavailable, use language such as:
+
+Declaration location unavailable
+
+Approximate declaration location
+
+Source file known; line unavailable
+
+### **Modal State**
+
+Source-view state should be independent from inspection state.
+
+A suitable conceptual model is:
+
+sourceViewTarget
+
+sourceViewOrigin
+
+sourceViewIsOpen
+
+Closing source view returns the user to the same carousel, Search, inspector, and semantic-zoom state that existed before it opened.
+
+Replacing the active project must close obsolete source view and clear stale source targets.
+
+---
+
+## **28.4 Task 15.2 — Visible Source Identity, Location, and Source Modal Foundation**
+
+### **Goal**
+
+Make the source origin of focused and inspected declarations immediately understandable and introduce the dedicated source-view modal.
+
+### **Required Visible Result**
+
+Users can see, where available:
+
+Source filename or package-relative path
+
+Declaration location
+
+Location precision or confidence
+
+View source
+
+Activating **View source** opens the new modal with the retained declaration or source fragment.
+
+### **Required Source Identity**
+
+For ZIP and multi-file projects, use project-relative paths such as:
+
+project-root/types/common.xsd
+
+Do not expose absolute local filesystem paths.
+
+Standalone files may show their supplied filename.
+
+### **Required Location Distinctions**
+
+The interface must distinguish:
+
+Exact line and column
+
+Exact line only
+
+Declaration-level or approximate location
+
+Source known but location unavailable
+
+Do not fabricate source coordinates.
+
+### **Architecture Boundary**
+
+* Reuse retained source and location metadata.  
+* Do not reparse source inside UI components.  
+* Do not change Xerces authority.  
+* Do not introduce remote or filesystem lookup.  
+* Do not derive source location from presentation order.  
+* Keep modal state separate from carousel and inspector state.
+
+### **Tests**
+
+Automated coverage must include:
+
+* standalone DTD;  
+* standalone XSD;  
+* multi-file ZIP;  
+* package-relative source paths;  
+* declarations with exact locations;  
+* declarations without retained locations;  
+* long filenames and paths;  
+* source containing markup-like text;  
+* modal open and close;  
+* Escape behaviour;  
+* focus trapping and restoration;  
+* project replacement;  
+* Search-origin opening;  
+* inspector-origin opening;  
+* responsive containment;  
+* 200% text scaling;  
+* forced colours;  
+* no journey or inspection mutation.
+
+### **Manual QA**
+
+Ben should verify that:
+
+* source identity is immediately understandable;  
+* no misleading line numbers appear;  
+* the modal is substantially easier to read than the old source presentation;  
+* source remains readable at desktop and narrow layouts;  
+* focus returns to the correct opening control;  
+* opening source does not navigate or change inspection;  
+* DTD, XSD, and ZIP source fragments are faithful.
+
+---
+
+## **28.5 Task 15.3 — Safe Copy-Source Action**
+
+### **Goal**
+
+Allow users to copy the retained source fragment displayed in the source modal.
+
+### **Required Visible Result**
+
+The modal provides a deliberate native control:
+
+Copy source
+
+After successful copying, provide concise feedback:
+
+Copied source
+
+If copying fails, the interface must provide truthful feedback and must not claim success.
+
+### **Source Fidelity Rules**
+
+The copied text must:
+
+* come from retained source;  
+* preserve retained spelling;  
+* preserve namespace prefixes;  
+* preserve significant whitespace;  
+* preserve comments included in the retained fragment;  
+* preserve declaration ordering;  
+* preserve escaped characters as source text;  
+* exclude unrelated hidden project content;  
+* exclude binary package entries.
+
+Do not reconstruct markup from the normalized schema model.
+
+### **Clipboard Rules**
+
+* Clipboard writes require explicit user activation.  
+* Use the browser Clipboard API where available.  
+* Preserve keyboard operation.  
+* Handle permission denial.  
+* Handle unavailable Clipboard API.  
+* Do not add a dependency solely for clipboard access.  
+* Do not copy automatically when the modal opens.  
+* Do not copy automatically when the inspected or focused node changes.  
+* Do not transmit copied content.  
+* Do not close the modal after copying unless a later explicit UX decision requires it.
+
+### **Feedback and Focus**
+
+Copy feedback should:
+
+* be understandable without relying on colour;  
+* use an appropriate polite announcement;  
+* not steal focus;  
+* not create repeated duplicate announcements;  
+* clear or update appropriately when the source target changes.
+
+### **Tests**
+
+Automated coverage must include:
+
+* successful clipboard write;  
+* rejected clipboard write;  
+* unavailable Clipboard API;  
+* retained DTD source;  
+* retained XSD source;  
+* ZIP-relative source;  
+* comments and whitespace;  
+* special characters;  
+* focus retention;  
+* accessible announcement;  
+* repeated copy;  
+* project replacement;  
+* no navigation or inspector mutation;  
+* no external request.
+
+### **Manual QA**
+
+Ben should verify that copied source matches the visible retained source exactly and pastes cleanly into:
+
+* a text editor;  
+* an issue tracker;  
+* email or chat;  
+* technical documentation.
+
+---
+
+## **28.6 Task 15.4 — Deterministic Copy-Node-Summary Action**
+
+### **Goal**
+
+Provide a stable, readable summary of a schema node for issue reports, developer notes, technical documents, chat, and email.
+
+### **Required Visible Result**
+
+Provide a deliberate control:
+
+Copy node summary
+
+The control may appear in the inspector and other appropriate node-detail surfaces.
+
+It must not replace **Copy source**. The two actions serve different purposes.
+
+### **Summary Contract**
+
+The summary must be deterministic plain text.
+
+It may include truthful available fields such as:
+
+Name
+
+Node kind
+
+Source file or package-relative path
+
+Source location
+
+Type
+
+Base type
+
+Reference
+
+Occurrence
+
+Content model or structural destinations
+
+Attribute information
+
+Documentation or comment indicator
+
+Short documentation or comment excerpt
+
+Incoming use count
+
+The exact fields and order must be defined in one central formatter.
+
+Unavailable fields should normally be omitted rather than filled with misleading placeholders.
+
+### **Plain-Text Example**
+
+A possible summary shape is:
+
+Name: hf:identity
+
+Kind: Global element
+
+Source: project-root/entity.xsd
+
+Location: Line 42, column 3
+
+Type: hf:entityIdentityType
+
+Occurs: 1
+
+Structural destinations: 5
+
+Attributes: 1
+
+Documentation: Defines the stable identity of an entity.
+
+Used by: 1 declaration
+
+The exact final wording should follow existing XML Carousel terminology.
+
+### **Determinism Requirements**
+
+For the same project and node, the summary must have:
+
+* stable field ordering;  
+* stable relationship ordering;  
+* stable newline behaviour;  
+* stable occurrence wording;  
+* no timestamps;  
+* no random identifiers;  
+* no transient animation or focus state;  
+* no absolute local paths;  
+* no browser-dependent formatting;  
+* no hidden UI-only metadata.
+
+### **Non-Goals**
+
+The copied summary is not:
+
+* XML;  
+* DTD source;  
+* JSON interchange;  
+* a complete project export;  
+* a reconstructed declaration;  
+* a guaranteed permanent external API;  
+* a replacement for source view;  
+* a substitute for the full inspector.
+
+The summary should remain readable when pasted into systems that do not render Markdown.
+
+### **Clipboard and Feedback Rules**
+
+Use the same explicit-action, success, failure, focus, announcement, and privacy rules as **Copy source**.
+
+### **Tests**
+
+Automated coverage must include:
+
+* representative DTD elements;  
+* DTD attributes;  
+* XSD elements and types;  
+* ZIP package paths;  
+* shared nodes;  
+* duplicate edges;  
+* cycles;  
+* long names;  
+* missing optional metadata;  
+* stable relationship ordering;  
+* repeated formatting determinism;  
+* newline stability;  
+* clipboard success and failure;  
+* accessibility;  
+* no state mutation;  
+* no absolute paths.
+
+### **Manual QA**
+
+Ben should paste summaries into several external contexts and confirm that they are:
+
+* understandable without XML Carousel;  
+* technically accurate;  
+* concise enough for handoff;  
+* stable across repeated copies;  
+* clearly different from raw source.
+
+---
+
+## **28.7 Task 15.5 — Developer Handoff Utilities Stabilization and Acceptance**
+
+### **Goal**
+
+Perform the final acceptance and stabilization audit for source identity, source modal, source copying, and node-summary copying.
+
+### **Required Audit Areas**
+
+The audit must cover:
+
+* truthful source identity;  
+* truthful location precision;  
+* no fabricated line or column values;  
+* modal readability;  
+* modal focus containment and restoration;  
+* retained-source fidelity;  
+* deterministic summary formatting;  
+* clipboard success and failure;  
+* keyboard operation;  
+* announcements;  
+* responsive containment;  
+* 200% text scaling;  
+* magnification-equivalent reflow;  
+* forced colours;  
+* reduced motion where applicable;  
+* standalone DTD;  
+* standalone XSD;  
+* multi-file ZIP;  
+* package-relative source paths;  
+* project replacement;  
+* Search and inspector origins;  
+* large-project boundedness;  
+* privacy and network isolation;  
+* controlled Chrome and Firefox evidence;  
+* technical documentation;  
+* no parser, model, validation, or standards regression.
+
+### **Completion Boundary**
+
+The Developer Handoff Utilities milestone closes only after:
+
+* focused automated tests pass;  
+* complete validation passes;  
+* controlled-browser evidence passes;  
+* Ben’s manual QA passes;  
+* exact-scope integration succeeds;  
+* staged, task, hypothetical-merge, actual-merge, and final trees match;  
+* hosted CI succeeds for the exact merge SHA.
+
+---
+
+## **28.8 Later Roadmap Candidates**
+
+The following remain roadmap candidates and are not approved implementation work:
+
+Large-project performance and capacity
+
+Accessibility and platform evidence
+
+In-memory session history
+
+Persistent local project reopening
+
+Schema comparison
+
+They should not receive Task 16 numbers until separately reviewed and approved.
+
+---
+
+## **28.9 Unresolved Product Decisions**
+
+The following decisions remain open:
+
+* Whether XML Carousel should remain permanently read-only or eventually support editing/export.  
+* Whether future standards work should remain limited to XSD 1.0 or include XSD 1.1.  
+* Whether Safari/WebKit support is a release requirement.  
+* Whether manual screen-reader testing or certification is required.  
+* Whether projects should persist and reopen across reloads.  
+* Whether documentation and appinfo should optionally become navigable nodes.  
+* Whether schema comparison should become a core workflow.  
+* Whether Developer Handoff Utilities should form a `0.2.0` release.  
+* Whether large-project performance should immediately follow this milestone.  
+* Whether explicit `I` or `D` inspector keyboard shortcuts should be added.
+
+These decisions must not be inferred from approval of Developer Handoff Utilities.
+
