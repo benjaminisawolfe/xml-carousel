@@ -71,32 +71,36 @@
   data-semantic-zoom-line-node-id={summary.nodeId}
   data-journey-position={journeyPosition}
 >
-  {#if presentation !== 'overview'}
-    <div class="card-topline">
-      {#if presentation === 'full' && summary.kind !== 'schema'}
-        <NodeKindBadge kind={summary.kind} />
-      {:else}
-        <span aria-hidden="true"></span>
-      {/if}
-      <button
-        class:close-inspection={isInspected}
-        type="button"
-        aria-label={isInspected
-          ? `Close inspection for ${summary.displayName}`
-          : `Inspect ${summary.displayName}`}
-        aria-pressed={isInspected}
-        data-inspect-node-id={summary.nodeId}
-        data-carousel-gesture-ignore
-        onclick={() => onToggleInspection(summary.nodeId)}
-      >
-        {isInspected ? 'Close Inspection' : 'Inspect'}
-      </button>
-    </div>
-  {/if}
+  <div class="card-topline">
+    {#if presentation === 'overview'}
+      <h2 bind:this={heading} tabindex="-1" data-focus-card-heading>
+        {summary.displayName}
+      </h2>
+    {:else if presentation === 'full' && summary.kind !== 'schema'}
+      <NodeKindBadge kind={summary.kind} />
+    {:else}
+      <span aria-hidden="true"></span>
+    {/if}
+    <button
+      class:close-inspection={isInspected}
+      type="button"
+      aria-label={isInspected
+        ? `Close inspection for ${summary.displayName}`
+        : `Inspect ${summary.displayName}`}
+      aria-pressed={isInspected}
+      data-inspect-node-id={summary.nodeId}
+      data-carousel-gesture-ignore
+      onclick={() => onToggleInspection(summary.nodeId)}
+    >
+      {isInspected ? 'Close Inspection' : 'Inspect'}
+    </button>
+  </div>
 
-  <h2 bind:this={heading} tabindex="-1" data-focus-card-heading>
-    {summary.displayName}
-  </h2>
+  {#if presentation !== 'overview'}
+    <h2 bind:this={heading} tabindex="-1" data-focus-card-heading>
+      {summary.displayName}
+    </h2>
+  {/if}
 
   {#if presentation === 'full'}
     <!-- svelte-ignore a11y_no_noninteractive_tabindex (the bounded overflow region must be keyboard-scrollable) -->
@@ -351,7 +355,18 @@
     border-top-width: 4px;
   }
 
+  .focus-card.overview .card-topline {
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-3);
+    margin: 0;
+  }
+
   .focus-card.overview h2 {
+    flex: 1 1 10rem;
     margin: 0;
     font-size: var(--font-size-lg);
     line-height: 1.25;
@@ -667,6 +682,11 @@
     background: var(--colour-accent-active);
   }
 
+  .card-topline button:focus-visible {
+    outline: 3px solid var(--colour-focus-ring);
+    outline-offset: 2px;
+  }
+
   .card-topline button.close-inspection {
     border-color: var(--colour-danger-action);
     background: var(--colour-danger-action);
@@ -827,6 +847,10 @@
       border-color: Highlight;
       background: ButtonFace;
       color: ButtonText;
+    }
+
+    .card-topline button:focus-visible {
+      outline-color: Highlight;
     }
 
     .leaf-state,

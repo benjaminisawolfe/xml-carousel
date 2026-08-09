@@ -157,6 +157,64 @@ const sourcePresentation: SourceViewPresentation = {
 };
 
 describe('focused-card information architecture', () => {
+  it('keeps the focused Overview card name-only apart from its independent Inspect action', async () => {
+    const onToggleInspection = vi.fn();
+    const onCenterNode = vi.fn();
+    const rendered = render(FocusCard, {
+      props: {
+        summary: summaryFixture,
+        sourcePresentation,
+        isInspected: false,
+        motionKey: 'fixture:overview',
+        onToggleInspection,
+        onCenterNode,
+        presentation: 'overview',
+      },
+    });
+    const card = screen.getByRole('article', { name: 'catalog' });
+    const inspect = within(card).getByRole('button', {
+      name: 'Inspect catalog',
+    });
+
+    expect(inspect).toHaveTextContent('Inspect');
+    expect(inspect).toHaveAttribute('type', 'button');
+    expect(inspect).toHaveAttribute('aria-pressed', 'false');
+    expect(inspect).toHaveAttribute('data-inspect-node-id', 'fixture:focus');
+    expect(inspect).toHaveAttribute('data-carousel-gesture-ignore');
+    expect(within(card).getAllByRole('button')).toEqual([inspect]);
+    expect(within(card).queryByText('DTD element declaration')).toBeNull();
+    expect(within(card).queryByText('catalog.dtd')).toBeNull();
+    expect(within(card).queryByLabelText('Content model')).toBeNull();
+    expect(card.querySelector('.kind-badge')).toBeNull();
+    expect(card.querySelector('[data-focus-card-scroll-region]')).toBeNull();
+
+    inspect.focus();
+    await fireEvent.click(inspect);
+    expect(onToggleInspection).toHaveBeenCalledOnce();
+    expect(onToggleInspection).toHaveBeenCalledWith('fixture:focus');
+    expect(onCenterNode).not.toHaveBeenCalled();
+
+    await rendered.rerender({
+      summary: summaryFixture,
+      sourcePresentation,
+      isInspected: true,
+      motionKey: 'fixture:overview',
+      onToggleInspection,
+      onCenterNode,
+      presentation: 'overview',
+    });
+    const close = within(card).getByRole('button', {
+      name: 'Close inspection for catalog',
+    });
+    expect(close).toHaveTextContent('Close Inspection');
+    expect(close).toHaveAttribute('aria-pressed', 'true');
+    expect(close).toHaveFocus();
+    expect(focusCardSource).toContain('.focus-card.overview .card-topline');
+    expect(focusCardSource).toContain('flex-wrap: wrap');
+    expect(focusCardSource).toContain('.card-topline button:focus-visible');
+    expect(focusCardSource).toContain('@media (forced-colors: active)');
+  });
+
   it('limits source details and action to Full zoom and keeps Inspect independent', async () => {
     const onViewSource = vi.fn();
     const onToggleInspection = vi.fn();
