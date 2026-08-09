@@ -11,6 +11,7 @@
   import NodeRelationships from './NodeRelationships.svelte';
   import NodeRelatedDefinitions from './NodeRelatedDefinitions.svelte';
   import NodeStructure from './NodeStructure.svelte';
+  import NodeSummaryCopyAction from './NodeSummaryCopyAction.svelte';
   import NodeUnresolvedReferences from './NodeUnresolvedReferences.svelte';
   import type { InspectorSummary } from './inspectorSummary';
   import { formatSchemaNodeKind } from '../carousel/nodePresentation';
@@ -25,6 +26,8 @@
   export let onClose: () => void;
   export let childListResetKey = summary.nodeId;
   export let sourcePresentation: SourceViewPresentation | undefined = undefined;
+  export let nodeSummaryText: string | undefined = undefined;
+  export let nodeSummaryTargetKey = childListResetKey;
   export let onViewSource: (origin: HTMLButtonElement) => void = () => {};
 
   $: overviewProperties = summary.overviewProperties.filter(
@@ -44,6 +47,10 @@
   />
 
   <div class="inspector-content" data-inspector-scroll-body>
+    <NodeSummaryCopyAction
+      summaryText={nodeSummaryText}
+      targetKey={nodeSummaryTargetKey}
+    />
     {#if sourcePresentation && (sourcePresentation.sourceIdentity || sourcePresentation.sourceAvailable)}
       <SourceOrientation
         presentation={sourcePresentation}

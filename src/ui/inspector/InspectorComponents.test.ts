@@ -952,6 +952,8 @@ describe('inspector presentation components', () => {
     };
     const { container } = render(NodeInspector, {
       summary: { ...summary, sourceMarkup },
+      nodeSummaryText: 'Name: chapter\nKind: DTD element declaration',
+      nodeSummaryTargetKey: 'project:chapter:1',
       sourcePresentation: sourcePresentation(
         'chapter',
         'chapter',
@@ -966,11 +968,17 @@ describe('inspector presentation components', () => {
     const viewSource = screen.getByRole('button', {
       name: 'View source for chapter',
     });
+    const copySummary = screen.getByRole('button', {
+      name: 'Copy node summary',
+    });
     const firstSection = screen.getByRole('region', { name: 'Overview' });
 
     expect(container.querySelector('details')).toBeNull();
     expect(screen.queryByText(sourceMarkup.fragments[0]!.text)).toBeNull();
     expect(viewSource.compareDocumentPosition(firstSection)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(copySummary.compareDocumentPosition(viewSource)).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(screen.getAllByText('book.dtd')).toHaveLength(1);
