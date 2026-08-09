@@ -151,6 +151,78 @@ describe('application shell', () => {
     }
   });
 
+  it('copies the Inspector node summary without navigation changes and keeps Copy source separate', async () => {
+    restoreSampleProject();
+    const writeText = vi
+      .fn<(text: string) => Promise<void>>()
+      .mockResolvedValue(undefined);
+    const restoreClipboard = installClipboard(writeText);
+    const request = vi.spyOn(globalThis, 'fetch');
+    try {
+      render(App);
+      const searchbox = screen.getByRole('searchbox', {
+        name: 'Search schema',
+      });
+      await fireEvent.input(searchbox, { target: { value: 'chapter' } });
+      expect(inspectorStore.inspect(bookDtdNodeIds.chapter).applied).toBe(true);
+      const copySummary = await screen.findByRole('button', {
+        name: 'Copy node summary',
+      });
+      const beforeProject = get(activeProjectStore);
+      const beforeNavigation = get(navigationStore);
+      const beforeInspector = get(inspectorStore);
+      const beforeZoom = get(semanticZoomStore);
+      const beforeSourceView = get(sourceViewStore);
+
+      copySummary.focus();
+      await fireEvent.click(copySummary);
+
+      expect(writeText).toHaveBeenCalledOnce();
+      const summaryPayload = writeText.mock.calls[0]![0];
+      expect(summaryPayload).toContain('Name: chapter');
+      expect(summaryPayload).toContain('Kind: DTD element declaration');
+      expect(summaryPayload).toContain('Source: sample.book.dtd');
+      expect(summaryPayload).toContain('Structural destinations:');
+      expect(summaryPayload).not.toContain('<!ELEMENT chapter');
+      expect(copySummary).toHaveFocus();
+      expect(
+        within(
+          copySummary.closest('[data-node-summary-copy-action]')!,
+        ).getByText('Copied node summary'),
+      ).toBeVisible();
+      expect(get(activeProjectStore)).toBe(beforeProject);
+      expect(get(navigationStore)).toEqual(beforeNavigation);
+      expect(get(inspectorStore)).toEqual(beforeInspector);
+      expect(get(semanticZoomStore)).toEqual(beforeZoom);
+      expect(get(sourceViewStore)).toEqual(beforeSourceView);
+      expect(searchbox).toHaveValue('chapter');
+      expect(
+        screen.getByRole('heading', { name: 'Search results' }),
+      ).toBeVisible();
+      expect(request).not.toHaveBeenCalled();
+
+      await fireEvent.click(
+        within(
+          screen.getByRole('complementary', { name: 'Schema inspector' }),
+        ).getByRole('button', { name: 'View source for chapter' }),
+      );
+      const dialog = await screen.findByRole('dialog', { name: 'chapter' });
+      const retained = within(dialog).getByLabelText(
+        'Retained source for chapter',
+      ).textContent;
+      await fireEvent.click(
+        within(dialog).getByRole('button', { name: 'Copy source' }),
+      );
+
+      expect(writeText).toHaveBeenCalledTimes(2);
+      expect(writeText).toHaveBeenNthCalledWith(2, retained);
+      expect(writeText.mock.calls[1]![0]).not.toBe(summaryPayload);
+    } finally {
+      request.mockRestore();
+      restoreClipboard();
+    }
+  });
+
   it('restores Inspector-origin focus while focus and inspection remain independent', async () => {
     restoreSampleProject();
     render(App);

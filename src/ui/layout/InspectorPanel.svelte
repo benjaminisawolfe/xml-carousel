@@ -10,6 +10,7 @@
   import NodeInspector from '../inspector/NodeInspector.svelte';
   import type { SourceViewOrigin } from '../../app/stores/sourceViewStore';
   import { selectSourceViewPresentation } from '../presentation/sourceMarkupPresentation';
+  import { formatNodeSummary } from '../presentation/nodeSummaryPresentation';
 
   export let onOpenSource: (
     nodeId: string,
@@ -41,6 +42,9 @@
     ? selectSourceViewPresentation($activeProjectStore, $inspectedNodeId)
     : undefined;
   $: childListResetKey = `${$activeProjectStore.project.id}\u0000${$projectSessionResetStore.revision}\u0000${$inspectedNodeId ?? ''}`;
+  $: nodeSummaryText = inspectorSummary
+    ? formatNodeSummary(inspectorSummary, sourcePresentation)
+    : undefined;
 
   onMount(() => {
     const overlayQuery = window.matchMedia?.('(max-width: 1099px)');
@@ -136,6 +140,8 @@
     <NodeInspector
       summary={inspectorSummary}
       {sourcePresentation}
+      {nodeSummaryText}
+      nodeSummaryTargetKey={childListResetKey}
       isCurrentFocus={inspectorSummary.nodeId === $currentFocusNodeId}
       onCenter={() => void centerInspectedNode()}
       onCenterNode={centerNode}
