@@ -1,15 +1,20 @@
 # XML Carousel 0.2.0 — Second Public Alpha
 
-- Candidate preparation date: 2026-08-09
-- Release date: pending publication
-- Planned tag: `v0.2.0`
-- Planned GitHub Release: prerelease
+- Release date: 2026-08-10
+- Annotated tag: `v0.2.0`
+- Published source commit: `1c744fd16079cbefcaf1f4c96d69c1897e9727ab`
+- GitHub Release: published as a prerelease
+- GitHub Release ID: `367670853`
 - Canonical site: https://xmlcarousel.wolfshafenpress.com/
+- Deployment: completed by manual FTP
+- Deployed-byte verification: passed
+- Live inventory SHA-256:
+  `39f0f141b99f43aaeec8de09a189ec4f6ba65b06edbb55008179b8cf3147ddd9`
 
-XML Carousel 0.2.0 is a prepared release candidate for the second public alpha.
-Publication and deployment remain pending final QA, integration, exact-SHA
-hosted CI, and explicit authorization. The canonical site continues to publish
-0.1.0 until that later work is completed.
+XML Carousel 0.2.0 is the published and deployed second public alpha. Annotated
+tag `v0.2.0` identifies the exact published source, and the canonical site
+serves the exact verified 14-file release distribution. Hosted CI, deployed-byte
+verification, and live Chrome and Firefox verification passed.
 
 ## Highlights
 
@@ -79,7 +84,7 @@ retain accessible names, and long names remain contained at enlarged text and
 narrow layouts.
 
 Automated accessibility evidence is not manual screen-reader certification.
-Safari/WebKit is not an acceptance target for this candidate.
+Safari/WebKit is not an acceptance target for this release.
 
 ## Security and privacy
 
@@ -96,15 +101,15 @@ supplied files.
 
 ## Distribution
 
-The candidate is one hosting-neutral static distribution built with relative
-`./assets/...` references. The same exact files are intended to run at a domain
-root or nested directory without rebuilding. No XML Carousel application
-backend is required.
+The release is one hosting-neutral 14-file static distribution built with
+relative `./assets/...` references. The same exact files run at a domain root or
+nested directory without rebuilding. No XML Carousel application backend is
+required.
 
-Publication and deployment are not part of candidate preparation. A later
-authorized deployment must transfer every release file in binary/image mode and
-perform a cache-bypassed byte comparison of every deployed file against the
-authoritative release inventory.
+The canonical deployment used Binary/Image transfer mode for every file and
+was verified byte-for-byte with cache bypass. The live inventory contains
+3,257,270 bytes and has canonical SHA-256
+`39f0f141b99f43aaeec8de09a189ec4f6ba65b06edbb55008179b8cf3147ddd9`.
 
 ## Known limitations
 
@@ -122,15 +127,16 @@ boundaries.
 
 ## Upgrade and testing notes
 
-This candidate does not change the portable hosting model used by 0.1.0. Users
+This release does not change the portable hosting model used by 0.1.0. Users
 testing unfamiliar schemas should keep all required local dependencies together
 in a ZIP with their relative paths preserved. Failed or cancelled replacement
 imports should leave the active project available.
 
-Release-candidate automated and controlled-browser evidence is recorded in the
-[0.2.0 candidate report](release-0.2.0-candidate-report.md). Publication cannot
-proceed until the [0.2.0 release checklist](release-0.2.0-checklist.md) reaches
-its explicit authorization gates.
+Publication, deployment, deployed-byte verification, and live browser evidence
+are recorded in the [0.2.0 release and deployment
+report](release-0.2.0-release-report.md). The unchanged [0.2.0 candidate
+report](release-0.2.0-candidate-report.md) remains historical pre-release
+evidence.
 
 ## Further documentation
 
@@ -138,5 +144,6 @@ its explicit authorization gates.
 - [Known limitations](known-limitations.md)
 - [Third-party licensing](third-party-licensing.md)
 - [0.2.0 release checklist](release-0.2.0-checklist.md)
-- [0.2.0 candidate report](release-0.2.0-candidate-report.md)
+- [0.2.0 release and deployment report](release-0.2.0-release-report.md)
+- [Historical 0.2.0 candidate report](release-0.2.0-candidate-report.md)
 - [Historical 0.1.0 release notes](first-public-alpha.md)

@@ -3,12 +3,20 @@
 ## Release identity
 
 - Version: `0.2.0`
-- Planned tag: `v0.2.0`
+- Release date: `2026-08-10`
+- Annotated tag: `v0.2.0`
 - Tag policy: annotated
-- Recommended title: `XML Carousel 0.2.0 — Second Public Alpha`
-- Recommended GitHub Release state: prerelease, non-draft at publication
+- Release commit: `1c744fd16079cbefcaf1f4c96d69c1897e9727ab`
+- Tag object: `8584d805caa734edbab712c6b4e2b16667304ff9`
+- Release title: `XML Carousel 0.2.0 — Second Public Alpha`
+- GitHub Release ID: `367670853`
+- GitHub Release state: prerelease, non-draft
 - Canonical site: https://xmlcarousel.wolfshafenpress.com/
-- Candidate report: [release-0.2.0-candidate-report.md](release-0.2.0-candidate-report.md)
+- Live inventory SHA-256:
+  `39f0f141b99f43aaeec8de09a189ec4f6ba65b06edbb55008179b8cf3147ddd9`
+- Final report: [release-0.2.0-release-report.md](release-0.2.0-release-report.md)
+- Historical candidate report:
+  [release-0.2.0-candidate-report.md](release-0.2.0-candidate-report.md)
 
 Authority markers have distinct meanings:
 
@@ -85,80 +93,82 @@ Authority markers have distinct meanings:
 
 ## Ben's final release QA
 
-- [ ] **[Manual QA]** Test built-in Book DTD and Library XSD, representative
+- [x] **[Manual QA]** Test built-in Book DTD and Library XSD, representative
   standalone DTD/XSD, a resolved ZIP, and invalid import state preservation.
-- [ ] **[Manual QA]** Test rootward/leafward journey, Navigation, Search,
+- [x] **[Manual QA]** Test rootward/leafward journey, Navigation, Search,
   Inspector independence, Full/Compact/Overview, focused Overview Inspect, and
   normal Overview Context navigation.
-- [ ] **[Manual QA]** Confirm source filename/package path and precision, large
+- [x] **[Manual QA]** Confirm source filename/package path and precision, large
   source modal, exact Copy source, and deterministic Copy node summary.
-- [ ] **[Manual QA]** Check keyboard focus, Help/source-modal focus restoration,
+- [x] **[Manual QA]** Check keyboard focus, Help/source-modal focus restoration,
   200% text, narrow reflow, short landscape, high contrast/forced colours, and
   reduced motion where practical.
-- [ ] **[Manual QA]** Perform a practical large-schema import/navigation smoke.
-- [ ] **[Manual QA]** Use DevTools Network to confirm schema/source/summary
+- [x] **[Manual QA]** Perform a practical large-schema import/navigation smoke.
+- [x] **[Manual QA]** Use DevTools Network to confirm schema/source/summary
   content does not leave the application host.
-- [ ] **[Manual QA]** Confirm candidate documents say 0.2.0 candidate,
-  publication pending, and deployment pending.
+- [x] **[Manual QA]** Confirm candidate documents accurately record the
+  historical pre-publication and pre-deployment state.
 
 ## Release-candidate integration and exact-SHA CI
 
-- [ ] **[Explicit authorization]** Stage and commit the reviewed candidate only
+- [x] **[Explicit authorization]** Stage and commit the reviewed candidate only
   after Ben's final release QA passes.
-- [ ] **[Explicit authorization]** Integrate the candidate using the separately
+- [x] **[Explicit authorization]** Integrate the candidate using the separately
   authorized release workflow without changing candidate content.
-- [ ] **[Explicit authorization]** Run hosted CI on the exact candidate merge SHA
+- [x] **[Explicit authorization]** Run hosted CI on the exact candidate merge SHA
   and require every release gate to pass.
-- [ ] **[Explicit authorization]** Record the final merge commit/tree and prove
+- [x] **[Explicit authorization]** Record the final merge commit/tree and prove
   the release files match the reviewed candidate.
 
 ## Tag and publication authorization
 
-- [ ] **[Explicit authorization]** Create annotated tag `v0.2.0` on the exact
+- [x] **[Explicit authorization]** Create annotated tag `v0.2.0` on the exact
   approved release commit; do not move or replace an existing tag.
-- [ ] **[Explicit authorization]** Push the approved release branch/commit and
+- [x] **[Explicit authorization]** Push the approved release branch/commit and
   annotated tag.
-- [ ] **[Explicit authorization]** Create and publish the GitHub Release titled
+- [x] **[Explicit authorization]** Create and publish the GitHub Release titled
   `XML Carousel 0.2.0 — Second Public Alpha` as a prerelease and non-draft.
-- [ ] **[Explicit authorization]** Verify the public tag object, release target,
+- [x] **[Explicit authorization]** Verify the public tag object, release target,
   title, notes, prerelease state, and source archives before deployment.
 
 ## Manual deployment authorization
 
-- [ ] **[Explicit authorization]** Confirm the authoritative release inventory
+- [x] **[Explicit authorization]** Confirm the authoritative release inventory
   and obtain separate permission to deploy its exact files.
-- [ ] **[Explicit authorization]** Use binary/image transfer mode for all release
+- [x] **[Explicit authorization]** Use binary/image transfer mode for all release
   files. Do not use FTP ASCII/text mode for HTML, CSS, JavaScript, text, licence,
   or WebAssembly files.
-- [ ] **[Explicit authorization]** Transfer the contents of `dist/` without a
+- [x] **[Explicit authorization]** Transfer the contents of `dist/` without a
   production rebuild and preserve filenames and directory structure.
 
 ## Deployed-byte verification
 
-- [ ] **[Explicit authorization]** Fetch every release file with cache bypass and
+- [x] **[Explicit authorization]** Fetch every release file with cache bypass and
   compare its bytes and SHA-256 to the authoritative release inventory.
-- [ ] **[Explicit authorization]** Treat one missing, extra, or byte-different
+- [x] **[Explicit authorization]** Treat one missing, extra, or byte-different
   release file as a blocker; correct it and repeat the complete comparison.
-- [ ] **[Explicit authorization]** Confirm production MIME behavior and relative
+- [x] **[Explicit authorization]** Confirm production MIME behavior and relative
   root asset loading from the deployed bytes.
 
 ## Live-site smoke
 
-- [ ] **[Manual QA]** Run fresh Chrome and Firefox smoke checks against the
+- [x] **[Manual QA]** Run fresh Chrome and Firefox smoke checks against the
   canonical site after deployed-byte verification passes.
-- [ ] **[Manual QA]** Recheck imports, navigation, semantic zoom, focused Overview
+- [x] **[Manual QA]** Recheck imports, navigation, semantic zoom, focused Overview
   Inspect, source/copy utilities, narrow layout, and privacy/network behavior.
-- [ ] **[Manual QA]** Confirm the live site exposes the exact authorized 0.2.0
+- [x] **[Manual QA]** Confirm the live site exposes the exact authorized 0.2.0
   distribution and no stale 0.1.0 assets.
 
 ## Final release closure
 
-- [ ] **[Explicit authorization]** Update release records with actual tag,
+- [x] **[Explicit authorization]** Update release records with actual tag,
   GitHub Release, deployment inventory, byte verification, live-browser, and
   manual-QA evidence only after each event occurs.
-- [ ] **[Explicit authorization]** Confirm no rollback is required and close the
+- [x] **[Explicit authorization]** Confirm no rollback is required and close the
   release only when publication, deployment, byte identity, and live smoke all
   pass.
 
-Candidate-stage publication and deployment actions intentionally remain
-unchecked.
+XML Carousel 0.2.0 publication, deployment, deployed-byte verification, live
+Chrome and Firefox verification, and release closure are complete. No rollback
+is required. See the [release and deployment
+report](release-0.2.0-release-report.md) for the authoritative evidence.
