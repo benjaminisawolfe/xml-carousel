@@ -109,22 +109,24 @@ Serve the application from the directory URL, normally with a trailing slash.
 The server must deliver the generated files with their normal MIME types. No
 application backend is required.
 
-Version `0.1.0` is published as the first public alpha at the canonical site:
-<https://xmlcarousel.wolfshafenpress.com/>. Manual FTP deployment was completed,
-and the live site passed deployed-byte verification against the
-exact 14-file release distribution. Its inventory SHA-256 is
-`2f73adbba3ec0837fd6c4bf5c86e879af1fa0bef7730f14e6afbf0040d412dc0`.
+Version 0.2.0 is the current second public alpha. Annotated tag
+[`v0.2.0`](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.2.0)
+and its GitHub prerelease identify the published source. The canonical site at
+<https://xmlcarousel.wolfshafenpress.com/> runs the exact verified 14-file
+0.2.0 distribution. Deployed-byte verification passed with live inventory
+SHA-256
+`39f0f141b99f43aaeec8de09a189ec4f6ba65b06edbb55008179b8cf3147ddd9`,
+and live checks passed in Chrome 151.0.7922.77 and Firefox 153.0.3.
 
-The release is identified by annotated tag
+Version 0.1.0 is the first public alpha. It remains historical and is identified
+by annotated tag
 [`v0.1.0`](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.1.0).
-Fresh live-site verification passed in Chrome 151.0.7922.72 and Firefox
-153.0.1. Distribution remains hosting-neutral: the same relative-base files
-can still be served from a domain root or nested directory without rebuilding.
-
-Version `0.2.0` is the prepared second-public-alpha release candidate. Its
-publication and deployment remain pending Ben's final QA and explicit
-authorization. The canonical site must not be treated as running `0.2.0` until
-the later publication, binary-mode deployment, and deployed-byte checks pass.
+Its manual FTP deployment passed deployed-byte verification and live-site
+checks in Chrome 151.0.7922.72 and Firefox 153.0.1. Its verified historical
+inventory SHA-256 is
+`2f73adbba3ec0837fd6c4bf5c86e879af1fa0bef7730f14e6afbf0040d412dc0`.
+Distribution remains hosting-neutral: the same relative-base files can be
+served from a domain root or a nested directory without rebuilding.
 
 ## Project documentation
 
@@ -132,31 +134,29 @@ the later publication, binary-mode deployment, and deployed-byte checks pass.
 - [Standards support](docs/standards-support.md)
 - [Known limitations](docs/known-limitations.md)
 - [Third-party licensing and attribution](docs/third-party-licensing.md)
-- Current 0.2.0 candidate: [Second public alpha release notes](docs/second-public-alpha.md)
-- Current 0.2.0 candidate: [Release checklist](docs/release-0.2.0-checklist.md)
-- Current 0.2.0 candidate: [Candidate report](docs/release-0.2.0-candidate-report.md)
-- Historical 0.1.0: [First public alpha release notes](docs/first-public-alpha.md)
-- Historical 0.1.0: [Release and deployment report](docs/release-candidate-report.md)
-- Historical 0.1.0: [Release checklist](docs/release-checklist.md)
+- 0.2.0: [Release notes](docs/second-public-alpha.md)
+- 0.2.0: [Completed release checklist](docs/release-0.2.0-checklist.md)
+- 0.2.0: [Release and deployment report](docs/release-0.2.0-release-report.md)
+- 0.2.0 historical: [Candidate report](docs/release-0.2.0-candidate-report.md)
+- 0.1.0 historical: [First public alpha release notes](docs/first-public-alpha.md)
+- 0.1.0 historical: [Release and deployment report](docs/release-candidate-report.md)
+- 0.1.0 historical: [Release checklist](docs/release-checklist.md)
 - [Development plan](docs/development-plan.md)
 - [Style guide](docs/style-guide.md)
 
 ## Status
 
-Version 0.1.0 is the first public alpha. It remains the currently published and
-deployed release. Annotated tag `v0.1.0` and the
-[GitHub prerelease](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.1.0)
+Version 0.2.0 is the current public alpha. Annotated tag `v0.2.0` and the
+[GitHub prerelease](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.2.0)
 identify the published source. The canonical deployment matches the exact
-published 14-file distribution, and fresh Chrome and Firefox live-site checks
-passed.
-
-Version 0.2.0 is a prepared release candidate for the second public alpha.
-Publication and deployment are pending final release QA, candidate integration,
-exact-SHA hosted CI, and explicit authorization. Read the current [candidate
-release notes](docs/second-public-alpha.md), [known
+authorized 14-file distribution, deployed-byte verification passed, and live
+Chrome and Firefox checks passed. Read the current [release
+notes](docs/second-public-alpha.md), [known
 limitations](docs/known-limitations.md), and [release and deployment
-report for 0.1.0](docs/release-candidate-report.md) before testing unfamiliar
-schemas.
+report](docs/release-0.2.0-release-report.md) before testing unfamiliar schemas.
+
+Version 0.1.0 is preserved as the historical first public alpha with its
+original annotated tag, prerelease, release documents, and deployment evidence.
 
 This alpha is suitable for exploratory testing. Apache Xerces-C++ is the
 authoritative XML, DTD, and XML Schema 1.0 validator within the controlled
