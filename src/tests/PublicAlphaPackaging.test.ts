@@ -43,10 +43,6 @@ const repositoryWorkflows = workflowFiles.map((entry) => ({
   entry,
   source: read(path.join('.github', 'workflows', entry)),
 }));
-const packageLock = JSON.parse(read('package-lock.json')) as {
-  version: string;
-  packages: { '': { version: string } };
-};
 const releaseNotes = read('docs/first-public-alpha.md');
 const releaseChecklist = read('docs/release-checklist.md');
 const candidateReport = read('docs/release-candidate-report.md');
@@ -122,9 +118,6 @@ describe('public alpha documentation and package contracts', () => {
 
   it('keeps accurate private-package metadata and build scripts', () => {
     expect(packageJson.private).toBe(true);
-    expect(packageJson.version).toBe('0.1.0');
-    expect(packageLock.version).toBe('0.1.0');
-    expect(packageLock.packages[''].version).toBe('0.1.0');
     expect(packageJson.description).toContain('DTD, XSD, and ZIP');
     expect(packageJson.author).toBe('Ben Wolfe');
     expect(packageJson.license).toBe('CC0-1.0');

@@ -1380,7 +1380,6 @@ async function compactSemanticZoomAudit(
       presentation: surface?.getAttribute('data-semantic-zoom-presentation') ?? null,
       rangeValue: document.querySelector('input[aria-label="Semantic zoom"]')?.value ?? null,
       rangeValueText: document.querySelector('input[aria-label="Semantic zoom"]')?.getAttribute('aria-valuetext') ?? null,
-      focusText: visibleText(focus),
       focusName: focus?.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
       focusHeight: focus?.getBoundingClientRect().height ?? null,
       rootwardNamesOnly: ${overviewRootwardNamesOnly},
@@ -1390,7 +1389,11 @@ async function compactSemanticZoomAudit(
       historyNamesOnly: historyRows.every((row) =>
         visibleText(row) === visibleText(row.querySelector('.node-name'))
       ),
-      inspectCount: surface?.querySelectorAll('[data-inspect-node-id]').length ?? -1,
+      focusedInspectCount: focus?.querySelectorAll('[data-inspect-node-id]').length ?? -1,
+      contextInspectCount: contextCards.reduce(
+        (count, card) => count + card.querySelectorAll('[data-inspect-node-id]').length,
+        0,
+      ),
       kindBadgeCount: surface?.querySelectorAll('.kind-badge').length ?? -1,
       occurrenceVisible: contextCards.some((card) => /[?*+]$/u.test(visibleText(card))),
       linePresentation: document.querySelector('[data-semantic-zoom-relationship-lines]')?.getAttribute('data-semantic-zoom-line-presentation') ?? null,
@@ -1400,6 +1403,48 @@ async function compactSemanticZoomAudit(
       overflowControlPresent: Boolean(document.querySelector('[data-carousel-window-direction^="leafward-"]')),
     };
   })()`);
+  const overviewBeforeInspection = await driver.evaluate(`(() => ({
+    project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
+    currentNode: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
+    requested: document.querySelector('[data-carousel-gesture-viewport]')?.getAttribute('data-semantic-zoom-requested') ?? null,
+    effective: document.querySelector('[data-carousel-gesture-viewport]')?.getAttribute('data-semantic-zoom-effective') ?? null,
+    presentation: document.querySelector('[data-carousel-gesture-viewport]')?.getAttribute('data-semantic-zoom-presentation') ?? null,
+    searchValue: document.querySelector('[aria-label="Search schema"]')?.value ?? '',
+  }))()`);
+  await driver.click('[aria-label="Inspect Schema overview"]');
+  const overviewInspectionOpened = await waitUntil(
+    () =>
+      driver.evaluate(`(() => {
+        const close = document.querySelector('[data-inspector-close]');
+        if (close?.getAttribute('aria-label') !== 'Close inspector for Schema overview') return null;
+        return {
+          inspected: close.getAttribute('aria-label'),
+          focusAction: document.querySelector('[data-semantic-zoom-focus-card] [data-inspect-node-id]')?.getAttribute('aria-label') ?? '',
+          project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
+          currentNode: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
+          requested: document.querySelector('[data-carousel-gesture-viewport]')?.getAttribute('data-semantic-zoom-requested') ?? null,
+          effective: document.querySelector('[data-carousel-gesture-viewport]')?.getAttribute('data-semantic-zoom-effective') ?? null,
+          presentation: document.querySelector('[data-carousel-gesture-viewport]')?.getAttribute('data-semantic-zoom-presentation') ?? null,
+          searchValue: document.querySelector('[aria-label="Search schema"]')?.value ?? '',
+        };
+      })()`),
+    'Task 16.1 focused Overview inspection',
+  );
+  await driver.click('[aria-label="Close inspection for Schema overview"]');
+  const overviewInspectionClosed = await waitUntil(
+    () =>
+      driver.evaluate(`(() => {
+        if (document.querySelector('[data-inspector-close]')) return null;
+        const action = document.querySelector('[data-semantic-zoom-focus-card] [data-inspect-node-id]');
+        return action?.getAttribute('aria-label') === 'Inspect Schema overview';
+      })()`),
+    'Task 16.1 focused Overview inspection close',
+  );
+  const overviewInspection = {
+    before: overviewBeforeInspection,
+    opened: overviewInspectionOpened,
+    closed: overviewInspectionClosed,
+  };
   const relationshipLines = {
     compact: compactRelationshipLines,
     overview: overviewRelationshipLines,
@@ -1596,6 +1641,7 @@ async function compactSemanticZoomAudit(
     initial,
     compact,
     overview,
+    overviewInspection,
     inspectionOpened,
     inspectionClosed,
     compactContext,
@@ -2140,6 +2186,159 @@ async function smokeDeployment(driver, url) {
   };
 }
 
+async function developerHandoffAudit(driver, url) {
+  await driver.setViewport(1440, 900, false);
+  await driver.navigate(url);
+  await dismissWelcome(driver);
+  const builtInDtd = await driver.evaluate(`(() => ({
+    project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
+    currentNode: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
+  }))()`);
+  await driver.click('[aria-label="Open XML Carousel help"]');
+  await driver.evaluate(`[
+    ...document.querySelectorAll('.welcome-help-dialog[open] button'),
+  ].find((button) => button.textContent?.trim() === 'Load sample XSD')?.click()`);
+  const builtInXsd = await waitUntil(
+    () =>
+      driver.evaluate(`(() => {
+        const project = document.querySelector('.project-name strong')?.textContent?.trim() ?? '';
+        const currentNode = document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '';
+        return project === 'library.xsd' && currentNode ? { project, currentNode } : null;
+      })()`),
+    'built-in Library XSD sample',
+  );
+  const clipboardInstalled = await driver.evaluate(`(() => {
+    window.__xmlCarouselCopiedText = [];
+    try {
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: {
+          writeText: async (text) => {
+            window.__xmlCarouselCopiedText.push(String(text));
+          },
+        },
+      });
+      return typeof navigator.clipboard?.writeText === 'function';
+    } catch {
+      return false;
+    }
+  })()`);
+  await importFile(driver, 'xsd', INPUTS.xsd, 'attributes.xsd');
+  await driver.evaluate(`(() => {
+    const search = document.querySelector('[aria-label="Search schema"]');
+    if (!search) return false;
+    search.value = 'root';
+    search.dispatchEvent(new InputEvent('input', {
+      bubbles: true,
+      inputType: 'insertText',
+      data: 'root',
+    }));
+    return true;
+  })()`);
+  await waitUntil(
+    () =>
+      driver.evaluate(
+        `Boolean(document.querySelector('[aria-label^="Inspect root,"]'))`,
+      ),
+    'Task 15 developer handoff Search result',
+  );
+  await driver.click('[aria-label^="Inspect root,"]');
+  await waitUntil(
+    () =>
+      driver.evaluate(`Boolean(
+        document.querySelector('[data-copy-node-summary]') &&
+        document.querySelector('[aria-label="View source for root"]')
+      )`),
+    'Task 15 developer handoff Inspector actions',
+  );
+  const stateBefore = await driver.evaluate(`(() => ({
+    project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
+    currentNode: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
+    inspected: document.querySelector('[data-inspector-close]')?.getAttribute('aria-label') ?? '',
+    requested: document.querySelector('[data-carousel-gesture-viewport]')?.getAttribute('data-semantic-zoom-requested') ?? null,
+    effective: document.querySelector('[data-carousel-gesture-viewport]')?.getAttribute('data-semantic-zoom-effective') ?? null,
+    searchValue: document.querySelector('[aria-label="Search schema"]')?.value ?? '',
+  }))()`);
+  await driver.click('[data-copy-node-summary]');
+  await waitUntil(
+    () =>
+      driver.evaluate(
+        `document.querySelector('[data-node-summary-copy-status]')?.textContent?.trim() === 'Copied node summary' && window.__xmlCarouselCopiedText?.length === 1`,
+      ),
+    'Task 15 Copy node summary',
+  );
+  await driver.click('[data-copy-node-summary]');
+  await waitUntil(
+    () => driver.evaluate(`window.__xmlCarouselCopiedText?.length === 2`),
+    'Task 15 deterministic Copy node summary repeat',
+  );
+  const nodeSummary = await driver.evaluate(`(() => ({
+    first: window.__xmlCarouselCopiedText?.[0] ?? '',
+    second: window.__xmlCarouselCopiedText?.[1] ?? '',
+    feedback: document.querySelector('[data-node-summary-copy-status]')?.textContent?.trim() ?? '',
+  }))()`);
+  await driver.click('[aria-label="View source for root"]');
+  await waitUntil(
+    () =>
+      driver.evaluate(
+        `Boolean(document.querySelector('#source-view-dialog[open] [data-copy-source]'))`,
+      ),
+    'Task 15 source modal',
+  );
+  const sourceModal = await driver.evaluate(`(() => {
+    const dialog = document.querySelector('#source-view-dialog[open]');
+    const rect = dialog?.getBoundingClientRect();
+    const code = dialog?.querySelector('[data-source-reading-region] code');
+    return {
+      heading: dialog?.querySelector('#source-view-title')?.textContent?.trim() ?? '',
+      sourceIdentity: dialog?.querySelector('.source-identity')?.textContent?.replace(/\\s+/gu, ' ').trim() ?? '',
+      location: dialog?.querySelector('#source-view-location')?.textContent?.replace(/\\s+/gu, ' ').trim() ?? '',
+      retainedSource: code?.textContent ?? '',
+      fragmentCount: dialog?.querySelectorAll('[data-source-reading-region]').length ?? 0,
+      contained: Boolean(rect) && rect.left >= 0 && rect.top >= 0 && rect.right <= innerWidth && rect.bottom <= innerHeight,
+      readingRegionScrollable: Boolean(dialog?.querySelector('[data-source-reading-region][tabindex="0"]')),
+    };
+  })()`);
+  await driver.click('#source-view-dialog[open] [data-copy-source]');
+  await waitUntil(
+    () =>
+      driver.evaluate(
+        `document.querySelector('#source-view-dialog[open] [role="status"]')?.textContent?.trim() === 'Copied source' && window.__xmlCarouselCopiedText?.length === 3`,
+      ),
+    'Task 15 exact Copy source',
+  );
+  const copiedSource = await driver.evaluate(
+    `window.__xmlCarouselCopiedText?.[2] ?? ''`,
+  );
+  await driver.click('[aria-label="Close source for root"]');
+  const sourceClosed = await waitUntil(
+    () =>
+      driver.evaluate(
+        `!document.querySelector('#source-view-dialog[open]') && Boolean(document.querySelector('[aria-label="View source for root"]'))`,
+      ),
+    'Task 15 source modal close',
+  );
+  const stateAfter = await driver.evaluate(`(() => ({
+    project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
+    currentNode: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
+    inspected: document.querySelector('[data-inspector-close]')?.getAttribute('aria-label') ?? '',
+    requested: document.querySelector('[data-carousel-gesture-viewport]')?.getAttribute('data-semantic-zoom-requested') ?? null,
+    effective: document.querySelector('[data-carousel-gesture-viewport]')?.getAttribute('data-semantic-zoom-effective') ?? null,
+    searchValue: document.querySelector('[aria-label="Search schema"]')?.value ?? '',
+  }))()`);
+  return {
+    builtInDtd,
+    builtInXsd,
+    clipboardInstalled,
+    stateBefore,
+    nodeSummary,
+    sourceModal,
+    copiedSource,
+    sourceClosed,
+    stateAfter,
+  };
+}
+
 function median(values) {
   const ordered = [...values].sort((left, right) => left - right);
   const middle = Math.floor(ordered.length / 2);
@@ -2500,6 +2699,10 @@ async function main() {
       options.browser,
       screenshotDirectory,
     );
+    const developerHandoff = await developerHandoffAudit(
+      driver,
+      server.rootUrl,
+    );
     const root = await smokeDeployment(driver, server.rootUrl);
     const nested = await smokeDeployment(driver, server.nestedUrl);
     const viewports = [];
@@ -2559,6 +2762,7 @@ async function main() {
       browserVersion: launched.version,
       compactSemanticZoom,
       semanticZoomUxHardening,
+      developerHandoff,
       deployment: { root, nested },
       viewports,
       rootCandidateViewports,
@@ -2680,18 +2884,35 @@ async function main() {
           compactSemanticZoom.overview.presentation === 'overview' &&
           compactSemanticZoom.overview.rangeValue === '0' &&
           compactSemanticZoom.overview.rangeValueText === 'Overview' &&
-          compactSemanticZoom.overview.focusText ===
-            compactSemanticZoom.overview.focusName &&
+          compactSemanticZoom.overview.focusName === 'Schema overview' &&
           compactSemanticZoom.overview.focusHeight <
             compactSemanticZoom.compact.focusHeight &&
           compactSemanticZoom.overview.rootwardNamesOnly &&
           compactSemanticZoom.overview.contextNamesOnly &&
           compactSemanticZoom.overview.historyNamesOnly &&
-          compactSemanticZoom.overview.inspectCount === 0 &&
+          compactSemanticZoom.overview.focusedInspectCount === 1 &&
+          compactSemanticZoom.overview.contextInspectCount === 0 &&
           compactSemanticZoom.overview.kindBadgeCount === 0 &&
           !compactSemanticZoom.overview.occurrenceVisible &&
           compactSemanticZoom.overview.linePresentation === 'overview' &&
           compactSemanticZoom.overview.contextIncrease &&
+          compactSemanticZoom.overviewInspection.opened.inspected ===
+            'Close inspector for Schema overview' &&
+          compactSemanticZoom.overviewInspection.opened.focusAction ===
+            'Close inspection for Schema overview' &&
+          compactSemanticZoom.overviewInspection.opened.project ===
+            compactSemanticZoom.overviewInspection.before.project &&
+          compactSemanticZoom.overviewInspection.opened.currentNode ===
+            compactSemanticZoom.overviewInspection.before.currentNode &&
+          compactSemanticZoom.overviewInspection.opened.requested ===
+            compactSemanticZoom.overviewInspection.before.requested &&
+          compactSemanticZoom.overviewInspection.opened.effective ===
+            compactSemanticZoom.overviewInspection.before.effective &&
+          compactSemanticZoom.overviewInspection.opened.presentation ===
+            compactSemanticZoom.overviewInspection.before.presentation &&
+          compactSemanticZoom.overviewInspection.opened.searchValue ===
+            compactSemanticZoom.overviewInspection.before.searchValue &&
+          compactSemanticZoom.overviewInspection.closed &&
           compactSemanticZoom.relationshipLines.compact.stateA.leafwardCount >=
             3 &&
           compactSemanticZoom.relationshipLines.compact.stateA.rootwardCount ===
@@ -2925,6 +3146,35 @@ async function main() {
                 audit.reducedMotion.settled.temporaryMotionCount === 0))
           );
         })(),
+        developerHandoff:
+          developerHandoff.builtInDtd.project === 'sample.book.dtd' &&
+          developerHandoff.builtInDtd.currentNode === 'book' &&
+          developerHandoff.builtInXsd.project === 'library.xsd' &&
+          developerHandoff.builtInXsd.currentNode !== '' &&
+          developerHandoff.clipboardInstalled &&
+          developerHandoff.nodeSummary.first ===
+            developerHandoff.nodeSummary.second &&
+          developerHandoff.nodeSummary.first.startsWith(
+            'Name: root\nKind: Global element declaration',
+          ) &&
+          developerHandoff.nodeSummary.first.includes(
+            'Source: attributes.xsd',
+          ) &&
+          developerHandoff.nodeSummary.feedback === 'Copied node summary' &&
+          developerHandoff.sourceModal.heading === 'root' &&
+          developerHandoff.sourceModal.sourceIdentity ===
+            'Source file: attributes.xsd' &&
+          developerHandoff.sourceModal.location.includes('Line ') &&
+          developerHandoff.sourceModal.location.includes('exact') &&
+          developerHandoff.sourceModal.fragmentCount === 1 &&
+          developerHandoff.sourceModal.contained &&
+          developerHandoff.sourceModal.readingRegionScrollable &&
+          developerHandoff.copiedSource ===
+            developerHandoff.sourceModal.retainedSource &&
+          developerHandoff.copiedSource.startsWith('<xs:element name="root"') &&
+          developerHandoff.sourceClosed &&
+          JSON.stringify(developerHandoff.stateAfter) ===
+            JSON.stringify(developerHandoff.stateBefore),
         rootCandidatePresentation: rootCandidateViewports.every(
           (audit, index, audits) =>
             audit.sectionLabelled &&

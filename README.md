@@ -44,6 +44,10 @@ control and follow the visible control labels.
 - Worker-based import with progress and cancellation
 - Precise declaration, reference, ownership, type, derivation, substitution,
   dependency, redefinition, source, and package relationships
+- Full, Compact, and Overview semantic zoom with bounded neighbourhoods,
+  relationship lines, and direct Inspect access for the focused node
+- Visible source identity and location, a dedicated source modal, exact retained
+  source copying, and deterministic plain-text node summaries
 - Adaptive presentation for large schemas and compact viewports
 - Built-in DTD and XSD samples plus keyboard-accessible Help
 
@@ -117,27 +121,42 @@ Fresh live-site verification passed in Chrome 151.0.7922.72 and Firefox
 153.0.1. Distribution remains hosting-neutral: the same relative-base files
 can still be served from a domain root or nested directory without rebuilding.
 
+Version `0.2.0` is the prepared second-public-alpha release candidate. Its
+publication and deployment remain pending Ben's final QA and explicit
+authorization. The canonical site must not be treated as running `0.2.0` until
+the later publication, binary-mode deployment, and deployed-byte checks pass.
+
 ## Project documentation
 
 - [Architecture](docs/architecture.md)
 - [Standards support](docs/standards-support.md)
 - [Known limitations](docs/known-limitations.md)
 - [Third-party licensing and attribution](docs/third-party-licensing.md)
-- [First public alpha release notes](docs/first-public-alpha.md)
-- [Release and deployment report](docs/release-candidate-report.md)
-- [Release checklist](docs/release-checklist.md)
+- Current 0.2.0 candidate: [Second public alpha release notes](docs/second-public-alpha.md)
+- Current 0.2.0 candidate: [Release checklist](docs/release-0.2.0-checklist.md)
+- Current 0.2.0 candidate: [Candidate report](docs/release-0.2.0-candidate-report.md)
+- Historical 0.1.0: [First public alpha release notes](docs/first-public-alpha.md)
+- Historical 0.1.0: [Release and deployment report](docs/release-candidate-report.md)
+- Historical 0.1.0: [Release checklist](docs/release-checklist.md)
 - [Development plan](docs/development-plan.md)
 - [Style guide](docs/style-guide.md)
 
 ## Status
 
-Version 0.1.0 is the first public alpha. Annotated tag `v0.1.0` and the
+Version 0.1.0 is the first public alpha. It remains the currently published and
+deployed release. Annotated tag `v0.1.0` and the
 [GitHub prerelease](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.1.0)
 identify the published source. The canonical deployment matches the exact
 published 14-file distribution, and fresh Chrome and Firefox live-site checks
-passed. Read the [release notes](docs/first-public-alpha.md), [known
+passed.
+
+Version 0.2.0 is a prepared release candidate for the second public alpha.
+Publication and deployment are pending final release QA, candidate integration,
+exact-SHA hosted CI, and explicit authorization. Read the current [candidate
+release notes](docs/second-public-alpha.md), [known
 limitations](docs/known-limitations.md), and [release and deployment
-report](docs/release-candidate-report.md) before testing unfamiliar schemas.
+report for 0.1.0](docs/release-candidate-report.md) before testing unfamiliar
+schemas.
 
 This alpha is suitable for exploratory testing. Apache Xerces-C++ is the
 authoritative XML, DTD, and XML Schema 1.0 validator within the controlled
