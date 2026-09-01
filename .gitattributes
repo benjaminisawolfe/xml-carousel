@@ -3,3 +3,9 @@
 
 # Preserve the reviewed generated Xerces runtime byte-for-byte.
 src/standards/xerces/runtime/xerces-runtime.js binary
+
+# Preserve production RELAX NG runtime identities across platforms.
+src/standards/relaxng/runtime/*.js text eol=lf
+src/standards/relaxng/runtime/*.json text eol=lf
+src/standards/relaxng/runtime/*.txt text eol=lf
+src/standards/relaxng/runtime/*.wasm binary

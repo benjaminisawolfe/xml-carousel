@@ -93,9 +93,9 @@
   "artifacts": [
     {
       "file": "libxml2-relaxng-runtime.js",
-      "rawBytes": 14086,
-      "gzipBytes": 4912,
-      "sha256": "e9d55d8ccf2c87a0a92a645ac8d4e3cf60a306c82e021717ec4791490cca8d5b"
+      "rawBytes": 14084,
+      "gzipBytes": 4907,
+      "sha256": "1cb2021f60c120b7130875f9b7e967ea0a35b00ae70f5e8b262cf82411668868"
     },
     {
       "file": "libxml2-relaxng-runtime.wasm",

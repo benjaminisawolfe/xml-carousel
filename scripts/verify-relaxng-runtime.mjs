@@ -142,8 +142,56 @@ async function createManifest() {
   };
 }
 
-function exactJson(left, right) {
-  return JSON.stringify(left) === JSON.stringify(right);
+function formatDifferenceValue(value) {
+  const json = JSON.stringify(value);
+  return json === undefined ? String(value) : json;
+}
+
+export function compareManifestIdentity(expected, actual, fieldPath = '') {
+  if (Object.is(expected, actual)) {
+    return [];
+  }
+
+  if (Array.isArray(expected) && Array.isArray(actual)) {
+    const differences = [];
+    const length = Math.max(expected.length, actual.length);
+    for (let index = 0; index < length; index += 1) {
+      differences.push(
+        ...compareManifestIdentity(
+          expected[index],
+          actual[index],
+          `${fieldPath}[${index}]`,
+        ),
+      );
+    }
+    return differences;
+  }
+
+  if (
+    expected !== null &&
+    actual !== null &&
+    typeof expected === 'object' &&
+    typeof actual === 'object' &&
+    !Array.isArray(expected) &&
+    !Array.isArray(actual)
+  ) {
+    const differences = [];
+    const keys = new Set([...Object.keys(expected), ...Object.keys(actual)]);
+    for (const key of keys) {
+      differences.push(
+        ...compareManifestIdentity(
+          expected[key],
+          actual[key],
+          fieldPath ? `${fieldPath}.${key}` : key,
+        ),
+      );
+    }
+    return differences;
+  }
+
+  return [
+    `${fieldPath || '<root>'} expected ${formatDifferenceValue(expected)}, got ${formatDifferenceValue(actual)}`,
+  ];
 }
 
 export async function verifyRelaxNgRuntime() {
@@ -178,9 +226,10 @@ export async function verifyRelaxNgRuntime() {
   }
   const manifest = JSON.parse(manifestSource);
   const expected = await createManifest();
-  if (!exactJson(manifest, expected)) {
+  const identityDifferences = compareManifestIdentity(expected, manifest);
+  if (identityDifferences.length > 0) {
     throw new Error(
-      'The RELAX NG runtime manifest differs from the pinned deterministic identity.',
+      `The RELAX NG runtime manifest differs from the pinned deterministic identity: ${identityDifferences.join('; ')}.`,
     );
   }
 
