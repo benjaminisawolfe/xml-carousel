@@ -1,0 +1,1 @@
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"><start><ref name="root"/></start><define name="root"><element name="root"><ref name="parts"/></element></define><define name="parts" combine="interleave"><element name="a"><empty/></element></define><define name="parts" combine="interleave"><element name="b"><empty/></element></define></grammar>

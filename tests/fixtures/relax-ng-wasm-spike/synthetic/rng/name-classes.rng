@@ -1,0 +1,1 @@
+<element xmlns="http://relaxng.org/ns/structure/1.0"><choice><name>known</name><nsName ns="urn:example"><except><name>excluded</name></except></nsName><anyName><except><nsName ns="urn:blocked"/></except></anyName></choice><empty/></element>

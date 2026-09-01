@@ -1,0 +1,31 @@
+{
+  "jingTrang": {
+    "release": "V20241231",
+    "tagCommit": "a6bc0041035988325dfbfe7823ef2c098fc56597",
+    "jingUrl": "https://github.com/relaxng/jing-trang/releases/download/V20241231/jing-20241231.zip",
+    "jingSha1Url": "https://github.com/relaxng/jing-trang/releases/download/V20241231/jing-20241231.zip.sha1",
+    "jingSha1": "e250393753ab46a5ec853edf3b52b4a3074f0c61",
+    "jingSha1FileSha256": "317042de712e2e7cf3e4b4542f5041b17fcc868af8eedc3955332f6877818758",
+    "jingSha256": "d11a765f9106e398e01d66aaffb629beb1da21f8a716299e2930a751130bfad2",
+    "trangUrl": "https://github.com/relaxng/jing-trang/releases/download/V20241231/trang-20241231.zip",
+    "trangSha1Url": "https://github.com/relaxng/jing-trang/releases/download/V20241231/trang-20241231.zip.sha1",
+    "trangSha1": "48462bc93cdc5bb5ea1014d37244a6b603d6f6ba",
+    "trangSha1FileSha256": "71a27b62c3dbd9e4a86cfb2b9e10a5563c8914d6b79634148604fa42ce1d9030",
+    "trangSha256": "eceaa8331377b78fcec6094de8e67d81649bc0c322be3fd2cbb39b4c4c7f3af8"
+  },
+  "rnv": {
+    "repository": "https://github.com/hartwork/rnv.git",
+    "commit": "c11d5efac7202377259d3bf862d37a1c57af1967",
+    "tree": "fb8709bb35ddfc137374f45527b196fcc14b9eca",
+    "archiveSha256": "40e14cf725a1c1a5555dbb5a1b799cf30c48a680289cedfee5428e5df30ff09e",
+    "licenseFile": "COPYING",
+    "licenseIdentity": "BSD-3-Clause"
+  },
+  "jamesClarkSuite": {
+    "archiveUrl": "https://relaxng.org/jclark/testSuite.zip",
+    "archiveSha256": "81fbee9946ce303a06951599ca06601d48ef977d054e4fdc62cfb92aaa54d37b",
+    "selectedAuthorityUrl": "https://raw.githubusercontent.com/relaxng/jing-trang/a6bc0041035988325dfbfe7823ef2c098fc56597/mod/rng-validate/test/spectest.xml",
+    "selectedAuthoritySha256": "3812289f941d4a1aa8ad0ab0f5e16f85f59d912eec710feb86b6b14a6e942a96",
+    "redistribution": "not committed; explicit redistribution terms were not found"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "rng": {
+    "accepted": [
+      "empty.rng",
+      "text.rng",
+      "attribute.rng",
+      "choice.rng",
+      "group.rng",
+      "interleave.rng",
+      "repetition.rng",
+      "mixed-list.rng",
+      "grammar-ref.rng",
+      "combine-interleave.rng",
+      "parent-ref.rng",
+      "name-classes.rng",
+      "datatypes.rng",
+      "annotation.rng",
+      "include/main.rng",
+      "external-main.rng"
+    ],
+    "invalid": [
+      "invalid-structural.rng",
+      "invalid-malformed.rng",
+      "invalid-datatype.rng",
+      "missing-include.rng"
+    ],
+    "blocked": [
+      "blocked-https.rng",
+      "blocked-http.rng",
+      "blocked-file.rng",
+      "blocked-absolute.rng",
+      "blocked-traversal.rng",
+      "blocked-encoded.rng"
+    ]
+  },
+  "rnc": {
+    "accepted": [
+      "simple.rnc",
+      "attribute.rnc",
+      "choice.rnc",
+      "group.rnc",
+      "interleave.rnc",
+      "repetition.rnc",
+      "definition.rnc",
+      "name-class.rnc",
+      "datatype.rnc",
+      "include-main.rnc",
+      "external.rnc"
+    ],
+    "invalid": ["invalid.rnc", "invalid-restriction.rnc", "missing.rnc"],
+    "blocked": ["blocked-remote.rnc"]
+  }
+}

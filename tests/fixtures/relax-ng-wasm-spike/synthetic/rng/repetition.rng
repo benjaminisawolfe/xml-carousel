@@ -1,0 +1,1 @@
+<element xmlns="http://relaxng.org/ns/structure/1.0" name="root"><group><optional><attribute name="id"/></optional><zeroOrMore><element name="z"><empty/></element></zeroOrMore><oneOrMore><element name="o"><empty/></element></oneOrMore></group></element>

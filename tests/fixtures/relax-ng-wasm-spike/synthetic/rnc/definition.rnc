@@ -1,0 +1,3 @@
+start = root
+root = element root { content }
+content = empty | text

@@ -1,0 +1,30 @@
+{
+  "libxml2": {
+    "version": "2.15.3",
+    "url": "https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.3.tar.xz",
+    "sha256Url": "https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.3.sha256sum",
+    "sha256": "78262a6e7ac170d6528ebfe2efccdf220191a5af6a6cd61ea4a9a9a5042c7a07",
+    "archiveBytes": 3152452,
+    "licenseFile": "Copyright"
+  },
+  "emsdk": {
+    "version": "6.0.5",
+    "commit": "dfb9d1a46c3bb8f52e1e6324be23123b9d73c190",
+    "reuse": "tools/xerces-wasm-spike/.tools/emsdk"
+  },
+  "cmake": {
+    "version": "4.4.2",
+    "reuse": "tools/xerces-wasm-spike/.tools/cmake-4.4.2-windows-x86_64"
+  },
+  "ninja": {
+    "version": "1.13.2",
+    "reuse": "tools/xerces-wasm-spike/.tools/ninja-1.13.2"
+  },
+  "firefoxDriver": {
+    "version": "0.37.1",
+    "url": "https://github.com/mozilla/geckodriver/releases/download/v0.37.1/geckodriver-v0.37.1-win64.zip",
+    "sha256": "dfed9315abe8d2fbc1b6161a2ee8002452e79cf05ee92fdc653a4e26bc35edd8",
+    "license": "MPL-2.0",
+    "distribution": "ignored tooling cache only"
+  }
+}

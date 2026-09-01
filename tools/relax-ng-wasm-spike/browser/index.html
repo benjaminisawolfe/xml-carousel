@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <base href="./browser/" />
+    <title>XML Carousel RELAX NG WASM spike</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font:
+          16px/1.45 system-ui,
+          sans-serif;
+      }
+      body {
+        margin: 0 auto;
+        max-width: 70rem;
+        padding: 2rem;
+        overflow-wrap: anywhere;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      button {
+        font: inherit;
+        padding: 0.55rem 0.9rem;
+      }
+      pre {
+        border: 1px solid #8888;
+        border-radius: 0.4rem;
+        padding: 1rem;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>RELAX NG WebAssembly feasibility harness</h1>
+    <p>
+      Developer-only: real libxml2, controlled in-memory project loader,
+      disposable worker.
+    </p>
+    <button id="run" type="button">Run evidence again</button>
+    <pre id="output" aria-live="polite">Initializing…</pre>
+    <script type="module" src="./spike-harness.mjs"></script>
+  </body>
+</html>
