@@ -1,7 +1,8 @@
 # RELAX NG WebAssembly feasibility spike
 
-This directory is developer-only evidence for Task 17.2. It does not provide
-RELAX NG support to the XML Carousel application.
+This directory retains Task 17.2 comparison/reproducibility evidence and the
+Task 17.3 build/publication tooling. It does not provide a user-facing RELAX NG
+import workflow to the XML Carousel application.
 
 Prerequisites and third-party sources are checksum-pinned in `manifests/` and
 are downloaded into ignored directories. The libxml2 adapter accepts only
@@ -23,3 +24,26 @@ Launch the static browser harness:
 ```
 
 Then open the root or nested URL printed by the server.
+
+Build and publish the production XML-syntax runtime explicitly:
+
+```powershell
+npm run spike:relaxng:build-production
+npm run vendor:relaxng:publish-runtime
+npm run verify:relaxng-runtime
+npm run test:relaxng-production
+```
+
+Build and serve the developer-only harness that imports the exact production
+client and worker:
+
+```powershell
+npm run spike:relaxng:build-production-harness
+npm run spike:relaxng:serve-production-harness
+```
+
+Set `XML_CAROUSEL_RELAX_NG_HOSTILE_MIME=1` before starting that server to serve
+WASM (and any MJS request) as `application/octet-stream`. Generated builds,
+downloads, and browser evidence remain ignored. Jing/Trang comparison, RNV,
+the original spike harness, pinned manifests, and project-authored fixtures are
+retained as development evidence.

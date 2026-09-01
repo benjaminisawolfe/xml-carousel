@@ -1,0 +1,119 @@
+{
+  "engine": "libxml2 RELAX NG",
+  "libxml2Version": "2.15.3",
+  "libxml2SourceUrl": "https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.3.tar.xz",
+  "libxml2SourceSha256": "78262a6e7ac170d6528ebfe2efccdf220191a5af6a6cd61ea4a9a9a5042c7a07",
+  "emsdkVersion": "6.0.5",
+  "emsdkCommit": "dfb9d1a46c3bb8f52e1e6324be23123b9d73c190",
+  "compilerBuildHash": "1db513782be24469589d7cb8a1f1834e9a33f271",
+  "cmakeVersion": "4.4.2",
+  "ninjaVersion": "1.13.2",
+  "productionLoading": {
+    "javascriptPackaging": "dynamic-es-module-js",
+    "wasmInstantiation": "prefetched-byte-array",
+    "hostileWasmMimeSupported": "application/octet-stream"
+  },
+  "buildConfiguration": {
+    "optimization": "-O2",
+    "filesystem": false,
+    "network": false,
+    "upstreamPatched": false,
+    "enabledLibxml2Features": [
+      "XML",
+      "regexps",
+      "XML Schema datatypes",
+      "RELAX NG"
+    ],
+    "disabledLibxml2Features": [
+      "HTTP",
+      "iconv",
+      "ICU",
+      "zlib",
+      "Python",
+      "threads",
+      "modules",
+      "catalog",
+      "programs",
+      "tests",
+      "docs",
+      "HTML",
+      "XInclude",
+      "XPath",
+      "DTD validation",
+      "legacy",
+      "debug",
+      "output"
+    ],
+    "configureOptions": [
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DBUILD_SHARED_LIBS=OFF",
+      "-DLIBXML2_WITH_RELAXNG=ON",
+      "-DLIBXML2_WITH_SCHEMAS=ON",
+      "-DLIBXML2_WITH_REGEXPS=ON",
+      "-DLIBXML2_WITH_OUTPUT=OFF",
+      "-DLIBXML2_WITH_HTTP=OFF",
+      "-DLIBXML2_WITH_ICONV=OFF",
+      "-DLIBXML2_WITH_ICU=OFF",
+      "-DLIBXML2_WITH_ZLIB=OFF",
+      "-DLIBXML2_WITH_PYTHON=OFF",
+      "-DLIBXML2_WITH_THREADS=OFF",
+      "-DLIBXML2_WITH_MODULES=OFF",
+      "-DLIBXML2_WITH_CATALOG=OFF",
+      "-DLIBXML2_WITH_PROGRAMS=OFF",
+      "-DLIBXML2_WITH_TESTS=OFF",
+      "-DLIBXML2_WITH_DOCS=OFF",
+      "-DLIBXML2_WITH_HTML=OFF",
+      "-DLIBXML2_WITH_XINCLUDE=OFF",
+      "-DLIBXML2_WITH_XPATH=OFF",
+      "-DLIBXML2_WITH_VALID=OFF",
+      "-DLIBXML2_WITH_LEGACY=OFF",
+      "-DLIBXML2_WITH_DEBUG=OFF"
+    ],
+    "linkFlags": [
+      "-DXML_CAROUSEL_RELAXNG_PRODUCTION=1",
+      "-O2",
+      "-sMODULARIZE=1",
+      "-sEXPORT_ES6=1",
+      "-sEXPORT_NAME=createRelaxNgProductionModule",
+      "-sENVIRONMENT=web,worker,node",
+      "-sALLOW_MEMORY_GROWTH=1",
+      "-sFILESYSTEM=0",
+      "-sEXPORTED_FUNCTIONS=['_malloc','_free','_relaxng_reset','_relaxng_add_file','_relaxng_compile','_relaxng_engine_version','_relaxng_result_json']",
+      "-sEXPORTED_RUNTIME_METHODS=['UTF8ToString','stringToUTF8','lengthBytesUTF8','writeArrayToMemory','cwrap','HEAPU8']"
+    ]
+  },
+  "resourcePolicy": {
+    "version": 1,
+    "canonicalNamespace": "project:///",
+    "resolution": "Exact common-root-relative POSIX paths resolved from the referring document directory; safe parent segments remain within the project root.",
+    "externalRetrieval": false,
+    "basenameFallback": false,
+    "includeRecursionLimit": 64
+  },
+  "artifacts": [
+    {
+      "file": "libxml2-relaxng-runtime.js",
+      "rawBytes": 14086,
+      "gzipBytes": 4912,
+      "sha256": "e9d55d8ccf2c87a0a92a645ac8d4e3cf60a306c82e021717ec4791490cca8d5b"
+    },
+    {
+      "file": "libxml2-relaxng-runtime.wasm",
+      "rawBytes": 383299,
+      "gzipBytes": 145306,
+      "sha256": "f587a4f9e2722bc5c132586de9224b2acf6ee22afa812889a3c6d70dc0a7af80"
+    }
+  ],
+  "attributionFiles": [
+    {
+      "file": "LICENSE.libxml2.txt",
+      "rawBytes": 1314,
+      "sha256": "5d4873884a890122a4b9b20ad56ac6f7da1d796a5bfcf04a427970ac96217626"
+    },
+    {
+      "file": "LICENSE.emscripten.txt",
+      "rawBytes": 1326,
+      "sha256": "99d9a9616fbde3f5ee22a71d8645799a8522d48526130c5ba6dc27ad15ce01f1"
+    }
+  ]
+}

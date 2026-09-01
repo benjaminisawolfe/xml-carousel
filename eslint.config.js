@@ -20,6 +20,7 @@ export default [
       'tools/relax-ng-wasm-spike/dist/',
       'tools/relax-ng-wasm-spike/.evidence/',
       'src/standards/xerces/runtime/xerces-runtime.js',
+      'src/standards/relaxng/runtime/libxml2-relaxng-runtime.js',
     ],
   },
   js.configs.recommended,

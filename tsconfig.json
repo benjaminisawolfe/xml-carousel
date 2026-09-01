@@ -16,5 +16,8 @@
     "src/**/*.svelte",
     "vite.config.ts"
   ],
-  "exclude": ["src/standards/xerces/runtime/xerces-runtime.js"]
+  "exclude": [
+    "src/standards/xerces/runtime/xerces-runtime.js",
+    "src/standards/relaxng/runtime/libxml2-relaxng-runtime.js"
+  ]
 }
