@@ -4,6 +4,7 @@ node_modules/
 docs/
 LICENSE
 src/standards/xerces/runtime/xerces-runtime.js
+src/standards/relaxng/runtime/libxml2-relaxng-runtime.js
 tests/fixtures/w3c-xmlconf-20130923/dtd-selected-tests.json
 tests/fixtures/w3c-xsd-1.0/2007-06-20/selected-tests.json
 tools/relax-ng-wasm-spike/.cache/

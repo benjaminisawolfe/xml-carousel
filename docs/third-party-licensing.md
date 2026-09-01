@@ -33,6 +33,27 @@ and the exact license files shipped by the locked npm packages. It includes the
 The full Xerces and Emscripten texts remain separate assets and are referenced
 from that consolidated notice.
 
+## Internal production RELAX NG runtime
+
+The repository also contains the Task 17.3 production RELAX NG engine:
+libxml2 2.15.3 compiled to JavaScript/WebAssembly with Emscripten 6.0.5. Its
+pinned source is `libxml2-2.15.3.tar.xz` from GNOME, SHA-256
+`78262a6e7ac170d6528ebfe2efccdf220191a5af6a6cd61ea4a9a9a5042c7a07`.
+libxml2's exact upstream MIT-style licence is preserved as
+`src/standards/relaxng/runtime/LICENSE.libxml2.txt`; the Emscripten-generated
+runtime layer is covered by the adjacent `LICENSE.emscripten.txt`.
+
+This runtime is the internal authoritative engine for RELAX NG XML-syntax
+grammar compilation. It is exercised through a dedicated disposable worker and
+the developer-only production harness. It is not imported or emitted by the
+ordinary user-facing application build in Task 17.3, because `.rng` import is a
+Task 17.4 concern. Therefore the current 0.2.0 `THIRD_PARTY_NOTICES.txt` release
+asset remains unchanged; Task 17.4 must add libxml2 to the distribution notice
+when it makes the runtime reachable from the ordinary application.
+
+Jing, Trang, RNV, and their Java/native tooling remain development-only
+comparison or reproducibility evidence. They are not production dependencies.
+
 The XML Carousel logo and built-in Book DTD and Library XSD samples have no
 third-party ownership or license marker in repository history and are treated
 as project-controlled material. No fonts, photographs, or externally licensed

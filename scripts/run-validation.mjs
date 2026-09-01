@@ -9,6 +9,7 @@ if (!npmCli) {
 
 const gates = [
   ['run', 'verify:xerces-runtime'],
+  ['run', 'verify:relaxng-runtime'],
   ['run', 'verify:release-integrity'],
   ['run', 'acceptance:complete-visualization'],
   ['run', 'check'],

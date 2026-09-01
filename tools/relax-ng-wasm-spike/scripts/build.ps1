@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param()
+param([switch]$Production)
 
 $ErrorActionPreference = 'Stop'
 $started = Get-Date
@@ -13,8 +13,8 @@ $ninjaRoot = Join-Path $xercesRoot "ninja-$($metadata.ninja.version)"
 $cmakeExe = Join-Path $cmakeRoot 'bin\cmake.exe'
 $ninjaExe = Join-Path $ninjaRoot 'ninja.exe'
 $sourceRoot = Join-Path $spikeRoot ".tools\libxml2\libxml2-$($metadata.libxml2.version)"
-$buildRoot = Join-Path $spikeRoot 'build\libxml2'
-$distRoot = Join-Path $spikeRoot 'dist'
+$buildRoot = Join-Path $spikeRoot $(if ($Production) { 'build\libxml2-production' } else { 'build\libxml2' })
+$distRoot = Join-Path $spikeRoot $(if ($Production) { 'dist\production' } else { 'dist' })
 
 foreach ($required in @(
     (Join-Path $sourceRoot 'CMakeLists.txt'),
@@ -33,7 +33,7 @@ $configure = @(
     "-DCMAKE_MAKE_PROGRAM=$ninjaExe",
     '-DCMAKE_BUILD_TYPE=Release', '-DBUILD_SHARED_LIBS=OFF',
     '-DLIBXML2_WITH_RELAXNG=ON', '-DLIBXML2_WITH_SCHEMAS=ON',
-    '-DLIBXML2_WITH_REGEXPS=ON', '-DLIBXML2_WITH_OUTPUT=ON',
+    '-DLIBXML2_WITH_REGEXPS=ON', $(if ($Production) { '-DLIBXML2_WITH_OUTPUT=OFF' } else { '-DLIBXML2_WITH_OUTPUT=ON' }),
     '-DLIBXML2_WITH_HTTP=OFF', '-DLIBXML2_WITH_ICONV=OFF',
     '-DLIBXML2_WITH_ICU=OFF',
     '-DLIBXML2_WITH_ZLIB=OFF', '-DLIBXML2_WITH_PYTHON=OFF',
@@ -51,21 +51,40 @@ if ($LASTEXITCODE -ne 0) { throw 'libxml2 static-library build failed.' }
 
 $library = Join-Path $buildRoot 'libxml2.a'
 if (-not (Test-Path -LiteralPath $library)) { throw "Missing libxml2 static library: $library" }
-$output = Join-Path $distRoot 'libxml2-relaxng.mjs'
+$outputName = if ($Production) { 'libxml2-relaxng-production.mjs' } else { 'libxml2-relaxng.mjs' }
+$wasmName = if ($Production) { 'libxml2-relaxng-production.wasm' } else { 'libxml2-relaxng.wasm' }
+$output = Join-Path $distRoot $outputName
 $link = @(
-    (Join-Path $spikeRoot 'native\adapter.c'), $library,
+    (Join-Path $spikeRoot 'native\adapter.c'),
+    $(if ($Production) { '-DXML_CAROUSEL_RELAXNG_PRODUCTION=1' } else { $null }),
+    $library,
     '-I', (Join-Path $sourceRoot 'include'), '-I', $buildRoot,
     '-O2', '-o', $output, '-sMODULARIZE=1', '-sEXPORT_ES6=1',
-    '-sEXPORT_NAME=createRelaxNgSpikeModule', '-sENVIRONMENT=web,worker,node',
+    $(if ($Production) { '-sEXPORT_NAME=createRelaxNgProductionModule' } else { '-sEXPORT_NAME=createRelaxNgSpikeModule' }), '-sENVIRONMENT=web,worker,node',
     '-sALLOW_MEMORY_GROWTH=1', '-sFILESYSTEM=0',
-    "-sEXPORTED_FUNCTIONS=['_malloc','_free','_rng_reset','_rng_add_file','_rng_compile','_rng_engine_version','_rng_result_json']",
+    $(if ($Production) {
+        "-sEXPORTED_FUNCTIONS=['_malloc','_free','_relaxng_reset','_relaxng_add_file','_relaxng_compile','_relaxng_engine_version','_relaxng_result_json']"
+    } else {
+        "-sEXPORTED_FUNCTIONS=['_malloc','_free','_rng_reset','_rng_add_file','_rng_compile','_rng_engine_version','_rng_result_json']"
+    }),
     "-sEXPORTED_RUNTIME_METHODS=['UTF8ToString','stringToUTF8','lengthBytesUTF8','writeArrayToMemory','cwrap','HEAPU8']"
-)
-& emcc @link
-if ($LASTEXITCODE -ne 0) { throw 'libxml2 adapter link failed.' }
+) | Where-Object { $_ -ne $null }
+$linkSucceeded = $false
+for ($linkAttempt = 1; $linkAttempt -le 5; $linkAttempt++) {
+    & emcc @link
+    if ($LASTEXITCODE -eq 0) {
+        $linkSucceeded = $true
+        break
+    }
+    Write-Warning "libxml2 adapter link attempt $linkAttempt failed; retrying the deterministic link."
+    foreach ($generated in @($output, (Join-Path $distRoot $wasmName))) {
+        if (Test-Path -LiteralPath $generated) { Remove-Item -LiteralPath $generated -Force }
+    }
+}
+if (-not $linkSucceeded) { throw 'libxml2 adapter link failed after five attempts.' }
 
 Copy-Item (Join-Path $sourceRoot 'Copyright') (Join-Path $distRoot 'LICENSE.libxml2.txt') -Force
-$artifacts = foreach ($name in @('libxml2-relaxng.mjs','libxml2-relaxng.wasm')) {
+$artifacts = foreach ($name in @($outputName,$wasmName)) {
     $path = Join-Path $distRoot $name
     $bytes = [IO.File]::ReadAllBytes($path)
     $memory = [IO.MemoryStream]::new()
@@ -74,12 +93,16 @@ $artifacts = foreach ($name in @('libxml2-relaxng.mjs','libxml2-relaxng.wasm')) 
     [ordered]@{ file=$name; rawBytes=$bytes.Length; gzipBytes=$memory.Length; sha256=(Get-FileHash -Algorithm SHA256 $path).Hash.ToLowerInvariant() }
     $memory.Dispose()
 }
-[ordered]@{
-    createdUtc=(Get-Date).ToUniversalTime().ToString('o')
+$manifest = [ordered]@{
     elapsedMs=[math]::Round(((Get-Date)-$started).TotalMilliseconds,3)
+    mode=$(if ($Production) { 'production' } else { 'spike' })
     libxml2Version=$metadata.libxml2.version
     configureFlags=$configure[7..($configure.Count-1)]
     linkFlags=$link[7..($link.Count-1)]
     artifacts=$artifacts
-} | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $distRoot 'build-manifest.json') -Encoding utf8
+}
+if (-not $Production) {
+    $manifest = [ordered]@{ createdUtc=(Get-Date).ToUniversalTime().ToString('o') } + $manifest
+}
+$manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $distRoot 'build-manifest.json') -Encoding utf8
 $artifacts | Format-Table
