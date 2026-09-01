@@ -6,3 +6,8 @@ LICENSE
 src/standards/xerces/runtime/xerces-runtime.js
 tests/fixtures/w3c-xmlconf-20130923/dtd-selected-tests.json
 tests/fixtures/w3c-xsd-1.0/2007-06-20/selected-tests.json
+tools/relax-ng-wasm-spike/.cache/
+tools/relax-ng-wasm-spike/.tools/
+tools/relax-ng-wasm-spike/build/
+tools/relax-ng-wasm-spike/dist/
+tools/relax-ng-wasm-spike/.evidence/

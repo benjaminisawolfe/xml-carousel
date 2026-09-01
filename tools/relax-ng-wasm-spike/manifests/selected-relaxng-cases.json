@@ -1,0 +1,20 @@
+{
+  "authority": "James Clark RELAX NG XML-syntax spectest.xml as pinned in jing-trang V20241231",
+  "sourceSha256": "3812289f941d4a1aa8ad0ab0f5e16f85f59d912eec710feb86b6b14a6e942a96",
+  "selection": [
+    { "kind": "incorrect", "index": 0, "theme": "foreign root" },
+    { "kind": "incorrect", "index": 5, "theme": "name-class restriction" },
+    { "kind": "incorrect", "index": 20, "theme": "structural restriction" },
+    { "kind": "incorrect", "index": 50, "theme": "grammar/definition" },
+    { "kind": "incorrect", "index": 100, "theme": "namespace/name class" },
+    { "kind": "incorrect", "index": 150, "theme": "datatype/restriction" },
+    { "kind": "incorrect", "index": 200, "theme": "late-suite restriction" },
+    { "kind": "correct", "index": 0, "theme": "basic grammar" },
+    { "kind": "correct", "index": 5, "theme": "name class" },
+    { "kind": "correct", "index": 20, "theme": "grammar/definition" },
+    { "kind": "correct", "index": 50, "theme": "namespace" },
+    { "kind": "correct", "index": 90, "theme": "restriction boundary" },
+    { "kind": "correct", "index": 130, "theme": "datatype" },
+    { "kind": "correct", "index": 170, "theme": "late-suite valid grammar" }
+  ]
+}

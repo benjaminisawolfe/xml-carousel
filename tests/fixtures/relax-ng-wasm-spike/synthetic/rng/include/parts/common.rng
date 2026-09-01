@@ -1,0 +1,1 @@
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"><define name="root"><element name="root"><externalRef href="../shared/leaf.rng"/></element></define></grammar>

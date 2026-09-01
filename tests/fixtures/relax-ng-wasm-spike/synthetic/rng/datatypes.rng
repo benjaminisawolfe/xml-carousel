@@ -1,0 +1,1 @@
+<element xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" name="root"><group><attribute name="count"><data type="integer"><param name="minInclusive">1</param></data></attribute><choice><value type="token">ready</value><data type="string"><except><value type="string">blocked</value></except></data></choice></group></element>

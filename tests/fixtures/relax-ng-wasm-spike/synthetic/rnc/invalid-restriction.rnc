@@ -1,0 +1,1 @@
+start = element root { (attribute a { text }, attribute b { text })+ }

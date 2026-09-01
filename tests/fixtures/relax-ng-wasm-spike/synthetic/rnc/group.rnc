@@ -1,0 +1,1 @@
+element root { element a { empty }, element b { empty } }

@@ -1,0 +1,1 @@
+<element xmlns="http://relaxng.org/ns/structure/1.0" xmlns:a="urn:xml-carousel:annotation" name="root"><a:documentation importance="example">Foreign annotation retained by the source DOM.</a:documentation><empty/></element>
