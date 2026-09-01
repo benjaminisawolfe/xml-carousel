@@ -3394,3 +3394,557 @@ The following decisions remain open:
 
 These decisions must not be inferred from approval of Developer Handoff Utilities.
 
+---
+
+# **29\. XML Carousel 0.3.0 — RELAX NG Support and Universal Reference Representation**
+
+## **29.1 Release Goal**
+
+Version 0.3.0 adds first-class **RELAX NG** support while preserving the standards rigor, supplied-files-only security model, normalized diagnostics, source fidelity, semantic zoom, Search, Navigation, Inspector, and Developer Handoff Utilities established for DTD and XSD.
+
+The release should support both principal RELAX NG syntaxes:
+
+* RELAX NG XML syntax (`.rng`)
+* RELAX NG Compact Syntax (`.rnc`)
+
+Preferred production architecture:
+
+```text
+DTD / XSD 1.0
+    ↓
+Apache Xerces-C++ WASM
+
+RELAX NG XML syntax
+    ↓
+libxml2 WASM
+
+RELAX NG Compact Syntax
+    ↓
+compact-syntax front end
+    ↓
+equivalent RELAX NG representation
+    ↓
+libxml2 WASM
+```
+
+Development/conformance roles:
+
+```text
+Jing
+    → RELAX NG reference validation/comparison
+
+Trang
+    → RNG/RNC translation oracle
+
+RNV
+    → candidate production Compact Syntax front end, subject to feasibility and differential-testing evidence
+```
+
+The production Compact Syntax front end must be selected by evidence in Task 17.2. RNV is a candidate, not a pre-approved standards authority.
+
+Apache Xerces-C++ remains authoritative for DTD and XSD. Adding libxml2 must not trigger migration of already accepted DTD/XSD validation away from Xerces.
+
+## **29.2 Task 17.1 — RELAX NG Standards and Product Contract**
+
+Define the exact 0.3.0 RELAX NG boundary before production implementation.
+
+Target supported scope:
+
+* RELAX NG 1.0 XML syntax (`.rng`)
+* RELAX NG Compact Syntax (`.rnc`)
+* standalone schemas
+* ZIP/multi-file projects
+* `grammar`, `start`, `define`, `ref`, `parentRef`
+* `element`, `attribute`
+* `choice`, `group`, `interleave`
+* `optional`, `zeroOrMore`, `oneOrMore`
+* `mixed`, `list`, `text`, `empty`, `notAllowed`
+* `data`, `value`, `param`, `except`
+* `include`, `externalRef`
+* name classes, including `name`, `anyName`, `nsName`, choice, and exclusions
+* `combine="choice"` and `combine="interleave"`
+* datatype libraries, including XML Schema datatypes where supported
+* RELAX NG DTD Compatibility features where explicitly supported
+* annotations, documentation, and foreign content
+* exact retained source
+* truthful source identity/location
+* Problems, Navigation, Search, carousel focus, Inspector, source view
+* Copy source and Copy node summary
+* Full, Compact, and Overview semantic zoom
+
+Outside 0.3.0:
+
+* NVDL
+* Schematron
+* XML instance-document validation as a product workflow
+* remote schema retrieval
+* arbitrary host-filesystem discovery
+* editing/export
+* persistent project reopening
+
+The standards validator remains authoritative. Extraction/presentation must not become a second RELAX NG validator.
+
+## **29.3 Task 17.2 — libxml2 and Compact-Syntax Feasibility Spike**
+
+### libxml2-WASM feasibility
+
+Prove:
+
+```text
+.rng source in memory
+    ↓
+RELAX NG schema compilation
+    ↓
+accepted / rejected standards result
+    ↓
+structured diagnostics
+```
+
+Exercise valid/invalid schemas, namespaces, datatype libraries, `include`, `externalRef`, diagnostics, controlled project-local resource loading, missing dependencies, blocked HTTP/HTTPS, blocked `file:`, traversal, recursive includes, cycles, cancellation, stale-result replacement, repeated loading, and cleanup.
+
+The production libxml2 build must not independently retrieve resources from the network or filesystem.
+
+### Jing differential comparison
+
+Run representative cases through libxml2 and Jing, classify every disagreement, and establish explicit accepted boundaries before production adoption.
+
+### Compact Syntax feasibility
+
+Evaluate:
+
+* RNV compiled to WASM
+* parser/API suitability
+* source-range and error-location fidelity
+* preservation of original `.rnc` source
+* Trang as a reference translation oracle
+* Jing validation of equivalent `.rng` and `.rnc`
+
+Select the production Compact Syntax front end only after evidence supports standards suitability, source fidelity, diagnostics, cancellation, and integration.
+
+## **29.4 Task 17.3 — Production RELAX NG Standards Engine**
+
+Integrate the accepted RELAX NG engine into the production worker architecture.
+
+```text
+                    XML Carousel
+                         │
+             ┌───────────┴───────────┐
+             │                       │
+      Xerces-C++ WASM           libxml2 WASM
+             │                       │
+        DTD / XSD 1.0            RELAX NG
+             │                       │
+             └───────────┬───────────┘
+                         │
+             normalized diagnostics
+                         │
+             schema-specific extractors
+                         │
+              normalized schema graph
+                         │
+                    XML Carousel
+```
+
+Require pinned/reproducible source and builds, licensing, worker integration, cancellation, stale-result suppression, resource limits, static portability, hostile-MIME coverage, no external retrieval, and root/nested deployment support.
+
+Do not replace Xerces with libxml2 for DTD or XSD.
+
+## **29.5 Task 17.4 — Standalone RNG Import and Diagnostics**
+
+Add the user-facing import control:
+
+```text
+Open DTD
+Open XSD
+Open RNG
+Open ZIP
+```
+
+**Open RNG** is the approved UI label.
+
+The final control accepts both `.rng` and `.rnc`. The first implementation phase may enable `.rng` before `.rnc`, but 0.3.0 is not complete until both are supported.
+
+For standalone `.rng`, establish classification, import lifecycle, standards validation, Problems, cancellation, replacement safety, filename/source identity, exact retained source, and initial source view.
+
+Do not build the complete RELAX NG visualization in this task.
+
+## **29.6 Task 17.5 — RELAX NG Multi-File, URI Reference, and Package Resolution**
+
+Add project dependency handling before rich visualization.
+
+Support `include`, `externalRef`, nested relative paths, safe `..` normalization inside the virtual root, shared dependencies, cycles, missing dependencies, duplicate basenames, ambiguous targets, blocked traversal, blocked filesystem paths, blocked `file:` URIs, and blocked HTTP/HTTPS URIs.
+
+The 0.3.0 rule remains:
+
+> Dependencies resolve only from files explicitly supplied by the user.
+
+Remote URIs must be **preserved and visualized without retrieval**.
+
+Example:
+
+```text
+main.rng
+    │
+    └── externalRef
+            ↓
+       https://example.org/common.rng
+       Blocked external reference
+```
+
+Do not manufacture a fake schema target and do not match a remote URI to a ZIP member by basename.
+
+## **29.7 Task 17.6 — RELAX NG Normalized Semantic Model**
+
+Build a first-class pattern-oriented model covering at least:
+
+* grammar, start, define, ref, parentRef
+* element, attribute
+* choice, group, interleave
+* optional, zeroOrMore, oneOrMore
+* mixed, list, text, empty, notAllowed
+* data, value, param, except
+* include, externalRef
+* name classes and exclusions
+* annotations/documentation/foreign content
+* combine
+* datatype-library and namespace context
+
+Preserve source order, source identity, exact fragments, supported source ranges, relationship semantics, original reference text, and resolution state.
+
+The extractor must not reject a standards-valid schema merely because visualization does not yet understand a construct.
+
+## **29.8 Task 17.7 — RELAX NG Visualization and Navigation**
+
+Design a presentation that respects RELAX NG's pattern-oriented nature.
+
+Primary navigation entities should normally emphasize:
+
+* grammar
+* start pattern
+* named definitions
+* element patterns
+* include/external relationships
+
+Composition operators such as choice, group, interleave, repetition, attributes, name classes, and datatype constraints should be presented contextually rather than automatically becoming carousel cards.
+
+The Inspector may expose richer pattern detail than the carousel.
+
+## **29.9 Task 17.8 — RELAX NG Compact Syntax**
+
+Enable production `.rnc` support after the XML-syntax semantic model is stable.
+
+Equivalent `.rng` and `.rnc` schemas should produce equivalent semantic graphs and relationship meaning, while preserving distinct original source.
+
+For `.rnc`:
+
+* View source shows original Compact Syntax
+* Copy source copies original Compact Syntax
+* diagnostics/source locations refer to original source where supported
+* package identity remains the `.rnc` file
+
+Any internally generated XML representation is an implementation artifact and must never be presented as the user's source.
+
+## **29.10 Task 17.9 — RELAX NG Conformance and Complete Visualization Gate**
+
+Use:
+
+```text
+RELAX NG specification/test corpus
+            +
+Jing differential comparison
+            +
+real-world RELAX NG grammars
+```
+
+Use Trang as an independent RNG/RNC translation oracle.
+
+Add a deterministic complete-visualization matrix for supported RELAX NG constructs.
+
+Equivalent RNG/RNC fixtures should prove semantic equivalence while retaining faithful syntax-specific source.
+
+## **29.11 Task 17.10 — RELAX NG Stabilization and 0.3.0 Acceptance**
+
+Run end-to-end acceptance for standalone/multi-file RNG and RNC, valid/invalid schemas, incomplete packages, cycles, blocked external references, large grammars, Search, Navigation, Inspector, Problems, source modal, copy utilities, semantic zoom, focused Overview Inspect, accessibility/responsive behavior, Chrome, Firefox, deterministic build, cleanup, privacy/no-network behavior, licensing, and release documentation.
+
+0.3.0 is not complete until both `.rng` and `.rnc` are first-class supported inputs.
+
+## **29.12 Universal Schema Reference Representation Rule**
+
+Formalize this cross-format rule:
+
+> **References are schema information even when their targets are unavailable. XML Carousel should visualize the reference faithfully; it should visualize target contents only when the target was actually supplied and safely resolved.**
+
+Apply to:
+
+### DTD
+
+* external subsets
+* external parameter entities
+* relevant external general entities
+
+### XSD
+
+* `xs:include`
+* `xs:import`
+* `xs:redefine`
+
+### RELAX NG
+
+* `include`
+* `externalRef`
+
+Common states:
+
+```text
+Resolved locally
+Missing from supplied project
+Ambiguous local reference
+Blocked external URI
+Blocked filesystem reference
+Blocked traversal reference
+```
+
+Make literal targets visible through appropriate Inspector, package-inventory, Problems, source-view, and dependency/navigation surfaces.
+
+Blocked remote references may be terminal relationship presentations but must not masquerade as loaded schema documents.
+
+---
+
+# **30\. XML Carousel 0.4.0 — Secure External Schema Resolution**
+
+## **30.1 Release Goal**
+
+Version 0.4.0 adds **controlled external resource resolution** for:
+
+* DTD
+* XSD 1.0
+* RELAX NG XML syntax
+* RELAX NG Compact Syntax
+
+Headline requirement:
+
+> **Secure external schema resolution for DTD, XSD, and RELAX NG, with imported resources becoming first-class members of the active XML Carousel project.**
+
+Fetched resources must retain canonical identity, requested URI, redirected/final URI where applicable, source/provenance, validator participation, normalized nodes/relationships, Search, Navigation, Inspector, source view, and dependency relationships.
+
+## **30.2 Task 18.1 — External Resolution Security and Product Contract**
+
+Define supported schemes, opt-in behavior, redirect policy/limits, CORS behavior, timeouts, per-resource and total size limits, resource-count/depth limits, cycle handling, caching, cancellation, stale-result suppression, credential-bearing URI policy, privacy disclosure, and failure/retry behavior.
+
+Opening a schema must not silently contact arbitrary domains.
+
+Preferred UX:
+
+```text
+This schema references 4 external resources.
+
+3 HTTPS resources may be retrieved.
+1 file: reference is blocked.
+
+[Load external references]
+```
+
+## **30.3 Task 18.2 — Controlled HTTP/HTTPS Resource Resolver**
+
+Create one XML Carousel-owned resolver for URI policy, HTTP/HTTPS fetching, redirects, final URI, raw bytes, MIME metadata, limits, timeouts, cancellation, cycles, provenance, diagnostics, and per-project caching.
+
+Xerces/libxml2 must not independently perform network retrieval.
+
+## **30.4 Task 18.3 — External Project Resource Model**
+
+Fetched resources become explicit project members.
+
+Track:
+
+```text
+Requested URI
+Final resolved URI
+Fetch status
+Origin/provenance
+Content length
+Source text
+Validator status
+Importing resources
+Dependencies
+Dependents
+```
+
+Distinguish:
+
+```text
+supplied local resource
+fetched remote resource
+missing local resource
+blocked reference
+failed remote fetch
+browser/CORS blocked fetch
+invalid fetched schema
+```
+
+## **30.5 Task 18.4 — DTD External Resolution**
+
+Implement DTD external resolution first because DTD is foundational to XML and is the logical starting point for external-resource semantics.
+
+Support and strictly bound:
+
+* external DTD subsets
+* external parameter entities
+* relevant external general entities used during grammar construction
+* nested external entity references
+* relative URI resolution
+* HTTP/HTTPS
+* redirects
+* cycles
+* missing/failed resources
+* browser/CORS failures
+* encoding
+* source identity/provenance
+
+Define strict limits for expansion, depth, total fetched bytes, resource count, recursion, and repeated references.
+
+Preserve Xerces as the authoritative DTD standards engine while supplying only XML Carousel-approved resources.
+
+## **30.6 Task 18.5 — XSD External Resolution**
+
+Implement controlled resolution for:
+
+* `xs:include`
+* `xs:import`
+* `xs:redefine`
+
+Preserve their distinct XML Schema namespace and composition semantics.
+
+Cover target namespaces, chameleon includes, imports, redefine behavior, relative and remote URIs, redirects, chained dependencies, cycles, shared dependencies, failures, CORS, invalid fetched schemas, and provenance.
+
+Xerces remains authoritative for XSD 1.0.
+
+## **30.7 Task 18.6 — RELAX NG External Resolution**
+
+Implement controlled resolution for RNG and RNC:
+
+* `include`
+* `externalRef`
+* mixed local/remote graphs
+* relative/remote URIs
+* redirects
+* cycles/shared resources
+* missing/failed resources
+* CORS
+* source/provenance fidelity
+
+A remotely fetched dependency and an equivalent supplied dependency should produce the same semantic result, differing only in provenance/resolution state.
+
+## **30.8 Task 18.7 — External Dependency Visualization and Source UX**
+
+Distinguish:
+
+```text
+Resolved — supplied locally
+Resolved — fetched remotely
+Missing local resource
+Blocked by XML Carousel policy
+Remote fetch failed
+Remote fetch blocked by browser/CORS
+Remote validation failed
+```
+
+Show requested URI, final redirected URI, local/package path, provenance, importing relationship, resolution status, and validation status as appropriate.
+
+Successful remote resources become navigable/searchable/inspectable/source-viewable. Blocked/failed references remain terminal reference presentations.
+
+## **30.9 Task 18.8 — Caching, Replacement, and Cancellation**
+
+Add bounded in-memory per-project caching, deduplicate shared dependencies, cancel outstanding requests on project replacement, suppress stale results, clean up worker/network state, and avoid persistent background activity.
+
+Persistent cross-session caching is not required unless separately approved.
+
+## **30.10 Task 18.9 — Adversarial Network and URI Security Audit**
+
+Cover redirect chains/loops, cross-origin redirects, huge resources, excessive counts/depth, cycles, malformed URIs, unsupported schemes, `file:`, `data:`, credential-bearing URLs, URI normalization collisions, hostile MIME, HTTP errors, empty responses, invalid encodings/schemas, slow responses, cancellation, stale results, CORS denial, and mixed local/remote graphs.
+
+Distinguish browser/platform restrictions from XML Carousel policy.
+
+## **30.11 Task 18.10 — External-Resolution Acceptance and 0.4.0 Stabilization**
+
+Run end-to-end acceptance across:
+
+### DTD
+
+* external subset
+* parameter entities
+* grammar-relevant external entities
+* chains/cycles/failures/security limits
+
+### XSD
+
+* include
+* import
+* redefine
+* namespaces
+* chained/shared dependencies
+* cycles/failures
+
+### RELAX NG
+
+* RNG include/externalRef
+* RNC equivalents
+* chained/shared dependencies
+* cycles/failures
+
+### Cross-cutting
+
+* explicit external-fetch opt-in
+* replacement/cancellation/stale-result protection
+* provenance
+* Search/Navigation/Inspector/Problems/source/copy
+* semantic zoom
+* Chrome/Firefox
+* CORS classification
+* deterministic diagnostics
+* privacy/network reporting
+* bounded resource use
+* licensing/release documentation
+
+0.4.0 is complete only when permitted, browser-accessible external dependencies can be safely retrieved, validated, incorporated into the project graph, and fully explored without weakening XML Carousel's privacy/security boundaries.
+
+---
+
+# **31\. Approved Release Progression**
+
+```text
+0.2.0
+DTD + XSD 1.0
+complete supported visualization
+semantic zoom
+developer handoff utilities
+verified static release
+
+        ↓
+
+0.3.0
+RELAX NG XML syntax
+RELAX NG Compact Syntax
+libxml2-WASM production RELAX NG engine
+Jing/Trang differential evidence
+universal cross-format dependency-reference representation
+remote references visualized but not retrieved
+
+        ↓
+
+0.4.0
+controlled external HTTP/HTTPS schema resolution
+DTD external resources
+XSD include/import/redefine
+RELAX NG include/externalRef
+fetched resources become first-class project members
+opt-in network access
+provenance, caching, cancellation, CORS and security controls
+```
+
+Governing architectural principle:
+
+> **XML Carousel owns resource resolution. Standards engines validate resources supplied to them by XML Carousel; they do not independently crawl the filesystem or network.**
+
+Governing presentation principle:
+
+> **A reference is meaningful schema information whether or not its target can be resolved. XML Carousel should always represent the reference truthfully and should represent target contents only when those contents were actually supplied or successfully retrieved under the active project policy.**
