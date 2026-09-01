@@ -34,7 +34,7 @@ Two clean builds produced identical reviewed artifacts:
 
 | Artifact | Raw bytes | gzip bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| `libxml2-relaxng-runtime.js` | 14,086 | 4,912 | `e9d55d8ccf2c87a0a92a645ac8d4e3cf60a306c82e021717ec4791490cca8d5b` |
+| `libxml2-relaxng-runtime.js` | 14,084 | 4,907 | `1cb2021f60c120b7130875f9b7e967ea0a35b00ae70f5e8b262cf82411668868` |
 | `libxml2-relaxng-runtime.wasm` | 383,299 | 145,306 | `f587a4f9e2722bc5c132586de9224b2acf6ee22afa812889a3c6d70dc0a7af80` |
 
 The gzip measurements above use the deterministic offline runtime verifier.
