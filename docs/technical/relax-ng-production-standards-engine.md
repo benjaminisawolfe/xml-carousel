@@ -110,19 +110,17 @@ exact production client, worker, JavaScript glue, WASM, manifest, and licences.
 It does not fork production validation logic. Generated harness output and
 evidence remain ignored.
 
-Firefox 155.0 passed the unchanged bundle at `/` and
+Firefox 155.0 and Chrome 152.0.0.0 passed the unchanged bundle at `/` and
 `/xml-carousel-relax-ng-production/`, both with normal MIME types and with WASM
-served as `application/octet-stream`. Each mode completed 24 assertions across
-the two paths: real libxml2 identity, valid and invalid schemas, local include,
-local external reference, blocked HTTPS and `file:`, missing member, valid after
-invalid, hard cancellation, stale suppression, and worker recreation. Both
-modes recorded zero page errors, unexpected console errors, remote schema
-requests, `file:` requests, and unexpected origins.
-
-The required controlled Chrome run is pending in this worktree because the
-Codex Chrome browser connection was unavailable. No Chrome result is claimed;
-closure requires repeating the same root/nested normal and hostile-MIME matrix
-in connected Chrome and recording its exact version.
+served as `application/octet-stream`. Each browser/MIME mode completed 24
+assertions across the two paths: real libxml2 identity, valid and invalid
+schemas, local include, local external reference, blocked HTTPS and `file:`,
+missing member, valid after invalid, hard cancellation, stale suppression, and
+worker recreation. Every mode recorded zero page errors, unexpected console
+errors, remote schema requests, `file:` requests, and unexpected origins. The
+Chrome hostile-MIME response header was independently confirmed as
+`application/octet-stream`; its 64-request server audit contained only local
+harness paths.
 
 ## Licensing and application distribution
 
@@ -136,6 +134,12 @@ RELAX-NG worker, RELAX-NG licence, or startup request because no user-facing
 caller exists. It therefore leaves the current 0.2.0 `THIRD_PARTY_NOTICES.txt`
 release asset unchanged. Task 17.4 must route `.rng` into this client and then
 extend ordinary distribution attribution/static/hostile-MIME verification.
+
+Chrome inspection of the ordinary built application confirmed that the top bar
+contains exactly `Open DTD`, `Open XSD`, and `Open ZIP`, with no `Open RNG`.
+The loaded entry document referenced only the ordinary hashed application
+JavaScript and CSS; the distribution contains no libxml2 or RELAX-NG artifact
+that could generate a startup request.
 
 ## Spike artifact disposition
 
