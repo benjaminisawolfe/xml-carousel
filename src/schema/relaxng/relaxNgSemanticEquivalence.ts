@@ -12,6 +12,7 @@ const omittedKeys = new Set([
   'valueRange',
   'hrefRange',
   'packageRelationshipId',
+  'owningPatternId',
   'path',
   'rawHref',
   'sourceLexicalValue',
@@ -20,6 +21,75 @@ const omittedKeys = new Set([
   'explicitNs',
 ]);
 
+function canonicalizeImplicitGroups(
+  model: RelaxNgSemanticModel,
+): RelaxNgSemanticModel {
+  const patternsById = new Map(
+    model.patterns.map((pattern) => [pattern.id, pattern]),
+  );
+  const consumedGroups = new Set<string>();
+  const flatten = (ids: readonly string[]): readonly string[] =>
+    ids.flatMap((id) => {
+      const pattern = patternsById.get(id);
+      if (pattern?.kind !== 'group') return [id];
+      consumedGroups.add(id);
+      return flatten(pattern.childPatternIds);
+    });
+
+  const startClauses = model.startClauses.map((clause) => ({
+    ...clause,
+    bodyPatternIds: flatten(clause.bodyPatternIds),
+  }));
+  const defineClauses = model.defineClauses.map((clause) => ({
+    ...clause,
+    bodyPatternIds: flatten(clause.bodyPatternIds),
+  }));
+  const patterns = model.patterns.map((pattern) => {
+    if (pattern.kind === 'element') {
+      return {
+        ...pattern,
+        contentPatternIds: flatten(pattern.contentPatternIds),
+      };
+    }
+    if (pattern.kind === 'attribute') {
+      return { ...pattern, valuePatternIds: flatten(pattern.valuePatternIds) };
+    }
+    if (pattern.kind === 'group') {
+      return { ...pattern, childPatternIds: flatten(pattern.childPatternIds) };
+    }
+    if (pattern.kind === 'data') {
+      return {
+        ...pattern,
+        exceptPatternIds: flatten(pattern.exceptPatternIds),
+      };
+    }
+    if (pattern.kind === 'value') {
+      const prefix = pattern.lexicalValue.includes(':')
+        ? pattern.lexicalValue.split(':', 1)[0]
+        : undefined;
+      return {
+        ...pattern,
+        namespaceBindings:
+          pattern.type === 'QName' && prefix !== undefined
+            ? Object.fromEntries(
+                Object.entries(pattern.namespaceBindings).filter(
+                  ([candidate]) => candidate === prefix,
+                ),
+              )
+            : {},
+      };
+    }
+    return pattern;
+  });
+
+  return {
+    ...model,
+    startClauses,
+    defineClauses,
+    patterns: patterns.filter(({ id }) => !consumedGroups.has(id)),
+  };
+}
+
 /**
  * Produces a clone-safe, syntax-neutral view used to prove that XML and
  * Compact Syntax sources project to the same RELAX NG meaning. Source-facing
@@ -27,6 +97,7 @@ const omittedKeys = new Set([
  * this comparator.
  */
 export function relaxNgSemanticMeaning(model: RelaxNgSemanticModel): unknown {
+  model = canonicalizeImplicitGroups(model);
   const valuesById = new Map<string, Record<string, unknown>>();
   for (const [collectionName, collection] of Object.entries(model)) {
     if (!Array.isArray(collection)) continue;

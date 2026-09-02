@@ -63,6 +63,19 @@ images are shipped. Production source maps are not emitted.
 
 ## Test-only third-party material
 
+- Jing/Trang V20241231 test authorities are pinned to commit
+  `a6bc0041035988325dfbfe7823ef2c098fc56597` under the retained BSD-3-Clause
+  `copying.txt`. The redistributed `spectest.xml` and `compacttest.xml` blobs,
+  provenance, and SHA-256 identities are recorded in
+  `tests/fixtures/relax-ng/conformance/manifest.json`. Jing/Trang archives and
+  JARs are ignored development tools and are not committed or distributed.
+- DocBook 5.1 schema evidence is pinned to DocBook commit
+  `7bf26df21266c00d38ea1d3033bcd70c2b280a59` and retains the schema-specific
+  perpetual redistribution notice. EPUBCheck 5.3.0 and Validator.nu 26.8.30
+  Compact Syntax evidence retain their MIT license texts and exact pinned
+  commits. All three projects live only under the test corpus and are excluded
+  from production builds.
+
 - The W3C XML Schema 1.0 subset preserves the upstream `00COPYRIGHT` and W3C
   Document Notice and License in
   `tests/fixtures/w3c-xsd-1.0/2007-06-20/`.

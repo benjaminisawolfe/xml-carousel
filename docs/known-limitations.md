@@ -13,18 +13,30 @@ cannot be evaluated from a standalone grammar alone.
 
 libxml2 RELAX NG 2.15.3 is authoritative for standalone and ZIP-supplied RELAX
 NG XML `.rng` and Compact Syntax `.rnc` validity. Compact Syntax uses a
-project-authored, in-memory front end; Task 17.9 still owns broader external
-conformance-corpus evidence. ZIP packages resolve local `include` and
+project-authored, in-memory front end. Task 17.9 measures it against all 90
+pinned Compact Syntax translation cases and records exact reviewed differences
+instead of silently filtering them. ZIP packages resolve local `include` and
 `externalRef` targets only from safely supplied members of the same syntax
 family, while missing and blocked references remain visible. Neither workflow
 searches for or fetches dependencies, and there is no cross-syntax fallback.
 
-The 221/221 complete-visualization result covers the DTD/XSD/ZIP presentation
-contracts enumerated by the repository matrix. It does not include the
-deliberately source-first RELAX NG preview and is not proof that every version
-or optional feature of every XML-related standard is implemented.
+The 221/221 complete-visualization result covers only the historical
+DTD/XSD/ZIP presentation contracts. RELAX NG has a separate 77/77 matrix; the
+two authorities are intentionally not combined or inflated. Neither matrix is
+proof that every version or optional feature of every XML-related standard is
+implemented.
 Accepted test boundaries remain explicit: unsupported, instance-dependent,
 optional accepted, optional reported, security-blocked, and metadata-disputed.
+
+The Task 17.9 corpus currently records 40 expected product-boundary results and
+two expected security-policy differences. Notable boundaries are seven
+specification cases that libxml2 accepts more permissively than Jing, remaining
+rare Compact Syntax escape/annotation translation forms, semantic-oracle
+normalization gaps, and Validator.nu's unregistered custom WHATWG datatype
+library. These are exact case-ID findings in
+`tests/fixtures/relax-ng/conformance/expected-boundaries.json`; a new,
+changed, or disappearing difference fails until the authority is reviewed.
+There are zero `INVESTIGATE` and zero harness-error results.
 
 ## Supplied-files-only resolution
 

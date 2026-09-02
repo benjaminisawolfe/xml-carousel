@@ -5,6 +5,9 @@ presentation, resolver, security, and test boundaries. Detailed presentation
 evidence remains in the
 [complete-visualization coverage audit](technical/complete-visualization-coverage-audit.md)
 and its [acceptance gate](technical/complete-visualization-acceptance-gate.md).
+RELAX NG has separate
+[conformance and visualization authorities](technical/relax-ng-conformance-and-visualization-authority.md)
+so its evidence does not rewrite the historical DTD/XSD/ZIP matrix.
 
 ## Supported inputs and validation authority
 
@@ -115,8 +118,11 @@ npm run acceptance:complete-visualization
 
 `npm run validate` invokes it. Current accepted DTD/XSD/ZIP evidence is 221/221
 complete, with zero partial, misleading, retained-unreachable, or source-only
-rows. The intentionally source-first standalone RELAX NG preview is outside
-that historical matrix until its structural presentation tasks are complete.
+rows. The separate `npm run acceptance:relaxng-complete-visualization` authority
+is 77/77 complete with digest
+`b5798413268b6f874ea1f9ef24909765153562bd4c04ae046fca02ea0476a5fc`.
+It covers the supported RNG/RNC semantic, package, source, Search, Navigation,
+Inspector, and zoom contracts without adding rows to the 221-row authority.
 The result is an implementation-completeness statement for the matrix's
 supported presentation contracts, not proof of universal standards coverage.
 
@@ -165,6 +171,12 @@ The current repository-backed evidence includes:
 - W3C DTD CI: 43 pass, zero fail; DTD full: 1,912 pass, zero fail;
 - W3C XSD CI: 43 pass, zero fail; XSD full: 171 pass, zero fail;
 - zero conformance-harness errors, with accepted boundary categories retained;
+- pinned RELAX NG corpus: 385 specification cases and 90 Compact Syntax cases,
+  all selected and executed, with zero unexplained Jing/Trang disagreements;
+- RELAX NG real-world corpus: DocBook, EPUBCheck, and Validator.nu, with the
+  Validator.nu custom WHATWG datatype library retained as an explicit product
+  boundary rather than misreported as schema invalidity;
+- dedicated RELAX NG complete visualization: 77/77 and zero findings;
 - Xerces-J comparison: 92 cases across 33 families, zero unexpected
   disagreements;
 - Simplified DocBook: 46,263 bytes, SHA-256

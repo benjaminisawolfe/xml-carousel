@@ -12,6 +12,8 @@ const gates = [
   ['run', 'verify:relaxng-runtime'],
   ['run', 'verify:release-integrity'],
   ['run', 'acceptance:complete-visualization'],
+  ['run', 'relaxng:conformance'],
+  ['run', 'acceptance:relaxng-complete-visualization'],
   ['run', 'check'],
   ['test'],
   ['run', 'lint'],
