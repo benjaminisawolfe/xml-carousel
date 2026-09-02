@@ -5,6 +5,7 @@ import {
   getOutgoingEdges,
   getOutgoingStructuralRelationships,
   getSchemaNode,
+  relaxNgPresentationNodeKinds,
   type SchemaEdgeKind,
   type SchemaNodeId,
   type SchemaNodeKind,
@@ -289,10 +290,15 @@ export function buildFocusCardSummary(
   });
   const sourceFilename = getNodeSourceFilename(project, node);
   const projectPresentation = buildProjectPresentationContext(project);
+  const isRelaxNgPresentationNode = (
+    relaxNgPresentationNodeKinds as readonly SchemaNodeKind[]
+  ).includes(node.kind);
   const declaration =
     node.kind === 'dtdElement' || node.kind === 'dtdAttributeList'
       ? node.compactDeclaration?.trim() || undefined
-      : undefined;
+      : isRelaxNgPresentationNode
+        ? node.compactDeclaration?.trim() || undefined
+        : undefined;
   const xsdPresentation = selectXsdNodePresentation(
     project,
     nodeId,
@@ -362,6 +368,13 @@ export function buildFocusCardSummary(
       orderedDestinationSummaries.length - FOCUS_CARD_RELATIONSHIP_LIMIT,
     ),
     xsdProperties: [
+      ...(isRelaxNgPresentationNode
+        ? (node.properties ?? []).slice(0, 6).map((property, index) => ({
+            id: `relax-ng-semantic-${index}`,
+            label: property.label,
+            value: property.value,
+          }))
+        : []),
       ...(xsdMetadata?.kind === node.kind &&
       [
         'list',
@@ -383,7 +396,7 @@ export function buildFocusCardSummary(
       ...(xsdPresentation?.properties ?? []),
     ],
     ...(documentation ? { documentation } : {}),
-    hasXsdPresentation: Boolean(xsdPresentation),
+    hasXsdPresentation: Boolean(xsdPresentation) || isRelaxNgPresentationNode,
     destinationCount: destinations.length,
     incomingUseCount: getIncomingStructuralRelationships(project, nodeId)
       .length,
@@ -405,6 +418,8 @@ export function buildFocusCardSummary(
         ? 'No ELEMENT declaration'
         : xsdPresentation
           ? 'No structural destinations'
-          : 'No child structures',
+          : isRelaxNgPresentationNode
+            ? 'No semantic continuations'
+            : 'No child structures',
   };
 }

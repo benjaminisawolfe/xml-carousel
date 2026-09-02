@@ -241,7 +241,17 @@ describe('project search index builder', () => {
       dtdComment: 'dtdDeclaration',
       dtdProcessingInstruction: 'dtdDeclaration',
       dtdDependency: 'dtdDeclaration',
-      relaxNgSchema: 'other',
+      relaxNgSchema: 'schema',
+      relaxNgGrammar: 'structure',
+      relaxNgStart: 'structure',
+      relaxNgDefinition: 'structure',
+      relaxNgElement: 'element',
+      relaxNgAttribute: 'attribute',
+      relaxNgReference: 'structure',
+      relaxNgExternalReference: 'structure',
+      relaxNgInclude: 'structure',
+      relaxNgPattern: 'structure',
+      relaxNgNameClass: 'structure',
     };
 
     expect(

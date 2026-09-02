@@ -673,6 +673,7 @@ describe('standalone RNG import controller', () => {
     expect(activateRelaxNg.mock.calls[0]![0].semanticModel).toEqual(
       semanticModel,
     );
+    expect(get(controller.state)).toEqual({ status: 'idle' });
 
     includeModel = false;
     await expect(
@@ -682,5 +683,10 @@ describe('standalone RNG import controller', () => {
     expect(activateRelaxNg.mock.calls[1]![0].semanticFindings).toEqual([
       expect.objectContaining({ code: 'semantic-extractor-internal' }),
     ]);
+    expect(get(controller.state)).toMatchObject({
+      status: 'warning',
+      format: 'rng',
+      visualizationSummary: { completeness: 'partial' },
+    });
   });
 });

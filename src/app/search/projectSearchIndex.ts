@@ -38,10 +38,12 @@ export function selectProjectSearchNodeCategory(
 ): ProjectSearchNodeCategory {
   switch (kind) {
     case 'schema':
+    case 'relaxNgSchema':
       return 'schema';
     case 'globalElement':
     case 'localElement':
     case 'elementReference':
+    case 'relaxNgElement':
       return 'element';
     case 'complexType':
     case 'simpleType':
@@ -49,6 +51,7 @@ export function selectProjectSearchNodeCategory(
     case 'attribute':
     case 'attributeReference':
     case 'dtdAttribute':
+    case 'relaxNgAttribute':
       return 'attribute';
     case 'dtdElement':
     case 'dtdContentModel':
@@ -94,6 +97,14 @@ export function selectProjectSearchNodeCategory(
     case 'xsdComment':
     case 'xsdProcessingInstruction':
     case 'xsdProlog':
+    case 'relaxNgGrammar':
+    case 'relaxNgStart':
+    case 'relaxNgDefinition':
+    case 'relaxNgReference':
+    case 'relaxNgExternalReference':
+    case 'relaxNgInclude':
+    case 'relaxNgPattern':
+    case 'relaxNgNameClass':
       return 'structure';
     default:
       return 'other';

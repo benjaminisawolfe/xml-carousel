@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { selectNodeSourceMarkup } from '../../ui/presentation/sourceMarkupPresentation';
 import { formatSchemaNodeKind } from '../../ui/carousel/nodePresentation';
-import { buildProjectSearchIndex } from '../../app/search';
+import { buildProjectSearchIndex, searchProjectIndex } from '../../app/search';
 import {
   buildRelaxNgSemanticModel,
   buildStandaloneRelaxNgProject,
@@ -76,7 +76,7 @@ describe('standalone RELAX NG source-first project', () => {
     });
   });
 
-  it('retains semantic metadata without changing the source-first presentation graph', () => {
+  it('projects retained semantics into the presentation graph with an effective-start focus', () => {
     const sourceText =
       '<grammar xmlns="http://relaxng.org/ns/structure/1.0"><start><ref name="semantic-only-secret"/></start><define name="semantic-only-secret"><element name="semantic-only-secret"><text/></element></define></grammar>';
     const semanticModel = buildRelaxNgSemanticModel({
@@ -98,13 +98,37 @@ describe('standalone RELAX NG source-first project', () => {
 
     expect(result.semanticModel).toEqual(semanticModel);
     expect(result.semanticFindings).toEqual([]);
-    expect(result.project.nodes).toHaveLength(1);
-    expect(result.project.edges).toEqual([]);
+    expect(result.project.nodes.map(({ kind }) => kind)).toEqual(
+      expect.arrayContaining([
+        'relaxNgSchema',
+        'relaxNgGrammar',
+        'relaxNgStart',
+        'relaxNgDefinition',
+        'relaxNgElement',
+        'relaxNgReference',
+      ]),
+    );
+    expect(result.project.edges.length).toBeGreaterThan(0);
     expect(result.project.nodes[0]!.kind).toBe('relaxNgSchema');
+    expect(
+      result.project.nodes.find(({ id }) => id === result.initialFocusNodeId)
+        ?.kind,
+    ).toBe('relaxNgStart');
+    expect(result.visualization.summary.completeness).toBe('complete');
     const search = buildProjectSearchIndex({
       project: result.project,
       sourceFilename: 'model.rng',
     });
-    expect(JSON.stringify(search)).not.toContain('semantic-only-secret');
+    expect(
+      searchProjectIndex(search, 'semantic-only-secret').map(
+        ({ nodeKind }) => nodeKind,
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        'relaxNgDefinition',
+        'relaxNgElement',
+        'relaxNgReference',
+      ]),
+    );
   });
 });

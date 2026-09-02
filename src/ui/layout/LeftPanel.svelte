@@ -85,6 +85,36 @@
   $: identityConstraintRows = outlineRows(xsdGroups.identityConstraints, true);
   $: xsdNotationRows = outlineRows(xsdGroups.notations, true);
   $: builtInTypeRows = outlineRows(xsdGroups.builtInTypes, true);
+  $: relaxNgGroups = [
+    ['sources', 'RELAX NG source', ['relaxNgSchema']],
+    ['starts', 'Start symbols', ['relaxNgStart']],
+    ['definitions', 'Named definitions', ['relaxNgDefinition']],
+    ['elements', 'Element patterns', ['relaxNgElement']],
+    ['attributes', 'Attribute patterns', ['relaxNgAttribute']],
+    [
+      'references',
+      'References',
+      ['relaxNgReference', 'relaxNgExternalReference'],
+    ],
+    ['includes', 'Includes', ['relaxNgInclude']],
+    ['grammars', 'Grammar scopes', ['relaxNgGrammar']],
+    [
+      'patterns',
+      'Patterns and name classes',
+      ['relaxNgPattern', 'relaxNgNameClass'],
+    ],
+  ]
+    .map(([key, label, kinds]) => ({
+      key: key as string,
+      label: label as string,
+      rows: outlineRows(
+        $activeProjectStore.project.nodes.filter(({ kind }) =>
+          (kinds as readonly SchemaNode['kind'][]).includes(kind),
+        ),
+        true,
+      ),
+    }))
+    .filter(({ rows }) => rows.length > 0);
   $: currentSourceFileId = getSchemaNode(
     $activeProjectStore.project,
     $currentFocusNodeId,
@@ -253,6 +283,24 @@
         <OutlineSectionHeading label="Schema files" count={1} />
         <p>{$activeProjectStore.sourceFilename || 'No source file'}</p>
       </section>
+
+      {#each relaxNgGroups as group (group.key)}
+        <section aria-labelledby={`relax-ng-${group.key}-heading`}>
+          <OutlineSectionHeading
+            id={`relax-ng-${group.key}-heading`}
+            label={group.label}
+            count={group.rows.length}
+          />
+          <SchemaOutlineList
+            groupId={`${$activeProjectStore.project.id}:relax-ng-${group.key}`}
+            label={group.label.toLocaleLowerCase()}
+            rows={group.rows}
+            currentFocusNodeId={$currentFocusNodeId}
+            inspectedNodeId={$inspectedNodeId}
+            onCenterNode={centerOutlineRow}
+          />
+        </section>
+      {/each}
 
       {#if dtdRootNodes.length > 0 && dtdElements.length < 50}
         <section>

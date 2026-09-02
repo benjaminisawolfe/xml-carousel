@@ -8,11 +8,11 @@ validity authority. The TypeScript extractor and binder never reject a schema,
 replace libxml2 diagnostics, or turn a semantic limitation into standards
 invalidity.
 
-The existing source-first `SchemaProject` remains unchanged: standalone and ZIP
-RNG sources still produce one `relaxNgSchema` document node per supplied source.
-The semantic model is retained only in active-project metadata. Search,
-Navigation, carousel, Inspector, Full, Compact, Overview, and package-outline
-presentation do not consume it. Task 17.7 owns that mapping.
+Standalone and ZIP RNG sources retain one `relaxNgSchema` document node per
+supplied source. Task 17.7 adds a typed presentation projection beside those
+source nodes. It consumes semantic IDs, bindings, and source ranges in Search,
+Navigation, carousel, Inspector, Full, Compact, Overview, and package outlines
+without changing the retained semantic authority or reparsing source.
 
 ## Layers and parser reuse
 
@@ -152,9 +152,21 @@ The model-integrity validator checks duplicate IDs, missing graph targets,
 grammar/pattern/name-class identities, source identities, and range shape for
 tests and development assertions only.
 
-## Task 17.7 handoff
+## Presentation projection
 
-Task 17.7 may map this retained model into RELAX NG-specific presentation,
-Search, Navigation, carousel, Inspector, and semantic-zoom behavior. It must
-continue to preserve the validator/extractor boundary, reference identity,
-source ranges, graph sharing, and the existing no-retrieval policy.
+`relaxNgPresentationProjector.ts` is the only semantic-to-UI adapter. It keeps
+semantic IDs as presentation node IDs, maps physical ranges to exact retained
+source fragments, and links pattern operands, name classes, definitions,
+includes, and external references through bounded graph edges. Effective start
+and definition groups may retain multiple physical source fragments. Shared
+documents and definition targets are not cloned, and recursive relationships
+remain ordinary graph cycles handled by the existing journey bound.
+
+The projection supplies concise kind/name/role facts and safe plain-text
+documentation or annotation summaries. Search indexes names, references,
+literals, datatype details, and retained documentation through the existing
+project index. Full, Compact, and Overview reuse the same graph and node IDs;
+only their visual density differs. Source-only document nodes remain available
+when extraction is absent and for invalid or blocked package members. The
+validator/extractor boundary, no-retrieval policy, and DTD/XSD graph behavior
+remain unchanged.

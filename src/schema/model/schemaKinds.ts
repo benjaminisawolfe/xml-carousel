@@ -61,11 +61,25 @@ export const schemaNodeKinds = [
 export type CompleteVisualizationSchemaNodeKind =
   (typeof schemaNodeKinds)[number];
 
-export const standaloneSchemaPreviewNodeKinds = ['relaxNgSchema'] as const;
+export const relaxNgPresentationNodeKinds = [
+  'relaxNgSchema',
+  'relaxNgGrammar',
+  'relaxNgStart',
+  'relaxNgDefinition',
+  'relaxNgElement',
+  'relaxNgAttribute',
+  'relaxNgReference',
+  'relaxNgExternalReference',
+  'relaxNgInclude',
+  'relaxNgPattern',
+  'relaxNgNameClass',
+] as const;
+
+export const standaloneSchemaPreviewNodeKinds = relaxNgPresentationNodeKinds;
 
 export type SchemaNodeKind =
   | CompleteVisualizationSchemaNodeKind
-  | (typeof standaloneSchemaPreviewNodeKinds)[number];
+  | (typeof relaxNgPresentationNodeKinds)[number];
 
 export const schemaEdgeKinds = [
   'contains',

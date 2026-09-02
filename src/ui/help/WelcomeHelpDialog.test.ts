@@ -46,7 +46,7 @@ describe('reusable welcome and Help dialog', () => {
       'libxml2 RELAX NG is the authoritative standalone and ZIP-package .rng validator.',
     );
     expect(dialog).toHaveTextContent(
-      'structural RELAX NG visualization is not available yet.',
+      'Standards-valid RELAX NG XML syntax is presented through its retained semantic model',
     );
     expect(
       within(dialog).getByRole('link', { name: 'XML Carousel licence' }),

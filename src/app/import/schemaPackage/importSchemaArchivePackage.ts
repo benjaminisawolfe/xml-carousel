@@ -16,7 +16,12 @@ import {
   type DtdNormalizedContentKind,
 } from '../../../schema/dtd';
 import { importXsdSource, type XsdMetadataByNodeId } from '../../../schema/xsd';
-import { buildStandaloneRelaxNgProject } from '../../../schema/relaxng';
+import {
+  buildRelaxNgSemanticModel,
+  buildStandaloneRelaxNgProject,
+  deriveStandaloneRelaxNgSourceFileId,
+  projectRelaxNgSemanticPresentation,
+} from '../../../schema/relaxng';
 import {
   discoverSchemaArchive,
   type SchemaArchiveBinary,
@@ -57,7 +62,6 @@ import type {
   SchemaPackageSummary,
 } from './schemaPackageTypes';
 import type { RelaxNgValidationResult } from '../../../standards/relaxng';
-import { buildRelaxNgSemanticModel } from '../../../schema/relaxng';
 import {
   clonePlainValue,
   compareUnicodeCodePoints,
@@ -706,6 +710,10 @@ const declarationNodeKinds = new Set<SchemaNode['kind']>([
   'dtdEntity',
   'dtdParameterEntity',
   'dtdNotation',
+  'relaxNgStart',
+  'relaxNgDefinition',
+  'relaxNgElement',
+  'relaxNgAttribute',
 ]);
 
 function safeUtf8Text(bytes: Uint8Array): string | undefined {
@@ -936,7 +944,13 @@ function buildPackagePresentationMetadata(input: {
     const schemaSource =
       kind === 'xsd-source' || kind === 'dtd-source' || kind === 'rng-source';
     const auxiliary = kind === 'auxiliary';
-    const nodeCount = source?.nodeCount ?? 0;
+    const nodeCount = source
+      ? kind === 'rng-source'
+        ? input.project.nodes.filter(
+            (node) => node.sourceFileId === source.sourceFileId,
+          ).length
+        : source.nodeCount
+      : 0;
     const declarationNodeCount = source
       ? input.project.nodes.filter(
           (node) =>
@@ -945,6 +959,17 @@ function buildPackagePresentationMetadata(input: {
         ).length
       : 0;
     const rootCandidateReason = roots.get(entry.packageRelativePath);
+    const standardsStatus =
+      kind === 'rng-source'
+        ? (input.rngStandardsStatusByPath.get(entry.packageRelativePath) ??
+          'not-independently-validated')
+        : schemaSource
+          ? input.standardsApplied
+            ? 'accepted-schema-source'
+            : 'not-independently-validated'
+          : auxiliary
+            ? 'accepted-auxiliary-dependency'
+            : 'not-a-schema-source';
     return {
       id: entry.id,
       archivePath: entry.archivePath,
@@ -975,20 +1000,12 @@ function buildPackagePresentationMetadata(input: {
         ? {}
         : { sourceText: safeText, encoding: 'UTF-8' }),
       ...(source === undefined ? {} : { sourceFileId: source.sourceFileId }),
-      standardsStatus:
-        kind === 'rng-source'
-          ? (input.rngStandardsStatusByPath.get(entry.packageRelativePath) ??
-            'not-independently-validated')
-          : schemaSource
-            ? input.standardsApplied
-              ? 'accepted-schema-source'
-              : 'not-independently-validated'
-            : auxiliary
-              ? 'accepted-auxiliary-dependency'
-              : 'not-a-schema-source',
+      standardsStatus,
       visualizationStatus:
         kind === 'rng-source'
-          ? 'source-only'
+          ? standardsStatus === 'accepted-schema-source' && nodeCount > 1
+            ? 'complete'
+            : 'source-only'
           : schemaSource
             ? declarationNodeCount === 0
               ? 'no-navigable-declarations'
@@ -1490,8 +1507,86 @@ export async function importSchemaArchivePackage(
           })),
         });
 
+  const rngPresentation = rngSemantic?.model
+    ? projectRelaxNgSemanticPresentation({
+        project: resolvedProject,
+        sourceMarkupByNodeId: assembled.sourceMarkupByNodeId,
+        semanticModel: rngSemantic.model,
+      })
+    : undefined;
+  const presentationProject = rngPresentation?.project ?? resolvedProject;
+  const presentationSourceMarkup =
+    rngPresentation?.sourceMarkupByNodeId ?? assembled.sourceMarkupByNodeId;
+  const presentedRngDocuments = rngPresentation
+    ? (rngSemantic?.model?.documents ?? [])
+    : [];
+  const presentedRngSourceIds = new Set(
+    presentedRngDocuments.flatMap(({ path, sourceFileId }) => [
+      sourceFileId,
+      deriveStandaloneRelaxNgSourceFileId(path),
+    ]),
+  );
+  const unavailableRngPresentationCode =
+    'relaxng:structural-visualization-unavailable';
+  const unavailableRngPresentationCount = Math.min(
+    presentedRngDocuments.length,
+    assembled.visualization.summary.totalFindingCount,
+  );
+  const assembledFindingCountsByCode =
+    assembled.visualization.summary.findingCountsByCode;
+  const presentationFindingCountsByCode = {
+    ...(assembledFindingCountsByCode &&
+    Object.keys(assembledFindingCountsByCode).length > 0
+      ? assembledFindingCountsByCode
+      : assembled.visualization.findings.reduce<Record<string, number>>(
+          (counts, { code }) => {
+            counts[code] = (counts[code] ?? 0) + 1;
+            return counts;
+          },
+          {},
+        )),
+  };
+  const remainingUnavailableCount = Math.max(
+    0,
+    (presentationFindingCountsByCode[unavailableRngPresentationCode] ??
+      unavailableRngPresentationCount) - unavailableRngPresentationCount,
+  );
+  if (remainingUnavailableCount === 0) {
+    delete presentationFindingCountsByCode[unavailableRngPresentationCode];
+  } else {
+    presentationFindingCountsByCode[unavailableRngPresentationCode] =
+      remainingUnavailableCount;
+  }
+  const presentationVisualization =
+    unavailableRngPresentationCount === 0
+      ? assembled.visualization
+      : createVisualizationResult(
+          assembled.visualization.findings.filter(
+            ({ code, sourceFileId }) =>
+              code !== unavailableRngPresentationCode ||
+              sourceFileId === undefined ||
+              !presentedRngSourceIds.has(sourceFileId),
+          ),
+          Math.max(
+            0,
+            assembled.visualization.summary.totalFindingCount -
+              unavailableRngPresentationCount,
+          ),
+          presentationFindingCountsByCode,
+        );
+  const assembledInitialNode = resolvedProject.nodes.find(
+    ({ id }) => id === assembled.initialFocusNodeId,
+  );
+  const presentationInitialFocusNodeId =
+    assembledInitialNode?.kind === 'relaxNgSchema' &&
+    assembledInitialNode.sourceFileId
+      ? (rngPresentation?.preferredInitialFocusNodeIdBySourceFileId[
+          assembledInitialNode.sourceFileId
+        ] ?? assembled.initialFocusNodeId)
+      : assembled.initialFocusNodeId;
+
   reportPackageProgress(execution, { phase: 'finalizing' });
-  const validation = validateSchemaProject(resolvedProject);
+  const validation = validateSchemaProject(presentationProject);
   if (validation.length > 0) {
     if (standardsApplied) {
       return failure(
@@ -1532,10 +1627,10 @@ export async function importSchemaArchivePackage(
     contents,
     decodedSources: decoded.sources,
     auxiliaryDtdSources: decoded.auxiliaryDtdSources,
-    project: resolvedProject,
+    project: presentationProject,
     sources: assembled.sources,
-    initialFocusNodeId: assembled.initialFocusNodeId,
-    sourceMarkupByNodeId: assembled.sourceMarkupByNodeId,
+    initialFocusNodeId: presentationInitialFocusNodeId,
+    sourceMarkupByNodeId: presentationSourceMarkup,
     standardsApplied,
     rngStandardsStatusByPath,
   });
@@ -1543,17 +1638,17 @@ export async function importSchemaArchivePackage(
   return deepFreezePlain({
     status: 'success',
     manifest: clonePlainValue(manifest),
-    project: clonePlainValue(resolvedProject),
+    project: clonePlainValue(presentationProject),
     sources: assembled.sources.map(clonePlainValue),
     entries: packagePresentation.entries.map(clonePlainValue),
     summary: clonePlainValue(packagePresentation.summary),
-    initialFocusNodeId: assembled.initialFocusNodeId,
+    initialFocusNodeId: presentationInitialFocusNodeId,
     contentKindsByNodeId: clonePlainValue(assembled.contentKindsByNodeId),
     dtdAttributesByNodeId: clonePlainValue(assembled.dtdAttributesByNodeId),
     comments: assembled.comments.map(clonePlainValue),
     commentsByNodeId: clonePlainValue(assembled.commentsByNodeId),
     schemaLevelComments: assembled.schemaLevelComments.map(clonePlainValue),
-    sourceMarkupByNodeId: clonePlainValue(assembled.sourceMarkupByNodeId),
+    sourceMarkupByNodeId: clonePlainValue(presentationSourceMarkup),
     xsdMetadataByNodeId: clonePlainValue(resolution.xsdMetadataByNodeId),
     unresolvedReferences: resolution.unresolvedReferences.map(clonePlainValue),
     diagnostics: sortDiagnostics(
@@ -1564,7 +1659,7 @@ export async function importSchemaArchivePackage(
       ],
       manifest,
     ).map(clonePlainValue),
-    visualization: clonePlainValue(assembled.visualization),
+    visualization: clonePlainValue(presentationVisualization),
     ...(rngSemantic?.model === undefined
       ? {}
       : { relaxNgSemanticModel: clonePlainValue(rngSemantic.model) }),

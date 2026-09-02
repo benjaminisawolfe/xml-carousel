@@ -12,6 +12,7 @@ import type {
   RelaxNgSemanticFinding,
   RelaxNgSemanticModel,
 } from './relaxNgSemanticModel';
+import { projectRelaxNgSemanticPresentation } from './relaxNgPresentationProjector';
 
 export interface StandaloneRelaxNgProjectOptions {
   readonly filename: string;
@@ -70,7 +71,7 @@ export function buildStandaloneRelaxNgProject(
     end: endPosition(options.sourceText),
     sourceId: sourceFileId,
   } as const;
-  const project: SchemaProject = Object.freeze({
+  const sourceFirstProject: SchemaProject = Object.freeze({
     id: projectId,
     displayName: filename,
     sourceFiles: Object.freeze([Object.freeze({ id: sourceFileId, filename })]),
@@ -96,7 +97,7 @@ export function buildStandaloneRelaxNgProject(
     edges: Object.freeze([]),
     rootNodeIds: Object.freeze([nodeId]),
   });
-  const sourceMarkupByNodeId: SchemaSourceMarkupByNodeId = Object.freeze({
+  const sourceFirstMarkup: SchemaSourceMarkupByNodeId = Object.freeze({
     [nodeId]: Object.freeze({
       syntax: 'rng' as const,
       fragments: Object.freeze([
@@ -109,22 +110,37 @@ export function buildStandaloneRelaxNgProject(
       ]),
     }),
   });
-  const visualization = createVisualizationResult([
-    {
-      code: 'relaxng:structural-visualization-unavailable',
-      message:
-        'This RELAX NG schema is standards-valid. Structural RELAX NG visualization is not available yet; the complete retained source remains available.',
-      sourceFileId,
-      range,
-      constructKind: 'relaxNgSchema',
-      constructName: filename,
-    },
-  ]);
+  const projection = options.semanticModel
+    ? projectRelaxNgSemanticPresentation({
+        project: sourceFirstProject,
+        sourceMarkupByNodeId: sourceFirstMarkup,
+        semanticModel: options.semanticModel,
+      })
+    : undefined;
+  const project = projection?.project ?? sourceFirstProject;
+  const sourceMarkupByNodeId =
+    projection?.sourceMarkupByNodeId ?? sourceFirstMarkup;
+  const initialFocusNodeId = projection?.preferredInitialFocusNodeId ?? nodeId;
+  const visualization = createVisualizationResult(
+    projection
+      ? []
+      : [
+          {
+            code: 'relaxng:structural-visualization-unavailable',
+            message:
+              'This RELAX NG schema is standards-valid, but semantic presentation data is unavailable; the complete retained source remains available.',
+            sourceFileId,
+            range,
+            constructKind: 'relaxNgSchema',
+            constructName: filename,
+          },
+        ],
+  );
 
   return Object.freeze({
     status: 'success' as const,
     project,
-    initialFocusNodeId: nodeId,
+    initialFocusNodeId,
     sourceMarkupByNodeId,
     visualization,
     ...(options.semanticModel === undefined
