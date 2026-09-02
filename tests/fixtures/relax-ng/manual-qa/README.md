@@ -1,20 +1,21 @@
 # Task 17.6 RELAX NG semantic-model manual QA
 
-All files in this directory are project-authored UTF-8 fixtures. Task 17.6 is
-internal: opening a valid fixture must still show the Task 17.5 source-first RNG
-document presentation. No grammar, definition, ref, pattern, Search, Navigation,
-Inspector, or semantic-zoom UI is expected yet.
+All files in this directory are project-authored UTF-8 fixtures. They remain the
+readable human-QA complement to the third-party formal corpus in
+`../conformance/` and the generated RELAX NG visualization matrix. Opening a
+valid fixture now exercises grammar, definitions, patterns, Search, Navigation,
+Inspector, exact source, and stable Full/Compact/Overview identity.
 
 ## Loose files — use Open RNG
 
 | Fixture                                | Exercise                                                                                   | Expected result                                                 |
 | -------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| `01-basic-grammar.rng`                 | Grammar, start, define, ref, elements and attributes                                       | Valid; one source-first RNG document                            |
+| `01-basic-grammar.rng`                 | Grammar, start, define, ref, elements and attributes                                       | Valid; semantic presentation and exact source                   |
 | `02-pattern-operators.rng`             | Group, choice, interleave, optional, repetition, mixed and list                            | Valid; exact source remains available                           |
-| `03-name-classes.rng`                  | Lexical/prefixed names, name-class choice, `anyName`/`nsName` exclusions                   | Valid; no semantic cards appear                                 |
-| `04-datatypes-and-values.rng`          | Datatype library, data params, data except and values                                      | Valid; source-first presentation                                |
-| `05-annotations-and-compatibility.rng` | Documentation, foreign metadata and DTD Compatibility `defaultValue`                       | Valid; metadata remains internal                                |
-| `06-nested-grammar-parent-ref.rng`     | Nested grammar and parent-scope `parentRef` binding                                        | Valid; no ref navigation appears                                |
+| `03-name-classes.rng`                  | Lexical/prefixed names, name-class choice, `anyName`/`nsName` exclusions                   | Valid; name classes are reachable and inspectable               |
+| `04-datatypes-and-values.rng`          | Datatype library, data params, data except and values                                      | Valid; structured details, Search, and exact source             |
+| `05-annotations-and-compatibility.rng` | Documentation, foreign metadata and DTD Compatibility `defaultValue`                       | Valid; inert metadata remains searchable/inspectable            |
+| `06-nested-grammar-parent-ref.rng`     | Nested grammar and parent-scope `parentRef` binding                                        | Valid; parent-scope target is navigable                         |
 | `07-large-semantic-model-a.rng`        | Large catalog model with definitions, recursion, contexts, annotations and foreign content | Valid; **11,283 bytes**                                         |
 | `08-large-semantic-model-b.rng`        | Large publishing model with combined definitions, recursive sections, tables and media     | Valid; **11,308 bytes**                                         |
 | `09-invalid-schema.rng`                | Undefined `ref`                                                                            | Standards-invalid; active project remains unchanged             |
@@ -34,9 +35,10 @@ Inspector, or semantic-zoom UI is expected yet.
 | `18-cycle-project.zip`           | Include cycle and externalRef cycle                            | Cycles terminate; source/relationships remain inspectable even where standards validation reports them |
 
 For every successful open, confirm the top bar still contains Open DTD, Open
-XSD, Open RNG, and Open ZIP; source view/copy is exact; Search does not list
-semantic names; Inspector has no semantic sections; Full/Compact/Overview are
-unchanged; and the browser makes no schema retrieval request.
+XSD, Open RNG, and Open ZIP; source view/copy is exact; semantic names and
+documentation are searchable; Inspector shows structured semantics;
+Full/Compact/Overview preserve identity; and the browser makes no schema
+retrieval request.
 
 `manifest.json` records deterministic byte sizes, SHA-256 identities, members,
 roots, and expected relationship outcomes. Regenerate the committed ZIPs and

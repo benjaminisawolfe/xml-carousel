@@ -12,6 +12,10 @@ test artifacts and are reproduced byte-for-byte by
 same syntax-neutral semantic model. Use them for the representative browser
 equivalence check.
 
+These readable project-authored fixtures complement, but do not replace, the
+formal third-party corpus in `../conformance/` or the generated 77-row RELAX NG
+complete-visualization matrix.
+
 No fixture is copied from a third-party conformance corpus. Original Compact
 Syntax text is the user-facing source; generated RELAX NG XML is never fixture
 or project inventory.

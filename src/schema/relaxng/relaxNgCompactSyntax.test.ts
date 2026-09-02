@@ -68,6 +68,35 @@ describe('RELAX NG Compact Syntax front end', () => {
     ).toBe(true);
   });
 
+  it.each([
+    [
+      'nested name-class exclusion',
+      'element * - foo - bar { empty }',
+      'rnc:nested-name-class-except',
+    ],
+    [
+      'duplicate expanded annotation attribute',
+      'namespace one = "urn:x"\nnamespace two = "urn:x"\n[ one:x = "a" two:x = "b" ] element root { empty }',
+      'rnc:duplicate-annotation-attribute',
+    ],
+    [
+      'reserved xmlns namespace',
+      'namespace bad = "http://www.w3.org/2000/xmlns"\n[ bad:x = "a" ] element root { empty }',
+      'rnc:reserved-namespace-binding',
+    ],
+    [
+      'invalid XML character escape',
+      'element root { "\\x{D800}" }',
+      'rnc:invalid-unicode-escape',
+    ],
+  ])('rejects authoritative invalid syntax: %s', (_, source, code) => {
+    const parsed = parseRelaxNgCompactSyntax(source, 'source:invalid');
+    expect(parsed.document).toBeUndefined();
+    expect(parsed.diagnostics.map((diagnostic) => diagnostic.code)).toContain(
+      code,
+    );
+  });
+
   it('handles escaped keywords, Unicode escapes, triple literals, concatenation, and annotations', () => {
     const source = `\ufeffnamespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"\nnamespace meta = "urn:meta"\n\\element = element root { "\\x{41}" ~ '''B\nC''' }\n## docs\n[ meta:review = "safe" ]\nstart = [ a:defaultValue = "fallback" ] attribute code { token } | \\element >> meta:note [ "after" ]`;
     const parsed = parseRelaxNgCompactSyntax(source, 'source:lexical');
@@ -120,6 +149,33 @@ describe('RELAX NG Compact Syntax front end', () => {
         right.patterns[0]!.range.end.offset,
       ),
     ).not.toContain('<');
+  });
+
+  it('canonicalizes implicit sibling grouping without erasing meaningful operators', () => {
+    const modelFor = (sourceText: string, sourceFileId: string) =>
+      buildRelaxNgSemanticModel({
+        sources: [{ sourceFileId, path: `${sourceFileId}.rng`, sourceText }],
+      }).model!;
+    const implicit = modelFor(
+      `<element xmlns="${rng}" name="root"><attribute name="id"/><text/></element>`,
+      'implicit',
+    );
+    const explicit = modelFor(
+      `<element xmlns="${rng}" name="root"><group><attribute name="id"/><text/></group></element>`,
+      'explicit',
+    );
+    const choice = modelFor(
+      `<element xmlns="${rng}" name="root"><choice><attribute name="id"/><text/></choice></element>`,
+      'choice',
+    );
+    const interleave = modelFor(
+      `<element xmlns="${rng}" name="root"><interleave><attribute name="id"/><text/></interleave></element>`,
+      'interleave',
+    );
+
+    expect(areRelaxNgSemanticallyEquivalent(implicit, explicit)).toBe(true);
+    expect(areRelaxNgSemanticallyEquivalent(implicit, choice)).toBe(false);
+    expect(areRelaxNgSemanticallyEquivalent(explicit, interleave)).toBe(false);
   });
 
   it.each([

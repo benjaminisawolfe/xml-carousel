@@ -309,6 +309,17 @@ export async function verifyStaticBuild({
   if (names.some((name) => name.endsWith('.mjs'))) {
     throw new Error('A production .mjs module was found in dist.');
   }
+  const testCorpusAssets = names.filter(
+    (name) =>
+      /(^|\/)(?:tests|fixtures|conformance)(?:\/|$)/iu.test(name) ||
+      /(?:spectest|compacttest)\.xml$/iu.test(name) ||
+      /(?:^|\/)oracle\.json$/iu.test(name),
+  );
+  if (testCorpusAssets.length > 0) {
+    throw new Error(
+      `Test-only conformance material was bundled into dist: ${testCorpusAssets.join(', ')}.`,
+    );
+  }
 
   const xercesRuntimePatterns = {
     glue: /^assets\/xerces-runtime-[\w-]+\.js$/u,

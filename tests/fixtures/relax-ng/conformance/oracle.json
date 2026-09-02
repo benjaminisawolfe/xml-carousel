@@ -1,0 +1,2960 @@
+{
+  "schemaVersion": 1,
+  "authority": "Jing/Trang V20241231",
+  "repository": "https://github.com/relaxng/jing-trang",
+  "tag": "V20241231",
+  "commit": "a6bc0041035988325dfbfe7823ef2c098fc56597",
+  "jingArchiveSha256": "d11a765f9106e398e01d66aaffb629beb1da21f8a716299e2930a751130bfad2",
+  "trangArchiveSha256": "eceaa8331377b78fcec6094de8e67d81649bc0c322be3fd2cbb39b4c4c7f3af8",
+  "jingJarSha256": "ea5e9026244d977e607d8b52212d6871498ece51939f9c49d0e7a77aad91133a",
+  "trangJarSha256": "7d0fa570a1957dd0bf8cf1adf06259a79cf1045418f8da6002c712d44c32f4a3",
+  "spectest": [
+    {
+      "id": "spectest:001",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:002",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:003",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:004",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:005",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:006",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:007",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:008",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:009",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:010",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:011",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:012",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:013",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:014",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:015",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:016",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:017",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:018",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:019",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:020",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:021",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:022",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:023",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:024",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:025",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:026",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:027",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:028",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:029",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:030",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:031",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:032",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:033",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:034",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:035",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:036",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:037",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:038",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:039",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:040",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:041",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:042",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:043",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:044",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:045",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:046",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:047",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:048",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:049",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:050",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:051",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:052",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:053",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:054",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:055",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:056",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:057",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:058",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:059",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:060",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:061",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:062",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:063",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:064",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:065",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:066",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:067",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:068",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:069",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:070",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:071",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:072",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:073",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:074",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:075",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:076",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:077",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:078",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:079",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:080",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:081",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:082",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:083",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:084",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:085",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:086",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:087",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:088",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:089",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:090",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:091",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:092",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:093",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:094",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:095",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:096",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:097",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:098",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:099",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:100",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:101",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:102",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:103",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:104",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:105",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:106",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:107",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:108",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:109",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:110",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:111",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:112",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:113",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:114",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:115",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:116",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:117",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:118",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:119",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:120",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:121",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:122",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:123",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:124",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:125",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:126",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:127",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:128",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:129",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:130",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:131",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:132",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:133",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:134",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:135",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:136",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:137",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:138",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:139",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:140",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:141",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:142",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:143",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:144",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:145",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:146",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:147",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:148",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:149",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:150",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:151",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:152",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:153",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:154",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:155",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:156",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:157",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:158",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:159",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:160",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:161",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:162",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:163",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:164",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:165",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:166",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:167",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:168",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:169",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:170",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:171",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:172",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:173",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:174",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:175",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:176",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:177",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:178",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:179",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:180",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:181",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:182",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:183",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:184",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:185",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:186",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:187",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:188",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:189",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:190",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:191",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:192",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:193",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:194",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:195",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:196",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:197",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:198",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:199",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:200",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:201",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:202",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:203",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:204",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:205",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:206",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:207",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:208",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:209",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:210",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:211",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:212",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:213",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:214",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:215",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:216",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:217",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:218",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:219",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:220",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:221",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:222",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:223",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:224",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:225",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:226",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:227",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:228",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:229",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:230",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:231",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:232",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:233",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:234",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:235",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:236",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:237",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:238",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:239",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:240",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:241",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:242",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:243",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:244",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:245",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:246",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:247",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:248",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:249",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:250",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:251",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:252",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:253",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:254",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:255",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:256",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:257",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:258",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:259",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:260",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:261",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:262",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:263",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:264",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:265",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:266",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:267",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:268",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:269",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:270",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:271",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:272",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:273",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:274",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:275",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:276",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:277",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:278",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:279",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:280",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:281",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:282",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:283",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:284",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:285",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:286",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:287",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:288",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:289",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:290",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:291",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:292",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:293",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:294",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:295",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:296",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:297",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:298",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:299",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:300",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:301",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:302",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:303",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:304",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:305",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:306",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:307",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:308",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:309",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:310",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:311",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:312",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:313",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:314",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:315",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:316",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:317",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:318",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:319",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:320",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:321",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:322",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:323",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:324",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:325",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:326",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:327",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:328",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:329",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:330",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:331",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:332",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:333",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:334",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:335",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:336",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:337",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:338",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:339",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:340",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:341",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:342",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:343",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:344",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:345",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:346",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:347",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:348",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:349",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:350",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:351",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:352",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:353",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:354",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:355",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:356",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:357",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:358",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:359",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:360",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:361",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:362",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:363",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:364",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:365",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:366",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:367",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:368",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:369",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:370",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:371",
+      "expected": "invalid",
+      "jing": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:372",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:373",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:374",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:375",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:376",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:377",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:378",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:379",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:380",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:381",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:382",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:383",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:384",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "spectest:385",
+      "expected": "accepted",
+      "jing": "accepted",
+      "comparison": "AGREE"
+    }
+  ],
+  "compacttest": [
+    {
+      "id": "compacttest:001",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:002",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:003",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:004",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:005",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:006",
+      "expected": "accepted",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "EXPECTED_HARNESS_DIFFERENCE",
+      "reason": "The unit authority supplies no x.rnc resource; the command-line translator resolves external and therefore cannot complete."
+    },
+    {
+      "id": "compacttest:007",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:008",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:009",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:010",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:011",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:012",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:013",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:014",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:015",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:016",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:017",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:018",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:019",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:020",
+      "expected": "accepted",
+      "jing": "invalid",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:021",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:022",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:023",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:024",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:025",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:026",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:027",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:028",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:029",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:030",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:031",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:032",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:033",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:034",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:035",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:036",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:037",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:038",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:039",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:040",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:041",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:042",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:043",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:044",
+      "expected": "accepted",
+      "jing": "invalid",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:045",
+      "expected": "accepted",
+      "jing": "invalid",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:046",
+      "expected": "accepted",
+      "jing": "invalid",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:047",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:048",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:049",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:050",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:051",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:052",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:053",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:054",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:055",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:056",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:057",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:058",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:059",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:060",
+      "expected": "accepted",
+      "jing": "invalid",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:061",
+      "expected": "accepted",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "EXPECTED_HARNESS_DIFFERENCE",
+      "reason": "The unit authority supplies no x.rnc resource; the command-line translator resolves include and therefore cannot complete."
+    },
+    {
+      "id": "compacttest:062",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:063",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:064",
+      "expected": "accepted",
+      "jing": "invalid",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:065",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:066",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:067",
+      "expected": "accepted",
+      "jing": "invalid",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:068",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:069",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:070",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:071",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:072",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:073",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:074",
+      "expected": "accepted",
+      "jing": "invalid",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:075",
+      "expected": "accepted",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "EXPECTED_HARNESS_DIFFERENCE",
+      "reason": "The unit authority supplies no x.rnc resource; the command-line translator resolves include and therefore cannot complete."
+    },
+    {
+      "id": "compacttest:076",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:077",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:078",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:079",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:080",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:081",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:082",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:083",
+      "expected": "accepted",
+      "jing": "invalid",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:084",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:085",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:086",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:087",
+      "expected": "accepted",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "AGREE"
+    },
+    {
+      "id": "compacttest:088",
+      "expected": "invalid",
+      "jing": "accepted",
+      "trang": "accepted",
+      "comparison": "EXPECTED_UPSTREAM_TOOL_DIFFERENCE",
+      "reason": "The compacttest unit authority rejects a reserved annotation name that the pinned Jing and Trang command-line front ends accept."
+    },
+    {
+      "id": "compacttest:089",
+      "expected": "accepted",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "EXPECTED_HARNESS_DIFFERENCE",
+      "reason": "The unit authority accepts an empty translation fragment; the standalone Trang command requires a schema document."
+    },
+    {
+      "id": "compacttest:090",
+      "expected": "invalid",
+      "jing": "invalid",
+      "trang": "invalid",
+      "comparison": "AGREE"
+    }
+  ]
+}

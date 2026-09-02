@@ -1,0 +1,426 @@
+{
+  "schemaVersion": 1,
+  "authority": "XML Carousel Task 17.9 reviewed conformance boundaries",
+  "records": [
+    {
+      "id": "spectest:056:standards",
+      "caseId": "spectest:056",
+      "stage": "standards",
+      "category": "expected-product-boundary",
+      "reason": "libxml2 2.15.3 accepts the datatypeLibrary URI form rejected by the specification suite and Jing.",
+      "productionOutcome": "accepted",
+      "oracleOutcome": "invalid",
+      "source": "spectest.xml testCase[55]"
+    },
+    {
+      "id": "spectest:070:standards",
+      "caseId": "spectest:070",
+      "stage": "standards",
+      "category": "expected-product-boundary",
+      "reason": "libxml2 2.15.3 does not reject this non-NCName element name.",
+      "productionOutcome": "accepted",
+      "oracleOutcome": "invalid",
+      "source": "spectest.xml testCase[69]"
+    },
+    {
+      "id": "spectest:072:standards",
+      "caseId": "spectest:072",
+      "stage": "standards",
+      "category": "expected-product-boundary",
+      "reason": "libxml2 2.15.3 does not reject this non-NCName name-class value.",
+      "productionOutcome": "accepted",
+      "oracleOutcome": "invalid",
+      "source": "spectest.xml testCase[71]"
+    },
+    {
+      "id": "spectest:073:standards",
+      "caseId": "spectest:073",
+      "stage": "standards",
+      "category": "expected-product-boundary",
+      "reason": "libxml2 2.15.3 does not reject this non-NCName attribute name.",
+      "productionOutcome": "accepted",
+      "oracleOutcome": "invalid",
+      "source": "spectest.xml testCase[72]"
+    },
+    {
+      "id": "spectest:074:standards",
+      "caseId": "spectest:074",
+      "stage": "standards",
+      "category": "expected-product-boundary",
+      "reason": "libxml2 2.15.3 does not reject this non-NCName definition/reference name.",
+      "productionOutcome": "accepted",
+      "oracleOutcome": "invalid",
+      "source": "spectest.xml testCase[73]"
+    },
+    {
+      "id": "spectest:079:standards",
+      "caseId": "spectest:079",
+      "stage": "standards",
+      "category": "expected-product-boundary",
+      "reason": "libxml2 2.15.3 does not reject this QName whose local part is not an NCName.",
+      "productionOutcome": "accepted",
+      "oracleOutcome": "invalid",
+      "source": "spectest.xml testCase[78]"
+    },
+    {
+      "id": "spectest:359:standards",
+      "caseId": "spectest:359",
+      "stage": "standards",
+      "category": "expected-product-boundary",
+      "reason": "libxml2 2.15.3 accepts an overlapping attribute name-class choice rejected by the specification suite and Jing.",
+      "productionOutcome": "accepted",
+      "oracleOutcome": "invalid",
+      "source": "spectest.xml testCase[358]"
+    },
+    {
+      "id": "compacttest:003:standards",
+      "caseId": "compacttest:003",
+      "stage": "standards",
+      "category": "expected-product-boundary",
+      "reason": "The source-preserving translator accepts this large self-schema, but its mapped grammar is rejected by libxml2 while Jing accepts the Compact Syntax schema.",
+      "productionOutcome": "invalid",
+      "oracleOutcome": "accepted",
+      "source": "compacttest.xml testCase[2]"
+    },
+    {
+      "id": "compacttest:006:security",
+      "caseId": "compacttest:006",
+      "stage": "standards",
+      "category": "expected-security-policy-difference",
+      "reason": "The translation unit references x.rnc but supplies no project resource; XML Carousel truthfully blocks the missing external dependency.",
+      "productionOutcome": "blocked",
+      "oracleOutcome": "invalid",
+      "source": "compacttest.xml testCase[5]"
+    },
+    {
+      "id": "compacttest:061:security",
+      "caseId": "compacttest:061",
+      "stage": "standards",
+      "category": "expected-security-policy-difference",
+      "reason": "The translation unit includes x.rnc but supplies no project resource; XML Carousel truthfully blocks the missing dependency.",
+      "productionOutcome": "blocked",
+      "oracleOutcome": "invalid",
+      "source": "compacttest.xml testCase[60]"
+    },
+    {
+      "id": "compacttest:088:oracle",
+      "caseId": "compacttest:088",
+      "stage": "standards",
+      "category": "expected-product-boundary",
+      "reason": "XML Carousel follows compacttest and rejects the reserved annotation name; the pinned Jing and Trang command-line tools accept it despite their unit-suite authority.",
+      "productionOutcome": "invalid",
+      "oracleOutcome": "accepted",
+      "source": "compacttest.xml testCase[87]"
+    },
+    {
+      "id": "compacttest:035:translation",
+      "caseId": "compacttest:035",
+      "stage": "translation",
+      "category": "expected-product-boundary",
+      "reason": "The source-preserving parser does not yet implement chained hexadecimal escapes across keyword, whitespace, and punctuation tokens.",
+      "productionOutcome": "invalid",
+      "oracleOutcome": "accepted",
+      "source": "compacttest.xml testCase[34]"
+    },
+    {
+      "id": "compacttest:036:translation",
+      "caseId": "compacttest:036",
+      "stage": "translation",
+      "category": "expected-product-boundary",
+      "reason": "The source-preserving parser does not yet implement this doubled-backslash identifier escape form.",
+      "productionOutcome": "invalid",
+      "oracleOutcome": "accepted",
+      "source": "compacttest.xml testCase[35]"
+    },
+    {
+      "id": "compacttest:037:translation",
+      "caseId": "compacttest:037",
+      "stage": "translation",
+      "category": "expected-product-boundary",
+      "reason": "The source-preserving parser does not yet concatenate this escaped identifier form.",
+      "productionOutcome": "invalid",
+      "oracleOutcome": "accepted",
+      "source": "compacttest.xml testCase[36]"
+    },
+    {
+      "id": "compacttest:074:translation",
+      "caseId": "compacttest:074",
+      "stage": "translation",
+      "category": "expected-product-boundary",
+      "reason": "The source-preserving parser does not yet retain a standalone foreign annotation grammar component inside div.",
+      "productionOutcome": "invalid",
+      "oracleOutcome": "accepted",
+      "source": "compacttest.xml testCase[73]"
+    },
+    {
+      "id": "compacttest:075:translation",
+      "caseId": "compacttest:075",
+      "stage": "translation",
+      "category": "expected-product-boundary",
+      "reason": "The source-preserving parser does not yet retain standalone foreign annotation grammar components inside include overrides.",
+      "productionOutcome": "invalid",
+      "oracleOutcome": "accepted",
+      "source": "compacttest.xml testCase[74]"
+    },
+    {
+      "id": "compacttest:004:semantic",
+      "caseId": "compacttest:004",
+      "stage": "semantic-equivalence",
+      "category": "expected-product-boundary",
+      "reason": "The syntax-neutral oracle does not yet normalize every namespace-context placement in this legacy RDF grammar.",
+      "productionOutcome": "different",
+      "oracleOutcome": "equivalent",
+      "source": "compacttest.xml testCase[3]"
+    },
+    {
+      "id": "compacttest:003:semantic",
+      "caseId": "compacttest:003",
+      "stage": "semantic-equivalence",
+      "category": "expected-product-boundary",
+      "reason": "The syntax-neutral oracle does not yet normalize every wrapper and namespace-context placement in this large self-schema.",
+      "productionOutcome": "different",
+      "oracleOutcome": "equivalent",
+      "source": "compacttest.xml testCase[2]"
+    },
+    {
+      "id": "compacttest:005:semantic",
+      "caseId": "compacttest:005",
+      "stage": "semantic-equivalence",
+      "category": "expected-product-boundary",
+      "reason": "The syntax-neutral oracle does not yet normalize every wrapper and comment placement in this large legacy grammar.",
+      "productionOutcome": "different",
+      "oracleOutcome": "equivalent",
+      "source": "compacttest.xml testCase[4]"
+    },
+    {
+      "id": "compacttest:039:semantic",
+      "caseId": "compacttest:039",
+      "stage": "semantic-equivalence",
+      "category": "expected-product-boundary",
+      "reason": "The syntax-neutral oracle preserves the Compact Syntax literal spelling while the XML authority resolves its character reference.",
+      "productionOutcome": "different",
+      "oracleOutcome": "equivalent",
+      "source": "compacttest.xml testCase[38]"
+    },
+    {
+      "id": "compacttest:047:semantic",
+      "caseId": "compacttest:047",
+      "stage": "semantic-equivalence",
+      "category": "expected-product-boundary",
+      "reason": "The semantic extractor retains adjacent documentation comments as distinct source-owned records.",
+      "productionOutcome": "different",
+      "oracleOutcome": "equivalent",
+      "source": "compacttest.xml testCase[46]"
+    },
+    {
+      "id": "compacttest:048:semantic",
+      "caseId": "compacttest:048",
+      "stage": "semantic-equivalence",
+      "category": "expected-product-boundary",
+      "reason": "The semantic extractor retains adjacent hash documentation comments as distinct source-owned records.",
+      "productionOutcome": "different",
+      "oracleOutcome": "equivalent",
+      "source": "compacttest.xml testCase[47]"
+    },
+    {
+      "id": "compacttest:049:semantic",
+      "caseId": "compacttest:049",
+      "stage": "semantic-equivalence",
+      "category": "expected-product-boundary",
+      "reason": "Ordinary comments are source fidelity rather than semantic model nodes, while adjacent documentation remains separately source-owned.",
+      "productionOutcome": "different",
+      "oracleOutcome": "equivalent",
+      "source": "compacttest.xml testCase[48]"
+    },
+    {
+      "id": "compacttest:050:semantic",
+      "caseId": "compacttest:050",
+      "stage": "semantic-equivalence",
+      "category": "expected-product-boundary",
+      "reason": "The semantic extractor retains adjacent grammar documentation as distinct source-owned records.",
+      "productionOutcome": "different",
+      "oracleOutcome": "equivalent",
+      "source": "compacttest.xml testCase[49]"
+    },
+    {
+      "id": "compacttest:066:semantic",
+      "caseId": "compacttest:066",
+      "stage": "semantic-equivalence",
+      "category": "expected-product-boundary",
+      "reason": "The syntax-neutral oracle does not yet concatenate adjacent nested foreign-annotation literal segments.",
+      "productionOutcome": "different",
+      "oracleOutcome": "equivalent",
+      "source": "compacttest.xml testCase[65]"
+    },
+    {
+      "id": "compacttest:086:semantic",
+      "caseId": "compacttest:086",
+      "stage": "semantic-equivalence",
+      "category": "expected-product-boundary",
+      "reason": "The syntax-neutral oracle does not yet normalize the implicit XML namespace context placement used by this authority output.",
+      "productionOutcome": "different",
+      "oracleOutcome": "equivalent",
+      "source": "compacttest.xml testCase[85]"
+    },
+    {
+      "id": "real-world:validator-26.8.30:standards",
+      "caseId": "real-world:validator-26.8.30",
+      "stage": "standards",
+      "category": "expected-product-boundary",
+      "reason": "Validator.nu depends on the custom WHATWG datatype library, which libxml2 does not register; the complete source and dependency graph remain importable without retrieval.",
+      "productionOutcome": "invalid",
+      "oracleOutcome": "requires-custom-datatype-library",
+      "source": "validator-26.8.30/html5/html5.rnc"
+    },
+    {
+      "id": "compacttest:009:translation",
+      "caseId": "compacttest:009",
+      "stage": "translation",
+      "category": "expected-product-boundary",
+      "reason": "The source-preserving parser currently accepts an unparenthesized data-except expression as a binary-choice operand; the standards compiler still rejects the schema.",
+      "productionOutcome": "accepted",
+      "oracleOutcome": "invalid",
+      "source": "compacttest.xml testCase[8]"
+    },
+    {
+      "id": "compacttest:079:translation",
+      "caseId": "compacttest:079",
+      "stage": "translation",
+      "category": "expected-product-boundary",
+      "reason": "The source-preserving parser currently accepts this top-level following-annotation placement; the standards compiler still rejects the schema.",
+      "productionOutcome": "accepted",
+      "oracleOutcome": "invalid",
+      "source": "compacttest.xml testCase[78]"
+    },
+    {
+      "id": "compacttest:090:translation",
+      "caseId": "compacttest:090",
+      "stage": "translation",
+      "category": "expected-product-boundary",
+      "reason": "compacttest contains both an accepted and an invalid empty translation unit with identical source bytes; XML Carousel deterministically follows the accepted empty-translation case while standalone compilation remains invalid.",
+      "productionOutcome": "accepted",
+      "oracleOutcome": "invalid",
+      "source": "compacttest.xml testCase[89]"
+    },
+    {
+      "id": "compacttest:072:standards",
+      "caseId": "compacttest:072",
+      "stage": "standards",
+      "category": "expected-product-boundary",
+      "reason": "The mapped nested structure-namespace annotation is rejected by libxml2 although Jing accepts the Compact Syntax form.",
+      "productionOutcome": "invalid",
+      "oracleOutcome": "accepted",
+      "source": "compacttest.xml testCase[71]"
+    },
+    {
+      "id": "compacttest:072:semantic",
+      "caseId": "compacttest:072",
+      "stage": "semantic-equivalence",
+      "category": "expected-product-boundary",
+      "reason": "The semantic oracle does not yet normalize this nested structure-namespace annotation placement.",
+      "productionOutcome": "different",
+      "oracleOutcome": "equivalent",
+      "source": "compacttest.xml testCase[71]"
+    },
+    {
+      "id": "compacttest:073:standards",
+      "caseId": "compacttest:073",
+      "stage": "standards",
+      "category": "expected-product-boundary",
+      "reason": "The mapped nested structure-namespace annotation attribute is rejected by libxml2 although Jing accepts the Compact Syntax form.",
+      "productionOutcome": "invalid",
+      "oracleOutcome": "accepted",
+      "source": "compacttest.xml testCase[72]"
+    },
+    {
+      "id": "compacttest:073:semantic",
+      "caseId": "compacttest:073",
+      "stage": "semantic-equivalence",
+      "category": "expected-product-boundary",
+      "reason": "The semantic oracle does not yet normalize this nested structure-namespace annotation-attribute placement.",
+      "productionOutcome": "different",
+      "oracleOutcome": "equivalent",
+      "source": "compacttest.xml testCase[72]"
+    },
+    {
+      "id": "compacttest:076:standards",
+      "caseId": "compacttest:076",
+      "stage": "standards",
+      "category": "expected-product-boundary",
+      "reason": "The mapped annotation attached inside a repetition wrapper is rejected by libxml2 although Jing accepts the Compact Syntax form.",
+      "productionOutcome": "invalid",
+      "oracleOutcome": "accepted",
+      "source": "compacttest.xml testCase[75]"
+    },
+    {
+      "id": "compacttest:076:semantic",
+      "caseId": "compacttest:076",
+      "stage": "semantic-equivalence",
+      "category": "expected-product-boundary",
+      "reason": "The semantic oracle does not yet normalize annotation ownership across this repetition wrapper.",
+      "productionOutcome": "different",
+      "oracleOutcome": "equivalent",
+      "source": "compacttest.xml testCase[75]"
+    },
+    {
+      "id": "compacttest:077:standards",
+      "caseId": "compacttest:077",
+      "stage": "standards",
+      "category": "expected-product-boundary",
+      "reason": "The mapped following annotations inside a data-except expression are rejected by libxml2 although Jing accepts the Compact Syntax form.",
+      "productionOutcome": "invalid",
+      "oracleOutcome": "accepted",
+      "source": "compacttest.xml testCase[76]"
+    },
+    {
+      "id": "compacttest:077:semantic",
+      "caseId": "compacttest:077",
+      "stage": "semantic-equivalence",
+      "category": "expected-product-boundary",
+      "reason": "The semantic oracle does not yet normalize following-annotation ownership inside this data-except expression.",
+      "productionOutcome": "different",
+      "oracleOutcome": "equivalent",
+      "source": "compacttest.xml testCase[76]"
+    },
+    {
+      "id": "compacttest:078:standards",
+      "caseId": "compacttest:078",
+      "stage": "standards",
+      "category": "expected-product-boundary",
+      "reason": "The mapped following annotations on a value inside data except are rejected by libxml2 although Jing accepts the Compact Syntax form.",
+      "productionOutcome": "invalid",
+      "oracleOutcome": "accepted",
+      "source": "compacttest.xml testCase[77]"
+    },
+    {
+      "id": "compacttest:078:semantic",
+      "caseId": "compacttest:078",
+      "stage": "semantic-equivalence",
+      "category": "expected-product-boundary",
+      "reason": "The semantic oracle does not yet normalize following-annotation ownership on a value inside data except.",
+      "productionOutcome": "different",
+      "oracleOutcome": "equivalent",
+      "source": "compacttest.xml testCase[77]"
+    },
+    {
+      "id": "compacttest:082:standards",
+      "caseId": "compacttest:082",
+      "stage": "standards",
+      "category": "expected-product-boundary",
+      "reason": "The mapped mixed text/comment annotation content is rejected by libxml2 although Jing accepts the Compact Syntax form.",
+      "productionOutcome": "invalid",
+      "oracleOutcome": "accepted",
+      "source": "compacttest.xml testCase[81]"
+    },
+    {
+      "id": "compacttest:082:semantic",
+      "caseId": "compacttest:082",
+      "stage": "semantic-equivalence",
+      "category": "expected-product-boundary",
+      "reason": "The semantic oracle does not yet retain ordinary comments between foreign-annotation text segments.",
+      "productionOutcome": "different",
+      "oracleOutcome": "equivalent",
+      "source": "compacttest.xml testCase[81]"
+    }
+  ]
+}

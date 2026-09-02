@@ -250,6 +250,16 @@ function lexCompactSyntax(
         if (escape) {
           value += escape.value;
           offset = escape.end;
+        } else if (sourceText.startsWith('\\x{', offset)) {
+          const close = sourceText.indexOf('}', offset + 3);
+          const end = close < 0 ? offset + 3 : close + 1;
+          diagnostic(
+            'rnc:invalid-unicode-escape',
+            'Compact Syntax Unicode escape is malformed or outside the XML character range.',
+            offset,
+            end,
+          );
+          offset = end;
         } else {
           if (
             !triple &&
@@ -337,7 +347,9 @@ class CompactParser {
   private readonly namespaceBindings: Record<string, string> = {
     a: relaxNgCompatibilityAnnotationsNamespace,
   };
-  private readonly datatypeBindings: Record<string, string> = {};
+  private readonly datatypeBindings: Record<string, string> = {
+    xsd: 'http://www.w3.org/2001/XMLSchema-datatypes',
+  };
   private defaultNamespace = '';
 
   constructor(
@@ -366,6 +378,16 @@ class CompactParser {
       );
     } else if (!this.at('eof')) {
       root = this.parsePattern(metadata);
+    }
+    if (!root && this.at('eof')) {
+      const start = metadata.start ?? this.current().start;
+      root = this.element(
+        'grammar',
+        start,
+        this.previousEnd(),
+        [],
+        metadata.nodes,
+      );
     }
     if (!root) {
       this.syntax(
@@ -530,6 +552,19 @@ class CompactParser {
         const value = this.at('inherit')
           ? (this.take(), '')
           : this.literal().value;
+        if (
+          prefix.value === 'xmlns' ||
+          value === 'http://www.w3.org/2000/xmlns' ||
+          value === 'http://www.w3.org/2000/xmlns/' ||
+          (prefix.value === 'xml' &&
+            value !== 'http://www.w3.org/XML/1998/namespace')
+        ) {
+          this.syntax(
+            'rnc:reserved-namespace-binding',
+            'Compact Syntax cannot rebind the reserved xml/xmlns namespace names.',
+            prefix,
+          );
+        }
         this.namespaceBindings[prefix.value] = value;
       } else if (this.at('default') && this.at('namespace', 1)) {
         this.take();
@@ -593,6 +628,7 @@ class CompactParser {
   private parseAnnotationBlock(
     nodes: MutableNode[],
     attributes: MutableAttribute[],
+    nested = false,
   ): void {
     this.expect('[', 'Expected [ to begin an annotation.');
     while (!this.at(']') && !this.at('eof')) {
@@ -603,6 +639,52 @@ class CompactParser {
       const name = this.qName();
       if (this.takeIf('=')) {
         const value = this.literal();
+        const split = this.splitQName(name.value);
+        const namespaceUri = this.namespaceBindings[split.prefix ?? ''];
+        if (
+          split.prefix === 'xmlns' ||
+          split.localName === 'xmlns' ||
+          namespaceUri === 'http://www.w3.org/2000/xmlns' ||
+          namespaceUri === 'http://www.w3.org/2000/xmlns/'
+        ) {
+          this.syntax(
+            'rnc:reserved-annotation-name',
+            'Annotation attributes cannot use the reserved xmlns name or namespace.',
+            name.token,
+          );
+        }
+        if (
+          namespaceUri === 'http://www.w3.org/XML/1998/namespace' &&
+          split.prefix !== 'xml'
+        ) {
+          this.syntax(
+            'rnc:reserved-xml-prefix',
+            'The XML namespace can only be used with the xml prefix.',
+            name.token,
+          );
+        }
+        if (namespaceUri === relaxNgStructureNamespace && !nested) {
+          this.syntax(
+            'rnc:structure-namespace-annotation',
+            'A direct foreign annotation cannot use the RELAX NG structure namespace.',
+            name.token,
+          );
+        }
+        if (
+          attributes.some((attribute) => {
+            const attributeNamespace = attribute.namespaceUri ?? '';
+            return (
+              attribute.localName === split.localName &&
+              attributeNamespace === (namespaceUri ?? '')
+            );
+          })
+        ) {
+          this.syntax(
+            'rnc:duplicate-annotation-attribute',
+            'Annotation attributes must have unique expanded names.',
+            name.token,
+          );
+        }
         attributes.push(
           this.attribute(name.value, value.value, name.start, value.end, value),
         );
@@ -610,8 +692,19 @@ class CompactParser {
         const childNodes: MutableNode[] = [];
         const childAttributes: MutableAttribute[] = [];
         const start = name.start;
-        this.parseAnnotationBlock(childNodes, childAttributes);
+        this.parseAnnotationBlock(childNodes, childAttributes, true);
         const split = this.splitQName(name.value);
+        if (
+          this.namespaceBindings[split.prefix ?? ''] ===
+            relaxNgStructureNamespace &&
+          !nested
+        ) {
+          this.syntax(
+            'rnc:structure-namespace-annotation',
+            'A direct foreign annotation cannot use the RELAX NG structure namespace.',
+            name.token,
+          );
+        }
         nodes.push(
           this.element(
             split.localName,
@@ -846,6 +939,7 @@ class CompactParser {
 
   private parsePrimaryPattern(
     metadata: ReturnType<CompactParser['parseInitialAnnotations']>,
+    allowDataExcept = true,
   ): MutableElement | undefined {
     const token = this.current();
     const start = metadata.start ?? token.start;
@@ -929,6 +1023,13 @@ class CompactParser {
     }
     if (token.kind === 'string') {
       const literal = this.literal();
+      if (metadata.nodes.length > 0 || metadata.attributes.length > 0) {
+        this.syntax(
+          'rnc:annotated-literal-pattern',
+          'A literal value pattern cannot carry an initial annotation.',
+          token,
+        );
+      }
       return wrap(this.valueElement(start, literal, 'token', ''));
     }
     if (token.kind === 'identifier') {
@@ -937,6 +1038,24 @@ class CompactParser {
       const datatypeType = this.localPart(qname.value);
       if (this.current().kind === 'string') {
         const literal = this.literal();
+        if (metadata.nodes.length > 0 || metadata.attributes.length > 0) {
+          this.syntax(
+            'rnc:annotated-literal-pattern',
+            'A literal value pattern cannot carry an initial annotation.',
+            qname.token,
+          );
+        }
+        if (
+          datatypeType === 'QName' &&
+          literal.value.includes(':') &&
+          this.namespaceBindings[literal.value.split(':', 1)[0]!] === undefined
+        ) {
+          this.syntax(
+            'rnc:undeclared-qname-value-prefix',
+            'A QName value uses a namespace prefix that has not been declared.',
+            qname.token,
+          );
+        }
         return wrap(
           this.valueElement(start, literal, datatypeType, datatypeLibrary),
         );
@@ -979,13 +1098,28 @@ class CompactParser {
           this.expect('}', 'Expected } after datatype parameters.');
         }
         if (this.takeIf('-')) {
+          if (!allowDataExcept) {
+            this.syntax(
+              'rnc:nested-data-except',
+              'A data except operand cannot itself contain another data except.',
+              this.current(),
+            );
+          }
           const except = this.parsePrimaryPattern(
             this.parseInitialAnnotations(),
+            false,
           );
           if (except)
             children.push(
               this.element('except', except.start, except.end, [], [except]),
             );
+          if (['?', '*', '+'].includes(this.current().value)) {
+            this.syntax(
+              'rnc:postfix-on-data-except',
+              'A repetition operator cannot be applied directly to a data except operand.',
+              this.current(),
+            );
+          }
         }
         return wrap(
           this.element('data', start, this.previousEnd(), attributes, children),
@@ -1025,7 +1159,7 @@ class CompactParser {
         );
   }
 
-  private parseNameClassPrimary(): MutableElement {
+  private parseNameClassPrimary(allowExcept = true): MutableElement {
     const start = this.current().start;
     let result: MutableElement;
     if (this.takeIf('(')) {
@@ -1060,7 +1194,25 @@ class CompactParser {
       }
     }
     if (this.takeIf('-')) {
-      const except = this.parseNameClassPrimary();
+      if (!allowExcept) {
+        this.syntax(
+          'rnc:nested-name-class-except',
+          'A name-class except operand cannot itself contain another except.',
+          this.current(),
+        );
+      }
+      const except = this.parseNameClassPrimary(false);
+      if (
+        (result.localName === 'anyName' && except.localName === 'anyName') ||
+        (result.localName === 'nsName' &&
+          (except.localName === 'anyName' || except.localName === 'nsName'))
+      ) {
+        this.syntax(
+          'rnc:invalid-name-class-except',
+          'The excluded name class is not permitted for this wildcard name class.',
+          this.current(),
+        );
+      }
       result.children.push(
         this.element('except', except.start, except.end, [], [except]),
       );

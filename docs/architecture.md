@@ -115,6 +115,22 @@ presentation nodes; includes and references link to targets rather than
 copying or recursively expanding them. Invalid and blocked RNG members remain
 source-first.
 
+## RELAX NG conformance and visualization authorities
+
+Task 17.9 adds two offline gates without changing the production engine route.
+`npm run relaxng:conformance` executes the pinned Jing/Trang specification and
+Compact Syntax corpora through the real TypeScript front end and libxml2 WASM,
+then exercises three pinned real-world projects. A committed oracle records
+the separately regenerated Jing/Trang results; Java and the oracle JARs remain
+ignored development tools and are never production dependencies.
+
+`npm run acceptance:relaxng-complete-visualization` verifies a separate
+77-row registry and executable presentation/source evidence. It does not edit
+or aggregate the historical 221-row DTD/XSD/ZIP matrix. Both new gates run in
+ordinary `npm run validate`, use only checkout contents and locked npm
+dependencies, and hash deterministic artifacts without time, machine path, or
+performance data.
+
 ## Worker protocol and lifecycle
 
 `src/app/import/schemaImportWorkerClient.ts` creates a module worker from

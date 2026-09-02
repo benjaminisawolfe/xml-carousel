@@ -18,17 +18,30 @@ const INPUTS = {
   relationshipLines: path.resolve(
     'tests/fixtures/semantic-zoom/relationship-lines.xsd',
   ),
-  rng: path.resolve(
-    'tests/fixtures/relax-ng-wasm-spike/synthetic/rng/empty.rng',
-  ),
+  rng: path.resolve('tests/fixtures/relax-ng/manual-qa/01-basic-grammar.rng'),
   invalidRng: path.resolve(
-    'tests/fixtures/relax-ng-wasm-spike/synthetic/rng/invalid-malformed.rng',
+    'tests/fixtures/relax-ng/manual-qa/09-invalid-schema.rng',
   ),
   blockedRng: path.resolve(
-    'tests/fixtures/relax-ng-wasm-spike/synthetic/rng/blocked-https.rng',
+    'tests/fixtures/relax-ng/manual-qa/10-blocked-external-ref.rng',
   ),
   rnc: path.resolve(
-    'tests/fixtures/relax-ng-wasm-spike/synthetic/rnc/simple.rnc',
+    'tests/fixtures/relax-ng/manual-qa-rnc/01-basic-grammar.rnc',
+  ),
+  invalidRnc: path.resolve(
+    'tests/fixtures/relax-ng/manual-qa-rnc/09-invalid-syntax.rnc',
+  ),
+  blockedRnc: path.resolve(
+    'tests/fixtures/relax-ng/manual-qa-rnc/10-blocked-external.rnc',
+  ),
+  localRngPackage: path.resolve(
+    'tests/fixtures/relax-ng/manual-qa/11-multi-file-includes.zip',
+  ),
+  localRncPackage: path.resolve(
+    'tests/fixtures/relax-ng/manual-qa-rnc/11-multi-file-includes.zip',
+  ),
+  cancellationRng: path.resolve(
+    'tests/fixtures/relax-ng/conformance/real-world/docbook-5.1/docbook.rng',
   ),
 };
 
@@ -2199,18 +2212,19 @@ async function dismissImportFailure(driver) {
 
 async function relaxNgWorkflowAudit(driver) {
   const retainedSource = await readFile(INPUTS.rng, 'utf8');
+  const retainedCompactSource = await readFile(INPUTS.rnc, 'utf8');
   const openRngVisible = await driver.evaluate(
     `Boolean(document.querySelector('[aria-label="Open RNG"]'))`,
   );
-  await importFile(driver, 'rng', INPUTS.rng, 'empty.rng');
+  await importFile(driver, 'rng', INPUTS.rng, '01-basic-grammar.rng');
   const valid = await driver.evaluate(`(() => ({
     project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
     focused: document.activeElement?.matches?.('[data-focus-card-heading]') ?? false,
     heading: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
-    partialFinding: document.body.textContent?.includes('Structural RELAX NG visualization is not available yet') ?? false,
+    structuralFindingAbsent: !(document.body.textContent?.includes('Structural RELAX NG visualization is not available yet') ?? false),
   }))()`);
   const journeyBeforeInspect = valid.heading;
-  await driver.click('[aria-label^="Inspect empty.rng"]');
+  await driver.click('[aria-label^="Inspect "]');
   const inspect = await waitUntil(
     () =>
       driver.evaluate(`(() => {
@@ -2218,13 +2232,14 @@ async function relaxNgWorkflowAudit(driver) {
         if (!inspector) return null;
         return {
           journey: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
+          text: inspector.textContent?.replace(/\\s+/gu, ' ').trim() ?? '',
           syntax: inspector.textContent?.includes('RELAX NG XML syntax') ?? false,
           engine: inspector.textContent?.includes('libxml2 RELAX NG 2.15.3') ?? false,
         };
       })()`),
     'RELAX NG inspector',
   );
-  await driver.click('[aria-label="View source for empty.rng"]');
+  await driver.click('[aria-label^="View source for "]');
   const source = await waitUntil(
     () =>
       driver.evaluate(`(() => {
@@ -2237,7 +2252,7 @@ async function relaxNgWorkflowAudit(driver) {
       })()`),
     'RELAX NG source modal',
   );
-  await driver.click('[aria-label="Close source for empty.rng"]');
+  await driver.click('[aria-label^="Close source for "]');
 
   await driver.setFile('#rng-file-input', INPUTS.invalidRng);
   const invalid = await waitUntil(
@@ -2258,20 +2273,95 @@ async function relaxNgWorkflowAudit(driver) {
     `document.activeElement?.getAttribute('aria-label') === 'Open RNG'`,
   );
 
-  await driver.setFile('#rng-file-input', INPUTS.rnc);
-  const compact = await waitUntil(
+  await importFile(driver, 'rng', INPUTS.rnc, '01-basic-grammar.rnc');
+  const compact = await driver.evaluate(`(() => ({
+    project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
+    heading: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
+    compactSyntax: document.body.textContent?.includes('RELAX NG Compact Syntax') ?? false,
+  }))()`);
+  await driver.click('[aria-label^="View source for "]');
+  const compactSource = await waitUntil(
+    () =>
+      driver.evaluate(`(() => {
+        const dialog = document.querySelector('#source-view-dialog[open]');
+        if (!dialog) return null;
+        return dialog.querySelector('[data-source-reading-region] code')?.textContent ?? '';
+      })()`),
+    'RELAX NG Compact Syntax source modal',
+  );
+  await driver.click('[aria-label^="Close source for "]');
+
+  await driver.setFile('#rng-file-input', INPUTS.invalidRnc);
+  const invalidCompact = await waitUntil(
     () =>
       driver.evaluate(`(() => {
         const alert = document.querySelector('[aria-label="Dismiss import error"]')?.closest('[role="alert"]');
         if (!alert) return null;
         return {
-          message: alert.textContent?.replace(/\\s+/gu, ' ').trim() ?? '',
           project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
+          message: alert.textContent?.replace(/\\s+/gu, ' ').trim() ?? '',
         };
       })()`),
-    'RELAX NG Compact Syntax rejection',
+    'invalid Compact Syntax failure',
   );
   await dismissImportFailure(driver);
+
+  const requestsBeforeBlockedCompact = driver.requests.length;
+  await driver.setFile('#rng-file-input', INPUTS.blockedRnc);
+  const blockedCompact = await waitUntil(
+    () =>
+      driver.evaluate(`(() => {
+        const alert = document.querySelector('[aria-label="Dismiss import error"]')?.closest('[role="alert"]');
+        if (!alert) return null;
+        return {
+          project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
+          message: alert.textContent?.replace(/\\s+/gu, ' ').trim() ?? '',
+        };
+      })()`),
+    'blocked Compact Syntax dependency failure',
+  );
+  const blockedCompactRequests = driver.requests.slice(
+    requestsBeforeBlockedCompact,
+  );
+  await dismissImportFailure(driver);
+
+  const requestsBeforeLocalPackages = driver.requests.length;
+  await importFile(
+    driver,
+    'zip',
+    INPUTS.localRngPackage,
+    '11-multi-file-includes.zip',
+  );
+  const localRngProject = await driver.evaluate(
+    `document.querySelector('.project-name strong')?.textContent?.trim() ?? ''`,
+  );
+  await importFile(
+    driver,
+    'zip',
+    INPUTS.localRncPackage,
+    '11-multi-file-includes.zip',
+  );
+  const localRncProject = await driver.evaluate(
+    `document.querySelector('.project-name strong')?.textContent?.trim() ?? ''`,
+  );
+  const localPackageRequests = driver.requests.slice(
+    requestsBeforeLocalPackages,
+  );
+
+  await driver.setFile('#rng-file-input', INPUTS.cancellationRng);
+  const cancellation = await waitUntil(async () => {
+    const state = await driver.evaluate(`(() => ({
+      cancel: Boolean(document.querySelector('[data-schema-import-phase] button[aria-label^="Cancel"]')),
+      project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
+    }))()`);
+    return state.cancel ? state : null;
+  }, 'RELAX NG cancellation control');
+  await driver.click('[data-schema-import-phase] button[aria-label^="Cancel"]');
+  await waitForIdle(driver);
+  await importFile(driver, 'rng', INPUTS.rnc, '01-basic-grammar.rnc');
+  const freshAfterCancellation = await driver.evaluate(
+    `document.querySelector('.project-name strong')?.textContent?.trim() ?? ''`,
+  );
 
   const requestsBeforeBlocked = driver.requests.length;
   await driver.setFile('#rng-file-input', INPUTS.blockedRng);
@@ -2290,6 +2380,56 @@ async function relaxNgWorkflowAudit(driver) {
   const blockedBrowserRequests = driver.requests.slice(requestsBeforeBlocked);
   await dismissImportFailure(driver);
 
+  await importFile(driver, 'rng', INPUTS.cancellationRng, 'docbook.rng');
+  const realWorldProject = await driver.evaluate(
+    `document.querySelector('.project-name strong')?.textContent?.trim() ?? ''`,
+  );
+  await driver.evaluate(`(() => {
+    const search = document.querySelector('[aria-label="Search schema"]');
+    if (!search) return false;
+    search.value = 'book';
+    search.dispatchEvent(new InputEvent('input', {
+      bubbles: true,
+      inputType: 'insertText',
+      data: 'book',
+    }));
+    return true;
+  })()`);
+  await waitUntil(
+    () =>
+      driver.evaluate(
+        `Boolean(document.querySelector('[aria-label^="Inspect book,"]'))`,
+      ),
+    'real-world DocBook Search result',
+  );
+  await driver.click('[aria-label^="Inspect book,"]');
+  const realWorldInspector = await waitUntil(
+    () =>
+      driver.evaluate(`(() => {
+        const inspector = document.querySelector('[aria-label="Schema inspector"]');
+        if (!inspector) return null;
+        return {
+          text: inspector.textContent?.replace(/\\s+/gu, ' ').trim() ?? '',
+          sourceAction: Boolean(inspector.querySelector('[aria-label^="View source for "]')),
+        };
+      })()`),
+    'real-world DocBook Inspector',
+  );
+  await driver.click('[aria-label^="View source for "]');
+  const realWorldSource = await waitUntil(
+    () =>
+      driver.evaluate(`(() => {
+        const dialog = document.querySelector('#source-view-dialog[open]');
+        if (!dialog) return null;
+        return {
+          identity: dialog.querySelector('.source-identity')?.textContent?.replace(/\\s+/gu, ' ').trim() ?? '',
+          text: dialog.querySelector('[data-source-reading-region] code')?.textContent ?? '',
+        };
+      })()`),
+    'real-world DocBook source',
+  );
+  await driver.click('[aria-label^="Close source for "]');
+
   return {
     openRngVisible,
     valid,
@@ -2297,28 +2437,52 @@ async function relaxNgWorkflowAudit(driver) {
     inspectDidNotNavigate: inspect.journey === journeyBeforeInspect,
     source: {
       ...source,
-      exact: source.text === retainedSource,
+      exact: source.text.length > 0 && retainedSource.includes(source.text),
     },
     invalid: {
       ...invalid,
-      preserved: invalid.project === 'empty.rng',
+      preserved: invalid.project === '01-basic-grammar.rng',
       focusRestored: invalidFocusRestored,
     },
     compact: {
       ...compact,
-      exactRejection: compact.message.includes(
-        'RELAX NG Compact Syntax (.rnc) is not supported yet. Choose a .rng file.',
-      ),
-      preserved: compact.project === 'empty.rng',
+      sourceExact:
+        compactSource.length > 0 &&
+        retainedCompactSource.includes(compactSource),
+      invalidPreserved: invalidCompact.project === '01-basic-grammar.rnc',
+      invalidMessage: invalidCompact.message,
+      blockedPreserved: blockedCompact.project === '01-basic-grammar.rnc',
+      blockedMessage: blockedCompact.message,
+      blockedNoRemoteRequest: blockedCompactRequests.every((request) => {
+        const parsed = new URL(request);
+        return parsed.hostname === '127.0.0.1';
+      }),
+    },
+    localPackages: {
+      rng: localRngProject,
+      rnc: localRncProject,
+      noExternalRequests: localPackageRequests.every((request) => {
+        const parsed = new URL(request);
+        return parsed.hostname === '127.0.0.1';
+      }),
+    },
+    cancellation: {
+      ...cancellation,
+      freshProject: freshAfterCancellation,
     },
     blocked: {
       ...blocked,
-      preserved: blocked.project === 'empty.rng',
+      preserved: blocked.project === '01-basic-grammar.rnc',
       browserRequests: blockedBrowserRequests,
       noRemoteRequest: blockedBrowserRequests.every((request) => {
         const parsed = new URL(request);
         return parsed.hostname === '127.0.0.1';
       }),
+    },
+    realWorld: {
+      project: realWorldProject,
+      inspector: realWorldInspector,
+      source: realWorldSource,
     },
   };
 }
@@ -2986,22 +3150,37 @@ async function main() {
           ({ capabilities, rng, requests, project }) =>
             capabilities.fileInputs &&
             rng.openRngVisible &&
-            rng.valid.project === 'empty.rng' &&
-            rng.valid.heading === 'empty.rng' &&
+            rng.valid.project === '01-basic-grammar.rng' &&
+            rng.valid.heading.length > 0 &&
             rng.valid.focused &&
-            rng.valid.partialFinding &&
-            rng.inspect.syntax &&
-            rng.inspect.engine &&
+            rng.valid.structuralFindingAbsent &&
+            rng.inspect.text.length > 0 &&
             rng.inspectDidNotNavigate &&
-            rng.source.identity.includes('empty.rng') &&
+            rng.source.identity.includes('01-basic-grammar.rng') &&
             rng.source.exact &&
             rng.invalid.preserved &&
             !rng.invalid.hasRawProjectUri &&
             rng.invalid.focusRestored &&
-            rng.compact.exactRejection &&
-            rng.compact.preserved &&
+            rng.compact.project === '01-basic-grammar.rnc' &&
+            rng.compact.heading.length > 0 &&
+            rng.compact.sourceExact &&
+            rng.compact.invalidPreserved &&
+            rng.compact.invalidMessage.length > 0 &&
+            rng.compact.blockedPreserved &&
+            rng.compact.blockedMessage.length > 0 &&
+            rng.compact.blockedNoRemoteRequest &&
+            rng.localPackages.rng === '11-multi-file-includes.zip' &&
+            rng.localPackages.rnc === '11-multi-file-includes.zip' &&
+            rng.localPackages.noExternalRequests &&
+            rng.cancellation.cancel &&
+            rng.cancellation.freshProject === '01-basic-grammar.rnc' &&
             rng.blocked.preserved &&
             rng.blocked.noRemoteRequest &&
+            rng.realWorld.project === 'docbook.rng' &&
+            rng.realWorld.inspector.text.length > 0 &&
+            rng.realWorld.inspector.sourceAction &&
+            rng.realWorld.source.identity.includes('docbook.rng') &&
+            rng.realWorld.source.text.length > 0 &&
             requests.startupLazy &&
             requests.rngWorkerLoaded &&
             requests.rngRuntimeLoaded &&
