@@ -3,6 +3,7 @@ import {
   type SchemaEdge,
   type SchemaNode,
   type SchemaNodeId,
+  type SchemaNodeKind,
   type SchemaProject,
   type SchemaSourceMarkupByNodeId,
 } from '../../../schema/model';
@@ -315,7 +316,9 @@ function remapDiagnostics(
 }
 
 function nodeKindOrder(node: SchemaNode): number {
-  const index = schemaNodeKinds.indexOf(node.kind);
+  const index = (schemaNodeKinds as readonly SchemaNodeKind[]).indexOf(
+    node.kind,
+  );
   return index < 0 ? schemaNodeKinds.length : index;
 }
 

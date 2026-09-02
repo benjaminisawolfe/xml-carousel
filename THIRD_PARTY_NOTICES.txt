@@ -5,9 +5,10 @@ This file covers third-party JavaScript incorporated into the production
 application bundle. It is generated deterministically from package-lock.json
 and the exact license files shipped by the locked npm packages.
 
-Apache Xerces-C++ 3.3.0 and Emscripten 6.0.5 are shipped as separate runtime
-assets. Their complete terms are distributed as LICENSE.xerces.txt,
-NOTICE.xerces.txt, and LICENSE.emscripten.txt.
+Apache Xerces-C++ 3.3.0 and libxml2 2.15.3 are shipped as separate
+WebAssembly runtime assets built with Emscripten 6.0.5. Their complete
+terms are distributed as LICENSE.xerces.txt, NOTICE.xerces.txt,
+LICENSE.libxml2.txt, and LICENSE.emscripten.txt.
 
 XML Carousel's own CC0 dedication is distributed separately as LICENSE.txt.
 CC0 does not apply to any third-party component or fixture.

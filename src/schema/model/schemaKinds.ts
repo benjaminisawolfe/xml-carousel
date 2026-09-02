@@ -53,7 +53,19 @@ export const schemaNodeKinds = [
   'dtdDependency',
 ] as const;
 
-export type SchemaNodeKind = (typeof schemaNodeKinds)[number];
+/**
+ * Node kinds covered by the completed DTD/XSD/ZIP visualization matrix.
+ * Task 17.4 deliberately keeps its source-first RELAX NG preview outside that
+ * historical 221-row acceptance authority.
+ */
+export type CompleteVisualizationSchemaNodeKind =
+  (typeof schemaNodeKinds)[number];
+
+export const standaloneSchemaPreviewNodeKinds = ['relaxNgSchema'] as const;
+
+export type SchemaNodeKind =
+  | CompleteVisualizationSchemaNodeKind
+  | (typeof standaloneSchemaPreviewNodeKinds)[number];
 
 export const schemaEdgeKinds = [
   'contains',

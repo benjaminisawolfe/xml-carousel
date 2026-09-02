@@ -23,6 +23,10 @@ The production distribution contains:
   `src/standards/xerces/runtime/NOTICE.xerces.txt`;
 - Emscripten 6.0.5 runtime support. Its authoritative repository copy is
   `src/standards/xerces/runtime/LICENSE.emscripten.txt`;
+- libxml2 2.15.3 compiled to JavaScript/WebAssembly for the user-facing
+  standalone `.rng` workflow. Its authoritative repository copy is
+  `src/standards/relaxng/runtime/LICENSE.libxml2.txt`; the adjacent
+  `LICENSE.emscripten.txt` covers its generated runtime layer;
 - JavaScript originating from Svelte 5.56.7, `clsx` 2.1.1, `esm-env` 1.2.2,
   and JSZip 3.10.1. JSZip's reviewed browser bundle incorporates Pako and its
   promise, stream, and scheduling helpers.
@@ -33,7 +37,7 @@ and the exact license files shipped by the locked npm packages. It includes the
 The full Xerces and Emscripten texts remain separate assets and are referenced
 from that consolidated notice.
 
-## Internal production RELAX NG runtime
+## Production RELAX NG runtime
 
 The repository also contains the Task 17.3 production RELAX NG engine:
 libxml2 2.15.3 compiled to JavaScript/WebAssembly with Emscripten 6.0.5. Its
@@ -43,13 +47,11 @@ libxml2's exact upstream MIT-style licence is preserved as
 `src/standards/relaxng/runtime/LICENSE.libxml2.txt`; the Emscripten-generated
 runtime layer is covered by the adjacent `LICENSE.emscripten.txt`.
 
-This runtime is the internal authoritative engine for RELAX NG XML-syntax
-grammar compilation. It is exercised through a dedicated disposable worker and
-the developer-only production harness. It is not imported or emitted by the
-ordinary user-facing application build in Task 17.3, because `.rng` import is a
-Task 17.4 concern. Therefore the current 0.2.0 `THIRD_PARTY_NOTICES.txt` release
-asset remains unchanged; Task 17.4 must add libxml2 to the distribution notice
-when it makes the runtime reachable from the ordinary application.
+This runtime is the authoritative engine for RELAX NG XML-syntax grammar
+compilation. Task 17.4 makes it reachable from the ordinary application only
+after the user selects a standalone `.rng` file. The ordinary distribution now
+includes the lazy RELAX NG worker, runtime, manifest, libxml2 licence, and the
+shared Emscripten licence; `THIRD_PARTY_NOTICES.txt` names those shipped roles.
 
 Jing, Trang, RNV, and their Java/native tooling remain development-only
 comparison or reproducibility evidence. They are not production dependencies.

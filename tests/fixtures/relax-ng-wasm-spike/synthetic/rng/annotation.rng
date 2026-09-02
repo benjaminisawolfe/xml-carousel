@@ -1,1 +1,11 @@
-<element xmlns="http://relaxng.org/ns/structure/1.0" xmlns:a="urn:xml-carousel:annotation" name="root"><a:documentation importance="example">Foreign annotation retained by the source DOM.</a:documentation><empty/></element>
+<?xml version="1.0"?>
+<!-- Exact whitespace, comments, prefixes, and foreign markup are retained. -->
+<rng:element
+  xmlns:rng="http://relaxng.org/ns/structure/1.0"
+  xmlns:a="urn:xml-carousel:annotation"
+  name="root">
+  <a:documentation importance="example">
+    Foreign annotation retained by the source view.
+  </a:documentation>
+  <rng:empty/>
+</rng:element>

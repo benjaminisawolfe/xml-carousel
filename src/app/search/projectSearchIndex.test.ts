@@ -241,6 +241,7 @@ describe('project search index builder', () => {
       dtdComment: 'dtdDeclaration',
       dtdProcessingInstruction: 'dtdDeclaration',
       dtdDependency: 'dtdDeclaration',
+      relaxNgSchema: 'other',
     };
 
     expect(

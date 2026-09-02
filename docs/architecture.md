@@ -23,7 +23,9 @@ runtime dependency.
 source-file records, relationship kinds, validation, and indexed query
 helpers. DTD, XSD, sample, and package imports all converge on this model.
 Format-specific detail stays in metadata maps owned by the active-project
-store rather than changing the shared graph shape.
+store rather than changing the shared graph shape. The standalone RELAX NG
+preview also uses this model, but deliberately activates only one source-first
+schema node until structural RELAX NG normalization is implemented.
 
 Stable node IDs connect the normalized graph, search index, navigation path,
 inspector target, and presentation state. `validateSchemaProject.ts` checks a
@@ -67,18 +69,35 @@ for each otherwise-unreachable cycle; supporting files remain in the map and
 package metadata. Relative parent segments are accepted only when canonical
 resolution from the referring schema stays inside the virtual root.
 
+## Standalone RELAX NG import
+
+`src/standards/relaxng/` owns the libxml2 RELAX NG 2.15.3 WebAssembly adapter,
+typed worker protocol, disposable worker client, and production worker.
+Standalone `.rng` imports transfer the exact selected bytes to this worker;
+the worker validates only the one supplied virtual file and has no network or
+host-filesystem resolver. `src/schema/relaxng/` then creates the intentionally
+minimal source-first project only after a standards-valid result, retaining the
+complete original text without inventing structural relationships.
+
+This path is separate from the Xerces DTD/XSD/ZIP worker because the engines
+and protocols have different responsibilities. It does not add `.rng` to ZIP
+classification or resolve RELAX NG `include`/`externalRef` dependencies.
+
 ## Worker protocol and lifecycle
 
 `src/app/import/schemaImportWorkerClient.ts` creates a module worker from
 `src/workers/schemaImportWorker.ts`. The typed protocol in
 `schemaImportWorkerProtocol.ts` carries one DTD, XSD, or ZIP request, progress
 events, and one terminal success or failure. The runtime parses, builds, and
-prepares the search index off the main thread.
+prepares the search index off the main thread. Standalone RNG validation uses
+its dedicated RELAX NG worker protocol and returns only standards validation
+outcomes; the controller builds the small source-first project after success.
 
-`schemaFileImportController.ts` owns the active task. A new request, explicit
-cancellation, external sample activation, or teardown invalidates stale work
-and terminates its worker. Request IDs and terminal-response guards prevent an
-old result from replacing a newer project.
+`schemaFileImportController.ts` owns one shared revision and active-task
+authority across DTD, XSD, RNG, and ZIP. A new request, explicit cancellation,
+external sample activation, or teardown invalidates stale work and terminates
+whichever worker owns the attempt. Request IDs and terminal-response guards
+prevent an old result from replacing a newer project across formats.
 
 ## Activation and state ownership
 
@@ -150,7 +169,8 @@ combination.
 ## Source markup and safe text
 
 DTD and XSD importers retain declaration-oriented source excerpts keyed by
-normalized node ID. `sourceMarkupPresentation.ts` is the central presentation
+normalized node ID; the standalone RELAX NG preview retains the complete `.rng`
+text as its one node's source range. `sourceMarkupPresentation.ts` is the central presentation
 boundary for source identity, explicit location precision, and safe fragment
 selection. It uses a supplied standalone filename or a package-relative path,
 rejects absolute paths, and omits identity or coordinates when the retained
@@ -198,10 +218,10 @@ the same unchanged artifact can be served from a domain root or a nested
 directory. No server hostname or mount path is compiled into the application.
 
 `scripts/verify-static-build.mjs` enforces relative HTML assets, safely maps
-them beneath `dist/assets/`, verifies the separately emitted relative worker,
+them beneath `dist/assets/`, verifies both separately emitted relative workers,
 and checks built-in sample presence, source maps, browser-only output, the
-application CC0 license, and consolidated third-party notices. Xerces and
-Emscripten licenses and the Xerces NOTICE remain separately emitted, hashed
+application CC0 license, and consolidated third-party notices. Xerces, libxml2,
+and Emscripten licences and the Xerces NOTICE remain separately emitted, hashed
 runtime assets. `scripts/verify-release-integrity.mjs` checks the source
 documentation, locked notices, third-party fixture provenance, and packaging
 contract before the build.

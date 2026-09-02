@@ -11,9 +11,17 @@ project architecture. XSD 1.1 is not supported. XML instance documents are not
 an XML Carousel product input, so instance-dependent DTD and XSD constraints
 cannot be evaluated from a standalone grammar alone.
 
-The 221/221 complete-visualization result covers the supported presentation
-contracts enumerated by the repository matrix. It is not proof that every
-version or optional feature of every XML-related standard is implemented.
+libxml2 RELAX NG 2.15.3 is authoritative for standalone RELAX NG XML-syntax
+`.rng` validity. This first path is a source-first preview: it retains and
+exposes the complete selected source but does not yet extract a structural
+RELAX NG graph. RELAX NG Compact Syntax (`.rnc`), RELAX NG members in ZIP
+packages, and multi-file `include`/`externalRef` resolution are not supported.
+The standalone checker never searches for or fetches those dependencies.
+
+The 221/221 complete-visualization result covers the DTD/XSD/ZIP presentation
+contracts enumerated by the repository matrix. It does not include the
+deliberately source-first RELAX NG preview and is not proof that every version
+or optional feature of every XML-related standard is implemented.
 Accepted test boundaries remain explicit: unsupported, instance-dependent,
 optional accepted, optional reported, security-blocked, and metadata-disputed.
 

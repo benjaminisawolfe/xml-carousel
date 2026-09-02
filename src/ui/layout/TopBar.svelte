@@ -22,6 +22,9 @@
   export let onOpenXsdFile: (
     file: SchemaReadableFile,
   ) => Promise<SchemaFileImportOutcome>;
+  export let onOpenRngFile: (
+    file: SchemaReadableFile,
+  ) => Promise<SchemaFileImportOutcome> = async () => ({ status: 'stale' });
   export let onOpenZipFile: (
     file: SchemaArchiveReadableFile,
   ) => Promise<SchemaFileImportOutcome> = async () => ({ status: 'stale' });
@@ -39,11 +42,13 @@
 
   let dtdOpenButton: HTMLButtonElement;
   let xsdOpenButton: HTMLButtonElement;
+  let rngOpenButton: HTMLButtonElement;
   let zipOpenButton: HTMLButtonElement;
   let navigationButton: HTMLButtonElement;
   let helpButton: HTMLButtonElement;
   let dtdFileInput: HTMLInputElement;
   let xsdFileInput: HTMLInputElement;
+  let rngFileInput: HTMLInputElement;
   let zipFileInput: HTMLInputElement;
 
   $: activeImportFormat =
@@ -61,7 +66,9 @@
       ? dtdOpenButton
       : format === 'xsd'
         ? xsdOpenButton
-        : zipOpenButton
+        : format === 'rng'
+          ? rngOpenButton
+          : zipOpenButton
     )?.focus();
   }
 
@@ -70,7 +77,9 @@
       ? dtdFileInput
       : format === 'xsd'
         ? xsdFileInput
-        : zipFileInput;
+        : format === 'rng'
+          ? rngFileInput
+          : zipFileInput;
   }
 
   export function focusNavigationToggle(): void {
@@ -104,7 +113,9 @@
       ? onOpenDtdFile(file)
       : format === 'xsd'
         ? onOpenXsdFile(file)
-        : onOpenZipFile(file));
+        : format === 'rng'
+          ? onOpenRngFile(file)
+          : onOpenZipFile(file));
   }
 </script>
 
@@ -153,6 +164,23 @@
       </span>
     </button>
     <button
+      bind:this={rngOpenButton}
+      class="primary-action secondary-import"
+      type="button"
+      aria-busy={activeImportFormat === 'rng' ? 'true' : undefined}
+      aria-controls="rng-file-input"
+      disabled={isImporting}
+      onclick={() => openFilePicker('rng')}
+      aria-label={activeImportFormat === 'rng' ? 'Opening RNG' : 'Open RNG'}
+    >
+      <span class="full-import-label" aria-hidden="true">
+        {activeImportFormat === 'rng' ? 'Opening…' : 'Open RNG'}
+      </span>
+      <span class="compact-import-label" aria-hidden="true">
+        {activeImportFormat === 'rng' ? 'Opening…' : 'RNG'}
+      </span>
+    </button>
+    <button
       bind:this={zipOpenButton}
       class="primary-action secondary-import"
       type="button"
@@ -191,6 +219,17 @@
       tabindex="-1"
       hidden
       onchange={(event) => void handleFileSelection('xsd', event)}
+    />
+    <label class="visually-hidden" for="rng-file-input">Choose RNG file</label>
+    <input
+      bind:this={rngFileInput}
+      id="rng-file-input"
+      class="file-input"
+      type="file"
+      accept=".rng,application/xml,text/xml"
+      tabindex="-1"
+      hidden
+      onchange={(event) => void handleFileSelection('rng', event)}
     />
     <label class="visually-hidden" for="zip-file-input"
       >Choose ZIP schema package</label

@@ -97,10 +97,16 @@ describe('committed libxml2 RELAX NG production runtime', () => {
       });
       expect(result.diagnostics[0]?.message.trim().length).toBeGreaterThan(0);
       expect(
+        result.diagnostics.some(
+          (diagnostic) => diagnostic.line !== undefined && diagnostic.line > 0,
+        ),
+      ).toBe(true);
+      expect(
         result.diagnostics.every(
           (diagnostic) => diagnostic.column === undefined,
         ),
       ).toBe(true);
+      expect(JSON.stringify(result.diagnostics)).not.toContain('project:///');
     },
   );
 
@@ -171,26 +177,34 @@ describe('committed libxml2 RELAX NG production runtime', () => {
     );
   });
 
-  it('distinguishes a missing exact project member from basename fallback', async () => {
-    const missing = await validate('missing', 'missing-include.rng', [
-      await fixture('missing-include.rng'),
-      {
-        path: 'other/not-present.rng',
-        bytes: new TextEncoder().encode(
-          '<element xmlns="http://relaxng.org/ns/structure/1.0" name="wrong"><empty/></element>',
+  it.each([
+    ['include', 'missing-include.rng'],
+    ['externalRef', 'external-main.rng'],
+  ])(
+    'distinguishes a missing exact %s member from basename fallback',
+    async (_referenceKind, name) => {
+      const missing = await validate(`missing-${name}`, name, [
+        await fixture(name),
+        {
+          path: 'other/not-present.rng',
+          bytes: new TextEncoder().encode(
+            '<element xmlns="http://relaxng.org/ns/structure/1.0" name="wrong"><empty/></element>',
+          ),
+        },
+      ]);
+      expect(missing.status).toBe('blocked');
+      expect(missing.dependencyRequests).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ outcome: 'missing' }),
+        ]),
+      );
+      expect(
+        missing.diagnostics.some(
+          (diagnostic) => diagnostic.category === 'blocked-dependency',
         ),
-      },
-    ]);
-    expect(missing.status).toBe('blocked');
-    expect(missing.dependencyRequests).toEqual(
-      expect.arrayContaining([expect.objectContaining({ outcome: 'missing' })]),
-    );
-    expect(
-      missing.diagnostics.some(
-        (diagnostic) => diagnostic.category === 'blocked-dependency',
-      ),
-    ).toBe(true);
-  });
+      ).toBe(true);
+    },
+  );
 
   it('resets native state across invalid and valid attempts', async () => {
     const invalid = await validate('first', 'invalid-malformed.rng', [

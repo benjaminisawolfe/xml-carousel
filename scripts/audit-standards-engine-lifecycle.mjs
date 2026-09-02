@@ -18,6 +18,18 @@ const INPUTS = {
   relationshipLines: path.resolve(
     'tests/fixtures/semantic-zoom/relationship-lines.xsd',
   ),
+  rng: path.resolve(
+    'tests/fixtures/relax-ng-wasm-spike/synthetic/rng/empty.rng',
+  ),
+  invalidRng: path.resolve(
+    'tests/fixtures/relax-ng-wasm-spike/synthetic/rng/invalid-malformed.rng',
+  ),
+  blockedRng: path.resolve(
+    'tests/fixtures/relax-ng-wasm-spike/synthetic/rng/blocked-https.rng',
+  ),
+  rnc: path.resolve(
+    'tests/fixtures/relax-ng-wasm-spike/synthetic/rnc/simple.rnc',
+  ),
 };
 
 function parseArguments(argv) {
@@ -452,6 +464,12 @@ class FirefoxDriver {
     this.consoleEntries = [];
     this.pageErrors = [];
     this.requests = [];
+    bidiConnection.onMessage((message) => {
+      if (message.method === 'network.beforeRequestSent') {
+        const url = message.params?.request?.url;
+        if (typeof url === 'string') this.requests.push(url);
+      }
+    });
   }
 
   static async launch(executablePath, geckodriverPath, reducedMotion = true) {
@@ -512,6 +530,10 @@ class FirefoxDriver {
       bidiConnection.close();
       throw new Error('Firefox session did not provide a browsing context.');
     }
+    await bidiConnection.send('session.subscribe', {
+      events: ['network.beforeRequestSent'],
+      contexts: [browsingContext],
+    });
     return {
       driver: new FirefoxDriver({
         process: child,
@@ -725,7 +747,7 @@ async function capabilitySnapshot(driver) {
       structuredClone: typeof structuredClone === 'function',
       transferableArrayBuffer: transferable.byteLength === 0 && clone.byteLength === 3,
       reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
-      fileInputs: ['dtd', 'xsd', 'zip'].every((format) => document.querySelector('#' + format + '-file-input')?.type === 'file'),
+      fileInputs: ['dtd', 'xsd', 'rng', 'zip'].every((format) => document.querySelector('#' + format + '-file-input')?.type === 'file'),
     };
   })()`);
 }
@@ -740,7 +762,7 @@ async function viewportAudit(driver, width, height) {
   const result = await driver.evaluate(`(() => {
     const dialog = document.querySelector('dialog[open]');
     const rect = dialog?.getBoundingClientRect();
-    const controls = ['Open DTD', 'Open XSD', 'Open ZIP', 'Open XML Carousel help'];
+    const controls = ['Open DTD', 'Open XSD', 'Open RNG', 'Open ZIP', 'Open XML Carousel help'];
     const semanticZoomSurface = document.querySelector('[data-semantic-zoom-requested]');
     const semanticZoomControl = document.querySelector('[data-semantic-zoom-control]');
     const semanticZoomRange = semanticZoomControl?.querySelector('input[type="range"]');
@@ -2170,16 +2192,166 @@ async function semanticZoomUxHardeningAudit(
   };
 }
 
-async function smokeDeployment(driver, url) {
+async function dismissImportFailure(driver) {
+  await driver.click('[aria-label="Dismiss import error"]');
+  await waitForIdle(driver);
+}
+
+async function relaxNgWorkflowAudit(driver) {
+  const retainedSource = await readFile(INPUTS.rng, 'utf8');
+  const openRngVisible = await driver.evaluate(
+    `Boolean(document.querySelector('[aria-label="Open RNG"]'))`,
+  );
+  await importFile(driver, 'rng', INPUTS.rng, 'empty.rng');
+  const valid = await driver.evaluate(`(() => ({
+    project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
+    focused: document.activeElement?.matches?.('[data-focus-card-heading]') ?? false,
+    heading: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
+    partialFinding: document.body.textContent?.includes('Structural RELAX NG visualization is not available yet') ?? false,
+  }))()`);
+  const journeyBeforeInspect = valid.heading;
+  await driver.click('[aria-label^="Inspect empty.rng"]');
+  const inspect = await waitUntil(
+    () =>
+      driver.evaluate(`(() => {
+        const inspector = document.querySelector('[aria-label="Schema inspector"]');
+        if (!inspector) return null;
+        return {
+          journey: document.querySelector('[data-focus-card-heading]')?.textContent?.trim() ?? '',
+          syntax: inspector.textContent?.includes('RELAX NG XML syntax') ?? false,
+          engine: inspector.textContent?.includes('libxml2 RELAX NG 2.15.3') ?? false,
+        };
+      })()`),
+    'RELAX NG inspector',
+  );
+  await driver.click('[aria-label="View source for empty.rng"]');
+  const source = await waitUntil(
+    () =>
+      driver.evaluate(`(() => {
+        const dialog = document.querySelector('#source-view-dialog[open]');
+        if (!dialog) return null;
+        return {
+          text: dialog.querySelector('[data-source-reading-region] code')?.textContent ?? '',
+          identity: dialog.querySelector('.source-identity')?.textContent?.replace(/\\s+/gu, ' ').trim() ?? '',
+        };
+      })()`),
+    'RELAX NG source modal',
+  );
+  await driver.click('[aria-label="Close source for empty.rng"]');
+
+  await driver.setFile('#rng-file-input', INPUTS.invalidRng);
+  const invalid = await waitUntil(
+    () =>
+      driver.evaluate(`(() => {
+        const alert = document.querySelector('[aria-label="Dismiss import error"]')?.closest('[role="alert"]');
+        if (!alert) return null;
+        return {
+          message: alert.textContent?.replace(/\\s+/gu, ' ').trim() ?? '',
+          project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
+          hasRawProjectUri: document.body.textContent?.includes('project:///') ?? false,
+        };
+      })()`),
+    'invalid RELAX NG failure',
+  );
+  await dismissImportFailure(driver);
+  const invalidFocusRestored = await driver.evaluate(
+    `document.activeElement?.getAttribute('aria-label') === 'Open RNG'`,
+  );
+
+  await driver.setFile('#rng-file-input', INPUTS.rnc);
+  const compact = await waitUntil(
+    () =>
+      driver.evaluate(`(() => {
+        const alert = document.querySelector('[aria-label="Dismiss import error"]')?.closest('[role="alert"]');
+        if (!alert) return null;
+        return {
+          message: alert.textContent?.replace(/\\s+/gu, ' ').trim() ?? '',
+          project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
+        };
+      })()`),
+    'RELAX NG Compact Syntax rejection',
+  );
+  await dismissImportFailure(driver);
+
+  const requestsBeforeBlocked = driver.requests.length;
+  await driver.setFile('#rng-file-input', INPUTS.blockedRng);
+  const blocked = await waitUntil(
+    () =>
+      driver.evaluate(`(() => {
+        const alert = document.querySelector('[aria-label="Dismiss import error"]')?.closest('[role="alert"]');
+        if (!alert) return null;
+        return {
+          message: alert.textContent?.replace(/\\s+/gu, ' ').trim() ?? '',
+          project: document.querySelector('.project-name strong')?.textContent?.trim() ?? '',
+        };
+      })()`),
+    'blocked RELAX NG dependency failure',
+  );
+  const blockedBrowserRequests = driver.requests.slice(requestsBeforeBlocked);
+  await dismissImportFailure(driver);
+
+  return {
+    openRngVisible,
+    valid,
+    inspect,
+    inspectDidNotNavigate: inspect.journey === journeyBeforeInspect,
+    source: {
+      ...source,
+      exact: source.text === retainedSource,
+    },
+    invalid: {
+      ...invalid,
+      preserved: invalid.project === 'empty.rng',
+      focusRestored: invalidFocusRestored,
+    },
+    compact: {
+      ...compact,
+      exactRejection: compact.message.includes(
+        'RELAX NG Compact Syntax (.rnc) is not supported yet. Choose a .rng file.',
+      ),
+      preserved: compact.project === 'empty.rng',
+    },
+    blocked: {
+      ...blocked,
+      preserved: blocked.project === 'empty.rng',
+      browserRequests: blockedBrowserRequests,
+      noRemoteRequest: blockedBrowserRequests.every((request) => {
+        const parsed = new URL(request);
+        return parsed.hostname === '127.0.0.1';
+      }),
+    },
+  };
+}
+
+async function smokeDeployment(driver, url, serverRequests) {
+  const requestStart = serverRequests.length;
   await driver.navigate(url);
   await dismissWelcome(driver);
   const capabilities = await capabilitySnapshot(driver);
+  const startupRequests = serverRequests.slice(requestStart);
+  const rng = await relaxNgWorkflowAudit(driver);
   await importFile(driver, 'dtd', INPUTS.dtd, 'library.dtd');
   await importFile(driver, 'xsd', INPUTS.xsd, 'attributes.xsd');
   await importFile(driver, 'zip', INPUTS.zip, 'valid-xsd-include.zip');
+  const completedRequests = serverRequests.slice(requestStart);
   return {
     url,
     capabilities,
+    rng,
+    requests: {
+      startup: startupRequests,
+      completed: completedRequests,
+      startupLazy: startupRequests.every(
+        ({ pathname }) =>
+          !/relaxNgStandardsWorker|libxml2-relaxng-runtime/u.test(pathname),
+      ),
+      rngRuntimeLoaded: completedRequests.some(({ pathname }) =>
+        /libxml2-relaxng-runtime-[\w-]+\.wasm$/u.test(pathname),
+      ),
+      rngWorkerLoaded: completedRequests.some(({ pathname }) =>
+        /relaxNgStandardsWorker-[\w-]+\.js$/u.test(pathname),
+      ),
+    },
     project: await driver.evaluate(
       "document.querySelector('.project-name strong')?.textContent?.trim()",
     ),
@@ -2703,8 +2875,12 @@ async function main() {
       driver,
       server.rootUrl,
     );
-    const root = await smokeDeployment(driver, server.rootUrl);
-    const nested = await smokeDeployment(driver, server.nestedUrl);
+    const root = await smokeDeployment(driver, server.rootUrl, serverRequests);
+    const nested = await smokeDeployment(
+      driver,
+      server.nestedUrl,
+      serverRequests,
+    );
     const viewports = [];
     for (const [width, height] of [
       [1440, 900],
@@ -2790,9 +2966,10 @@ async function main() {
         noProductionMjs: serverRequests.every(
           ({ pathname }) => !pathname.endsWith('.mjs'),
         ),
-        noExternalRequests: driver.requests.every(
-          (url) => new URL(url).hostname === '127.0.0.1',
-        ),
+        noExternalRequests: driver.requests.every((url) => {
+          const parsed = new URL(url);
+          return parsed.protocol === 'data:' || parsed.hostname === '127.0.0.1';
+        }),
         noFileRequests: driver.requests.every(
           (url) => !url.toLowerCase().startsWith('file:'),
         ),
@@ -2804,6 +2981,31 @@ async function main() {
         ),
         noLiveWorkersBetweenImports: mixedSamples.every(
           ({ liveWorkers }) => liveWorkers === null || liveWorkers === 0,
+        ),
+        standaloneRngWorkflow: [root, nested].every(
+          ({ capabilities, rng, requests, project }) =>
+            capabilities.fileInputs &&
+            rng.openRngVisible &&
+            rng.valid.project === 'empty.rng' &&
+            rng.valid.heading === 'empty.rng' &&
+            rng.valid.focused &&
+            rng.valid.partialFinding &&
+            rng.inspect.syntax &&
+            rng.inspect.engine &&
+            rng.inspectDidNotNavigate &&
+            rng.source.identity.includes('empty.rng') &&
+            rng.source.exact &&
+            rng.invalid.preserved &&
+            !rng.invalid.hasRawProjectUri &&
+            rng.invalid.focusRestored &&
+            rng.compact.exactRejection &&
+            rng.compact.preserved &&
+            rng.blocked.preserved &&
+            rng.blocked.noRemoteRequest &&
+            requests.startupLazy &&
+            requests.rngWorkerLoaded &&
+            requests.rngRuntimeLoaded &&
+            project === 'valid-xsd-include.zip',
         ),
         reducedMotionPreference:
           options.browser === 'firefox' && options.firefoxMotion === 'normal'

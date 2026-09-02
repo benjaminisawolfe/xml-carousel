@@ -263,7 +263,10 @@ export function isSchemaImportProgress(
   if (
     !isRecord(value) ||
     !hasString(value, 'filename') ||
-    (value.format !== 'dtd' && value.format !== 'xsd' && value.format !== 'zip')
+    (value.format !== 'dtd' &&
+      value.format !== 'xsd' &&
+      value.format !== 'rng' &&
+      value.format !== 'zip')
   ) {
     return false;
   }

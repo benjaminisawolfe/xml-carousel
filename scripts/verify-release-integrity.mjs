@@ -141,6 +141,7 @@ export async function verifyReleaseIntegrity() {
     'THIRD_PARTY_NOTICES.txt',
     [
       'Apache Xerces-C++ 3.3.0',
+      'libxml2 2.15.3',
       'Emscripten 6.0.5',
       'svelte 5.56.7',
       'jszip 3.10.1',
