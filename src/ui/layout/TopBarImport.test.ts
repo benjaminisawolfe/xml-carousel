@@ -37,6 +37,9 @@ function props(
   onOpenZipFile: OpenArchiveCallback = vi.fn(() =>
     Promise.resolve(success('zip', 'schemas.zip')),
   ),
+  onOpenRngFile: OpenFileCallback = vi.fn(() =>
+    Promise.resolve(success('rng', 'schema.rng')),
+  ),
 ) {
   return {
     projectIdentity: 'book.dtd',
@@ -44,6 +47,7 @@ function props(
     importState,
     onOpenDtdFile,
     onOpenXsdFile,
+    onOpenRngFile,
     onOpenZipFile,
     onToggleNavigation: vi.fn(),
     onSearchIntent: vi.fn(),
@@ -77,7 +81,7 @@ function setFiles(
 }
 
 describe('coordinated schema-file top-bar controls', () => {
-  it('renders enabled native Open DTD, Open XSD, and Open ZIP buttons', () => {
+  it('renders enabled native Open DTD, Open XSD, Open RNG, and Open ZIP buttons', () => {
     render(TopBar, { props: props() });
     const banner = screen.getByRole('banner');
 
@@ -91,6 +95,9 @@ describe('coordinated schema-file top-bar controls', () => {
     ).toBeEnabled();
     expect(
       within(banner).getByRole('button', { name: 'Open XSD' }),
+    ).toBeEnabled();
+    expect(
+      within(banner).getByRole('button', { name: 'Open RNG' }),
     ).toBeEnabled();
     expect(
       within(banner).getByRole('button', { name: 'Open ZIP' }),
@@ -156,14 +163,16 @@ describe('coordinated schema-file top-bar controls', () => {
     },
   );
 
-  it('uses three labeled hidden single-file inputs with exact accept hints', () => {
+  it('uses four labeled hidden single-file inputs with exact accept hints', () => {
     const { container } = render(TopBar, { props: props() });
     const dtd = fileInput(container, 'dtd');
     const xsd = fileInput(container, 'xsd');
+    const rng = fileInput(container, 'rng');
     const zip = fileInput(container, 'zip');
 
     expect(dtd).toHaveAttribute('accept', '.dtd,application/xml-dtd');
     expect(xsd).toHaveAttribute('accept', '.xsd,application/xml,text/xml');
+    expect(rng).toHaveAttribute('accept', '.rng,application/xml,text/xml');
     expect(zip).toHaveAttribute(
       'accept',
       '.zip,application/zip,application/x-zip-compressed',
@@ -171,6 +180,7 @@ describe('coordinated schema-file top-bar controls', () => {
     for (const [format, input] of [
       ['DTD', dtd],
       ['XSD', xsd],
+      ['RNG', rng],
       ['ZIP schema package', zip],
     ] as const) {
       expect(input).not.toHaveAttribute('multiple');
@@ -194,6 +204,7 @@ describe('coordinated schema-file top-bar controls', () => {
   it.each([
     ['dtd', 'Open DTD'],
     ['xsd', 'Open XSD'],
+    ['rng', 'Open RNG'],
     ['zip', 'Open ZIP'],
   ] as const)(
     'opens the %s native input from its button',
@@ -216,7 +227,7 @@ describe('coordinated schema-file top-bar controls', () => {
     },
   );
 
-  it.each(['dtd', 'xsd', 'zip'] as const)(
+  it.each(['dtd', 'xsd', 'rng', 'zip'] as const)(
     'disables every import button and marks only the active %s button busy',
     (format) => {
       render(TopBar, {
@@ -230,7 +241,7 @@ describe('coordinated schema-file top-bar controls', () => {
       const opening = screen.getByRole('button', {
         name: `Opening ${format.toUpperCase()}`,
       });
-      const others = ['dtd', 'xsd', 'zip']
+      const others = ['dtd', 'xsd', 'rng', 'zip']
         .filter((candidate) => candidate !== format)
         .map((candidate) =>
           screen.getByRole('button', {
@@ -238,7 +249,7 @@ describe('coordinated schema-file top-bar controls', () => {
           }),
         );
       expect(opening).toBeDisabled();
-      expect(others).toHaveLength(2);
+      expect(others).toHaveLength(3);
       for (const other of others) expect(other).toBeDisabled();
       expect(opening).toHaveAttribute('aria-busy', 'true');
       for (const other of others)
@@ -246,7 +257,7 @@ describe('coordinated schema-file top-bar controls', () => {
     },
   );
 
-  it.each(['dtd', 'xsd', 'zip'] as const)(
+  it.each(['dtd', 'xsd', 'rng', 'zip'] as const)(
     'keeps all import buttons disabled and only %s busy during worker processing',
     (format) => {
       render(TopBar, {
@@ -266,7 +277,7 @@ describe('coordinated schema-file top-bar controls', () => {
       });
       expect(active).toBeDisabled();
       expect(active).toHaveAttribute('aria-busy', 'true');
-      for (const candidate of ['dtd', 'xsd', 'zip'] as const) {
+      for (const candidate of ['dtd', 'xsd', 'rng', 'zip'] as const) {
         if (candidate === format) continue;
         const button = screen.getByRole('button', {
           name: `Open ${candidate.toUpperCase()}`,
@@ -280,6 +291,7 @@ describe('coordinated schema-file top-bar controls', () => {
   it.each([
     ['dtd', 'library.dtd'],
     ['xsd', 'schema.xsd'],
+    ['rng', 'schema.rng'],
     ['zip', 'schemas.zip'],
   ] as const)(
     'dispatches %s selection, clears it, and preserves successful focus ownership',
@@ -294,9 +306,16 @@ describe('coordinated schema-file top-bar controls', () => {
         });
       const onOpenDtdFile = callback('dtd');
       const onOpenXsdFile = callback('xsd');
+      const onOpenRngFile = callback('rng');
       const onOpenZipFile = callback('zip');
       const { container } = render(TopBar, {
-        props: props(idle, onOpenDtdFile, onOpenXsdFile, onOpenZipFile),
+        props: props(
+          idle,
+          onOpenDtdFile,
+          onOpenXsdFile,
+          onOpenZipFile,
+          onOpenRngFile,
+        ),
       });
       const input = fileInput(container, format);
       const file =
@@ -308,6 +327,11 @@ describe('coordinated schema-file top-bar controls', () => {
           : {
               name: filename,
               text: () => Promise.resolve('schema source'),
+              ...(format === 'rng'
+                ? {
+                    arrayBuffer: () => Promise.resolve(new ArrayBuffer(4)),
+                  }
+                : {}),
             };
       Object.defineProperty(input, 'value', {
         configurable: true,
@@ -323,9 +347,16 @@ describe('coordinated schema-file top-bar controls', () => {
           ? onOpenDtdFile
           : format === 'xsd'
             ? onOpenXsdFile
-            : onOpenZipFile,
+            : format === 'rng'
+              ? onOpenRngFile
+              : onOpenZipFile,
       ).toHaveBeenCalledWith(file);
-      const callbacks = [onOpenDtdFile, onOpenXsdFile, onOpenZipFile];
+      const callbacks = [
+        onOpenDtdFile,
+        onOpenXsdFile,
+        onOpenRngFile,
+        onOpenZipFile,
+      ];
       for (const callback of callbacks) {
         if (!callback.mock.calls.length)
           expect(callback).not.toHaveBeenCalled();
@@ -366,14 +397,21 @@ describe('coordinated schema-file top-bar controls', () => {
     priorFocus.remove();
   });
 
-  it.each(['dtd', 'xsd', 'zip'] as const)(
+  it.each(['dtd', 'xsd', 'rng', 'zip'] as const)(
     'treats %s cancellation as a no-op and restores matching focus',
     async (format) => {
       const onOpenDtdFile = vi.fn();
       const onOpenXsdFile = vi.fn();
+      const onOpenRngFile = vi.fn();
       const onOpenZipFile = vi.fn();
       const { container } = render(TopBar, {
-        props: props(idle, onOpenDtdFile, onOpenXsdFile, onOpenZipFile),
+        props: props(
+          idle,
+          onOpenDtdFile,
+          onOpenXsdFile,
+          onOpenZipFile,
+          onOpenRngFile,
+        ),
       });
       const input = fileInput(container, format);
       setFiles(input);
@@ -382,6 +420,7 @@ describe('coordinated schema-file top-bar controls', () => {
 
       expect(onOpenDtdFile).not.toHaveBeenCalled();
       expect(onOpenXsdFile).not.toHaveBeenCalled();
+      expect(onOpenRngFile).not.toHaveBeenCalled();
       expect(onOpenZipFile).not.toHaveBeenCalled();
       expect(
         screen.getByRole('button', {
@@ -417,6 +456,7 @@ describe('coordinated schema-file top-bar controls', () => {
     for (const [accessibleName, compactLabel] of [
       ['Open DTD', 'DTD'],
       ['Open XSD', 'XSD'],
+      ['Open RNG', 'RNG'],
       ['Open ZIP', 'ZIP'],
     ] as const) {
       const button = screen.getByRole('button', { name: accessibleName });

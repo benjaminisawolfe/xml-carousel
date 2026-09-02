@@ -114,7 +114,7 @@ function compareCodePoints(left: string, right: string): number {
 
 function nodeKindOrder(kind: SchemaNodeKind | undefined): number {
   if (kind === undefined) return schemaNodeKinds.length;
-  const order = schemaNodeKinds.indexOf(kind);
+  const order = (schemaNodeKinds as readonly SchemaNodeKind[]).indexOf(kind);
   return order === -1 ? schemaNodeKinds.length : order;
 }
 

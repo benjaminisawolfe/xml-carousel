@@ -213,7 +213,9 @@ function dependencies(
   };
 }
 
-function successFor(format: SchemaFileFormat): SchemaWorkerImportResult {
+function successFor(
+  format: Exclude<SchemaFileFormat, 'rng'>,
+): SchemaWorkerImportResult {
   if (format === 'dtd') {
     return { format, importResult: dtdSuccess, diagnostics: [] };
   }
@@ -225,7 +227,7 @@ function successFor(format: SchemaFileFormat): SchemaWorkerImportResult {
 
 function openFormat(
   controller: ReturnType<typeof createSchemaFileImportController>,
-  format: SchemaFileFormat,
+  format: Exclude<SchemaFileFormat, 'rng'>,
   filename = `schema.${format}`,
 ) {
   return format === 'dtd'

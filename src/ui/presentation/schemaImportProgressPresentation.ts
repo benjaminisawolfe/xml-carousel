@@ -39,7 +39,9 @@ function processingMessage(
   const { progress } = state;
   switch (progress.phase) {
     case 'validating-standards':
-      return `Checking ${filename} with Apache Xerces-C++…`;
+      return state.format === 'rng'
+        ? `Checking ${filename} with libxml2 RELAX NG…`
+        : `Checking ${filename} with Apache Xerces-C++…`;
     case 'preparing':
       return `Preparing ${filename}.`;
     case 'parsing':

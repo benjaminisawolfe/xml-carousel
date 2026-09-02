@@ -287,6 +287,22 @@ export async function verifyStaticBuild({
   if (workerStats.size === 0) {
     throw new Error('The schema import worker asset is empty.');
   }
+  const relaxNgWorkers = names.filter((name) =>
+    /^assets\/relaxNgStandardsWorker-[\w-]+\.js$/u.test(name),
+  );
+  if (relaxNgWorkers.length !== 1) {
+    throw new Error(
+      `Expected exactly one RELAX NG standards worker asset; found ${relaxNgWorkers.length}.`,
+    );
+  }
+  const relaxNgWorkerPath = path.join(
+    distDirectory,
+    ...relaxNgWorkers[0].split('/'),
+  );
+  const relaxNgWorkerStats = await stat(relaxNgWorkerPath);
+  if (!relaxNgWorkerStats.isFile() || relaxNgWorkerStats.size === 0) {
+    throw new Error('The RELAX NG standards worker asset is empty.');
+  }
   if (names.some((name) => name.endsWith('.map'))) {
     throw new Error('Unexpected source-map output was found in dist.');
   }
@@ -294,44 +310,117 @@ export async function verifyStaticBuild({
     throw new Error('A production .mjs module was found in dist.');
   }
 
-  const runtimePatterns = {
+  const xercesRuntimePatterns = {
     glue: /^assets\/xerces-runtime-[\w-]+\.js$/u,
     wasm: /^assets\/xerces-runtime-[\w-]+\.wasm$/u,
-    manifest: /^assets\/runtime-manifest-[\w-]+\.json$/u,
     xercesLicense: /^assets\/LICENSE\.xerces-[\w-]+\.txt$/u,
     xercesNotice: /^assets\/NOTICE\.xerces-[\w-]+\.txt$/u,
+  };
+  const relaxNgRuntimePatterns = {
+    glue: /^assets\/libxml2-relaxng-runtime-[\w-]+\.js$/u,
+    wasm: /^assets\/libxml2-relaxng-runtime-[\w-]+\.wasm$/u,
+    libxml2License: /^assets\/LICENSE\.libxml2-[\w-]+\.txt$/u,
+  };
+  const sharedRuntimePatterns = {
     emscriptenLicense: /^assets\/LICENSE\.emscripten-[\w-]+\.txt$/u,
   };
-  /** @type {Record<string, { name: string; size: number }>} */
-  const runtimeAssets = {};
-  for (const [kind, pattern] of Object.entries(runtimePatterns)) {
-    const matches = names.filter((name) => pattern.test(name));
-    if (matches.length !== 1) {
-      throw new Error(
-        `Expected exactly one Xerces ${kind} asset; found ${matches.length}.`,
-      );
-    }
-    const runtimePath = path.join(distDirectory, ...matches[0].split('/'));
-    const runtimeStats = await stat(runtimePath);
-    if (!runtimeStats.isFile() || runtimeStats.size === 0) {
-      throw new Error(`The Xerces ${kind} asset is empty.`);
-    }
-    runtimeAssets[kind] = { name: matches[0], size: runtimeStats.size };
+  const manifestNames = names.filter((name) =>
+    /^assets\/runtime-manifest-[\w-]+\.json$/u.test(name),
+  );
+  if (manifestNames.length !== 2) {
+    throw new Error(
+      `Expected exactly two standards runtime manifests; found ${manifestNames.length}.`,
+    );
   }
+  const manifests = await Promise.all(
+    manifestNames.map(async (name) => ({
+      name,
+      parsed: JSON.parse(
+        await readFile(path.join(distDirectory, ...name.split('/')), 'utf8'),
+      ),
+    })),
+  );
+  const xercesManifest = manifests.find(
+    ({ parsed }) => parsed.engine === 'Apache Xerces-C++',
+  );
+  const relaxNgManifest = manifests.find(
+    ({ parsed }) => parsed.engine === 'libxml2 RELAX NG',
+  );
+  if (!xercesManifest || !relaxNgManifest) {
+    throw new Error('The standards runtime manifests have unexpected engines.');
+  }
+  /** @type {Record<string, { name: string; size: number }>} */
+  const xercesRuntimeAssets = {};
+  /** @type {Record<string, { name: string; size: number }>} */
+  const relaxNgRuntimeAssets = {};
+  /** @type {Record<string, { name: string; size: number }>} */
+  const sharedRuntimeAssets = {};
+  /**
+   * @param {Record<string, RegExp>} patterns
+   * @param {Record<string, { name: string; size: number }>} destination
+   * @param {string} label
+   */
+  async function collectRuntimeAssets(patterns, destination, label) {
+    for (const [kind, pattern] of Object.entries(patterns)) {
+      const matches = names.filter((name) => pattern.test(name));
+      if (matches.length !== 1) {
+        throw new Error(
+          `Expected exactly one ${label} ${kind} asset; found ${matches.length}.`,
+        );
+      }
+      const runtimePath = path.join(distDirectory, ...matches[0].split('/'));
+      const runtimeStats = await stat(runtimePath);
+      if (!runtimeStats.isFile() || runtimeStats.size === 0) {
+        throw new Error(`The ${label} ${kind} asset is empty.`);
+      }
+      destination[kind] = { name: matches[0], size: runtimeStats.size };
+    }
+  }
+  await collectRuntimeAssets(
+    xercesRuntimePatterns,
+    xercesRuntimeAssets,
+    'Xerces',
+  );
+  await collectRuntimeAssets(
+    relaxNgRuntimePatterns,
+    relaxNgRuntimeAssets,
+    'RELAX NG',
+  );
+  await collectRuntimeAssets(
+    sharedRuntimePatterns,
+    sharedRuntimeAssets,
+    'shared runtime',
+  );
+  xercesRuntimeAssets.manifest = {
+    name: xercesManifest.name,
+    size: (
+      await stat(path.join(distDirectory, ...xercesManifest.name.split('/')))
+    ).size,
+  };
+  relaxNgRuntimeAssets.manifest = {
+    name: relaxNgManifest.name,
+    size: (
+      await stat(path.join(distDirectory, ...relaxNgManifest.name.split('/')))
+    ).size,
+  };
+  xercesRuntimeAssets.emscriptenLicense = sharedRuntimeAssets.emscriptenLicense;
+  relaxNgRuntimeAssets.emscriptenLicense =
+    sharedRuntimeAssets.emscriptenLicense;
 
   const javascriptFiles = files.filter((file) => file.endsWith('.js'));
   const javascriptSources = await Promise.all(
     javascriptFiles.map((file) => readFile(file, 'utf8')),
   );
   const javascript = javascriptSources.join('\n');
-  const gluePath = path.join(
-    distDirectory,
-    ...runtimeAssets.glue.name.split('/'),
+  const runtimeGluePaths = new Set(
+    [xercesRuntimeAssets.glue, relaxNgRuntimeAssets.glue].map(({ name }) =>
+      path.resolve(path.join(distDirectory, ...name.split('/'))),
+    ),
   );
   const applicationJavascript = (
     await Promise.all(
       javascriptFiles
-        .filter((file) => path.resolve(file) !== path.resolve(gluePath))
+        .filter((file) => !runtimeGluePaths.has(path.resolve(file)))
         .map((file) => readFile(file, 'utf8')),
     )
   ).join('\n');
@@ -349,72 +438,129 @@ export async function verifyStaticBuild({
   const textualOutput = (
     await Promise.all(textualFiles.map((file) => readFile(file, 'utf8')))
   ).join('\n');
-  if (textualOutput.includes('xerces-runtime.mjs')) {
-    throw new Error('The production build references xerces-runtime.mjs.');
+  for (const forbiddenRuntime of [
+    'xerces-runtime.mjs',
+    'libxml2-relaxng-runtime.mjs',
+  ]) {
+    if (textualOutput.includes(forbiddenRuntime)) {
+      throw new Error(`The production build references ${forbiddenRuntime}.`);
+    }
   }
   const workerBasename = path.basename(workerPath);
-  if (!javascript.includes(workerBasename)) {
-    throw new Error('The application bundle does not reference the worker.');
-  }
-  for (const [kind, asset] of Object.entries(runtimeAssets)) {
-    const basename = path.basename(asset.name);
+  const relaxNgWorkerBasename = path.basename(relaxNgWorkerPath);
+  for (const [label, basename] of [
+    ['schema import', workerBasename],
+    ['RELAX NG standards', relaxNgWorkerBasename],
+  ]) {
     if (!javascript.includes(basename)) {
       throw new Error(
-        `The production worker does not reference Xerces ${kind}.`,
+        `The application bundle does not reference the ${label} worker.`,
       );
+    }
+  }
+  for (const [label, assets] of [
+    ['Xerces', xercesRuntimeAssets],
+    ['RELAX NG', relaxNgRuntimeAssets],
+  ]) {
+    for (const [kind, asset] of Object.entries(assets)) {
+      const basename = path.basename(asset.name);
+      if (!javascript.includes(basename)) {
+        throw new Error(
+          `The production JavaScript does not reference ${label} ${kind}.`,
+        );
+      }
     }
   }
   const workerSource = await readFile(workerPath, 'utf8');
-  for (const kind of ['glue', 'wasm']) {
-    const basename = path.basename(runtimeAssets[kind].name);
-    if (!workerSource.includes(basename)) {
-      throw new Error(
-        `The production worker does not reference Xerces ${kind}.`,
-      );
+  const relaxNgWorkerSource = await readFile(relaxNgWorkerPath, 'utf8');
+  /**
+   * @param {string} label
+   * @param {string} source
+   * @param {Record<string, { name: string; size: number }>} assets
+   */
+  function verifyWorkerRuntimeReferences(label, source, assets) {
+    for (const kind of ['glue', 'wasm']) {
+      const basename = path.basename(assets[kind].name);
+      if (!source.includes(basename)) {
+        throw new Error(
+          `The production ${label} worker does not reference its ${kind}.`,
+        );
+      }
     }
   }
+  verifyWorkerRuntimeReferences('Xerces', workerSource, xercesRuntimeAssets);
+  verifyWorkerRuntimeReferences(
+    'RELAX NG',
+    relaxNgWorkerSource,
+    relaxNgRuntimeAssets,
+  );
   if (base === './') {
     if (
       javascript.includes(`/assets/${workerBasename}`) ||
+      javascript.includes(`/assets/${relaxNgWorkerBasename}`) ||
       javascript.includes('/xml-carousel/assets/')
     ) {
       throw new Error(
         'The portable application bundle embeds a location-specific worker or asset base.',
       );
     }
-    const escapedWorker = workerBasename.replace(
-      /[.*+?^${}()|[\]\\]/gu,
-      '\\$&',
-    );
-    const relativeWorkerPattern = new RegExp(
-      `new URL\\((?:"|')(?:\\./)?${escapedWorker}(?:"|'),\\s*import\\.meta\\.url\\)`,
-      'u',
-    );
-    if (!relativeWorkerPattern.test(javascript)) {
-      throw new Error(
-        'The application bundle does not resolve the worker relative to its module URL.',
-      );
-    }
-    for (const kind of ['glue', 'wasm']) {
-      const basename = path
-        .basename(runtimeAssets[kind].name)
-        .replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-      const relativeRuntimePattern = new RegExp(
-        `new URL\\((?:"|')(?:\\./)?${basename}(?:"|'),\\s*import\\.meta\\.url\\)`,
+    for (const [label, basename] of [
+      ['schema import', workerBasename],
+      ['RELAX NG standards', relaxNgWorkerBasename],
+    ]) {
+      const escapedWorker = basename.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+      const relativeWorkerPattern = new RegExp(
+        `new URL\\((?:"|')(?:\\./)?${escapedWorker}(?:"|'),\\s*import\\.meta\\.url\\)`,
         'u',
       );
-      if (!relativeRuntimePattern.test(javascript)) {
+      if (!relativeWorkerPattern.test(javascript)) {
         throw new Error(
-          `The portable production worker does not resolve Xerces ${kind} relative to its module URL.`,
+          `The application bundle does not resolve the ${label} worker relative to its module URL.`,
         );
       }
     }
+    /**
+     * @param {string} label
+     * @param {string} source
+     * @param {Record<string, { name: string; size: number }>} assets
+     */
+    function verifyPortableRuntimeReferences(label, source, assets) {
+      for (const kind of ['glue', 'wasm']) {
+        const basename = path
+          .basename(assets[kind].name)
+          .replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+        const relativeRuntimePattern = new RegExp(
+          `new URL\\((?:"|')(?:\\./)?${basename}(?:"|'),\\s*(?:import\\.meta\\.url|self\\.location\\.href)\\)`,
+          'u',
+        );
+        if (!relativeRuntimePattern.test(source)) {
+          throw new Error(
+            `The portable production ${label} worker does not resolve its ${kind} relative to its worker URL.`,
+          );
+        }
+      }
+    }
+    verifyPortableRuntimeReferences(
+      'Xerces',
+      workerSource,
+      xercesRuntimeAssets,
+    );
+    verifyPortableRuntimeReferences(
+      'RELAX NG',
+      relaxNgWorkerSource,
+      relaxNgRuntimeAssets,
+    );
   } else {
-    const expectedWorkerUrl = `${base}assets/${workerBasename}`;
-    if (!javascript.includes(expectedWorkerUrl)) {
-      throw new Error(
-        `The application bundle does not reference the worker beneath ${base}.`,
-      );
+    for (const [label, basename] of [
+      ['schema import', workerBasename],
+      ['RELAX NG standards', relaxNgWorkerBasename],
+    ]) {
+      const expectedWorkerUrl = `${base}assets/${basename}`;
+      if (!javascript.includes(expectedWorkerUrl)) {
+        throw new Error(
+          `The application bundle does not reference the ${label} worker beneath ${base}.`,
+        );
+      }
     }
   }
   if (
@@ -446,7 +592,12 @@ export async function verifyStaticBuild({
       name: workers[0],
       size: workerStats.size,
     },
-    xercesRuntime: runtimeAssets,
+    relaxNgWorker: {
+      name: relaxNgWorkers[0],
+      size: relaxNgWorkerStats.size,
+    },
+    xercesRuntime: xercesRuntimeAssets,
+    relaxNgRuntime: relaxNgRuntimeAssets,
     releaseNotices: Object.keys(releaseNotices),
   };
 }
@@ -456,8 +607,8 @@ async function main() {
   const result = await verifyStaticBuild({ expectedBase });
   console.log(
     result.base === './'
-      ? `Verified portable relative static build: ${result.referencedAssets} HTML assets; ${result.worker.name} (${result.worker.size} bytes); 6 Xerces runtime/attribution assets; ${result.releaseNotices.length} release notices.`
-      : `Verified static build for ${result.base}: ${result.referencedAssets} HTML assets; ${result.worker.name} (${result.worker.size} bytes); 6 Xerces runtime/attribution assets; ${result.releaseNotices.length} release notices.`,
+      ? `Verified portable relative static build: ${result.referencedAssets} HTML assets; ${result.worker.name} (${result.worker.size} bytes); ${result.relaxNgWorker.name} (${result.relaxNgWorker.size} bytes); ${Object.keys(result.xercesRuntime).length} Xerces and ${Object.keys(result.relaxNgRuntime).length} RELAX NG runtime/attribution assets; ${result.releaseNotices.length} release notices.`
+      : `Verified static build for ${result.base}: ${result.referencedAssets} HTML assets; ${result.worker.name} (${result.worker.size} bytes); ${result.relaxNgWorker.name} (${result.relaxNgWorker.size} bytes); ${Object.keys(result.xercesRuntime).length} Xerces and ${Object.keys(result.relaxNgRuntime).length} RELAX NG runtime/attribution assets; ${result.releaseNotices.length} release notices.`,
   );
 }
 

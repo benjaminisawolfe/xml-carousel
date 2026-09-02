@@ -3,7 +3,14 @@ export type SchemaDiagnosticSeverity = 'error' | 'warning' | 'info';
 import type { StandardsDiagnosticCategory } from '../../standards/xerces';
 
 export type SchemaDiagnosticSource =
-  'xml' | 'dtd' | 'dtd-lint' | 'xsd' | 'zip' | 'project' | 'visualization';
+  | 'xml'
+  | 'dtd'
+  | 'dtd-lint'
+  | 'xsd'
+  | 'rng'
+  | 'zip'
+  | 'project'
+  | 'visualization';
 
 export type SchemaDiagnosticCategory =
   | StandardsDiagnosticCategory
@@ -13,7 +20,7 @@ export type SchemaDiagnosticCategory =
 
 export const MAX_RETAINED_SCHEMA_DIAGNOSTICS = 500;
 
-export type SchemaDiagnosticImportFormat = 'dtd' | 'xsd' | 'zip';
+export type SchemaDiagnosticImportFormat = 'dtd' | 'xsd' | 'rng' | 'zip';
 
 export interface SchemaDiagnostic {
   readonly id: string;
@@ -121,6 +128,7 @@ function diagnosticSource(
     diagnostic.source === 'dtd' ||
     diagnostic.source === 'dtd-lint' ||
     diagnostic.source === 'xsd' ||
+    diagnostic.source === 'rng' ||
     diagnostic.source === 'zip' ||
     diagnostic.source === 'project' ||
     diagnostic.source === 'visualization'
@@ -133,9 +141,11 @@ function diagnosticSource(
   if (stage === 'file' || stage === 'worker') return 'project';
   if (fileName?.toLocaleLowerCase().endsWith('.dtd')) return 'dtd';
   if (fileName?.toLocaleLowerCase().endsWith('.xsd')) return 'xsd';
+  if (fileName?.toLocaleLowerCase().endsWith('.rng')) return 'rng';
   if (!stage) return undefined;
   if (context.format === 'dtd') return 'dtd';
   if (context.format === 'xsd') return 'xsd';
+  if (context.format === 'rng') return 'rng';
   if (context.format === 'zip') return 'zip';
   return undefined;
 }

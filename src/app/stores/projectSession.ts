@@ -1,5 +1,6 @@
 import type { DtdImportResult } from '../../schema/dtd';
 import type { XsdImportResult } from '../../schema/xsd';
+import type { StandaloneRelaxNgImportResult } from '../../schema/relaxng';
 import type { SchemaPackageImportResult } from '../import/schemaPackage';
 import {
   getSchemaNode,
@@ -77,6 +78,10 @@ export interface ProjectSession {
   ): ProjectSessionReplacementResult;
   activateImportedXsdProject(
     importResult: XsdImportResult,
+    options?: ProjectImportActivationOptions,
+  ): ProjectSessionReplacementResult;
+  activateImportedRelaxNgProject(
+    importResult: StandaloneRelaxNgImportResult,
     options?: ProjectImportActivationOptions,
   ): ProjectSessionReplacementResult;
   activateImportedSchemaPackage(
@@ -203,6 +208,25 @@ export function createProjectSession(
         ownership: options.ownership,
       });
     },
+    activateImportedRelaxNgProject(importResult, options = {}) {
+      return replace({
+        project: importResult.project,
+        initialFocusNodeId: importResult.initialFocusNodeId,
+        metadata: {
+          origin: options.origin ?? 'imported',
+          sourceFilename: sourceFilenameForProject(importResult.project),
+          visualizationCompleteness:
+            importResult.visualization.summary.completeness,
+          visualizationSummary: importResult.visualization.summary,
+          visualizationFindings: importResult.visualization.findings,
+          sourceMarkupByNodeId: importResult.sourceMarkupByNodeId,
+          ...(options.preparedSearchIndex
+            ? { preparedSearchIndex: options.preparedSearchIndex }
+            : {}),
+        },
+        ownership: options.ownership,
+      });
+    },
     activateImportedSchemaPackage(importResult, options = {}) {
       if (importResult.status === 'failure') {
         return {
@@ -256,6 +280,8 @@ export const activateImportedProject =
   projectSession.activateImportedProject.bind(projectSession);
 export const activateImportedXsdProject =
   projectSession.activateImportedXsdProject.bind(projectSession);
+export const activateImportedRelaxNgProject =
+  projectSession.activateImportedRelaxNgProject.bind(projectSession);
 export const activateImportedSchemaPackage =
   projectSession.activateImportedSchemaPackage.bind(projectSession);
 export const replaceProjectSession =

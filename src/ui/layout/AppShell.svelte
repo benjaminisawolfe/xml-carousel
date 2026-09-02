@@ -305,6 +305,10 @@
     return completeLocalImport(importController.openXsd(file));
   }
 
+  function openRngFile(file: SchemaReadableFile) {
+    return completeLocalImport(importController.openRng(file));
+  }
+
   function openZipFile(file: SchemaArchiveReadableFile) {
     return completeLocalImport(importController.openZip(file));
   }
@@ -340,6 +344,7 @@
     {isNavigationOpen}
     onOpenDtdFile={openDtdFile}
     onOpenXsdFile={openXsdFile}
+    onOpenRngFile={openRngFile}
     onOpenZipFile={openZipFile}
     onToggleNavigation={toggleNavigation}
     onSearchIntent={() => closeNavigation(false)}

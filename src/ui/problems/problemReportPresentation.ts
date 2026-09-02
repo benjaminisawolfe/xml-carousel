@@ -35,6 +35,7 @@ export function presentDiagnosticSource(
     dtd: 'DTD',
     'dtd-lint': 'DTD lint',
     xsd: 'XSD',
+    rng: 'RELAX NG',
     zip: 'ZIP package',
     project: 'Project import',
     visualization: 'Visualization adapter',

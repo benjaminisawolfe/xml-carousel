@@ -3,9 +3,9 @@
 ## Overview
 
 XML Carousel is a browser-based explorer for XML schema definitions. It turns
-DTD, XSD, and ZIP schema packages into a connected set of cards: choose a
-relationship to move through the schema as a journey, or inspect a declaration
-without changing that journey.
+DTD, XSD, standalone RELAX NG XML-syntax schemas, and ZIP schema packages into
+an inspectable project. DTD and XSD projects provide connected cards; the
+initial RELAX NG path provides a source-first standards-validation preview.
 
 The application is a static, local-first site. Selected files are read and
 processed in the browser, including parsing work performed in a Web Worker. No
@@ -23,8 +23,8 @@ hands. Everything happens in the browser.
 
 On startup, the built-in Book DTD sample is ready to explore. Open **Help** for
 an introduction or to switch between the built-in Book DTD and Library XSD
-samples. Use **Open DTD**, **Open XSD**, or **Open ZIP** to replace the active
-project with a local file.
+samples. Use **Open DTD**, **Open XSD**, **Open RNG**, or **Open ZIP** to replace
+the active project with a local file.
 
 Selecting a relationship card advances or revisits the carousel journey.
 **Inspect** opens details independently, so checking a related declaration does
@@ -37,6 +37,9 @@ control and follow the visible control labels.
 
 - XML 1.0 DTD grammar and XML Schema 1.0 validity through the authoritative
   Apache Xerces-C++ 3.3.0 WebAssembly engine
+- Standalone RELAX NG XML syntax (`.rng`) validity through the authoritative
+  libxml2 RELAX NG 2.15.3 WebAssembly engine, with exact retained source and a
+  source-first project preview
 - Complete supported DTD and XSD 1.0 presentation through Navigation, Search,
   carousel focus, inspector, source view, and package inventory
 - ZIP packages containing DTD and XSD files, with project-local dependencies
@@ -51,10 +54,11 @@ control and follow the visible control labels.
 - Adaptive presentation for large schemas and compact viewports
 - Built-in DTD and XSD samples plus keyboard-accessible Help
 
-The deterministic supported-presentation gate is currently 221/221 complete.
-That result is an implementation-completeness statement for the documented
-contracts, not a claim to support every XML-related standard. XSD 1.1 is not
-supported. See [Standards support](docs/standards-support.md) and
+The deterministic DTD/XSD/ZIP supported-presentation gate is currently 221/221
+complete. That result is an implementation-completeness statement for those
+documented contracts, not a claim to support every XML-related standard or the
+initial source-first RELAX NG preview. XSD 1.1 and RELAX NG Compact Syntax
+(`.rnc`) are not supported. See [Standards support](docs/standards-support.md) and
 [Known limitations](docs/known-limitations.md).
 
 ## Multi-file projects and security
@@ -162,7 +166,10 @@ This alpha is suitable for exploratory testing. Apache Xerces-C++ is the
 authoritative XML, DTD, and XML Schema 1.0 validator within the controlled
 project architecture. XML Carousel's post-Xerces extraction and presentation
 layers are not a second validator. XSD 1.1, XML-instance product import,
-network retrieval, and host-filesystem discovery remain outside scope.
+network retrieval, and host-filesystem discovery remain outside scope. libxml2
+RELAX NG is authoritative for standalone `.rng` validity; structural RELAX NG
+visualization, Compact Syntax, and RELAX NG package resolution remain future
+work.
 
 ## Licence
 

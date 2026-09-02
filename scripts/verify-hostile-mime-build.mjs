@@ -63,10 +63,15 @@ export async function verifyHostileMimeBuild(
         .map((file) => readFile(file, 'utf8')),
     )
   ).join('\n');
-  if (text.includes('xerces-runtime.mjs')) {
-    throw new Error(
-      'The production distribution references xerces-runtime.mjs.',
-    );
+  for (const forbiddenRuntime of [
+    'xerces-runtime.mjs',
+    'libxml2-relaxng-runtime.mjs',
+  ]) {
+    if (text.includes(forbiddenRuntime)) {
+      throw new Error(
+        `The production distribution references ${forbiddenRuntime}.`,
+      );
+    }
   }
 
   const requests = [];
@@ -77,12 +82,18 @@ export async function verifyHostileMimeBuild(
   try {
     const rootAssetCount = await verifyMount(running.rootUrl, requests);
     const nestedAssetCount = await verifyMount(running.nestedUrl, requests);
-    const runtimeUrls = Object.values(staticResult.xercesRuntime).map(
-      ({ name }) => new URL(name, running.nestedUrl).href,
-    );
+    const runtimeUrls = [
+      ...new Set(
+        [
+          ...Object.values(staticResult.xercesRuntime),
+          ...Object.values(staticResult.relaxNgRuntime),
+        ].map(({ name }) => new URL(name, running.nestedUrl).href),
+      ),
+    ];
     for (const url of runtimeUrls) {
       const response = await fetch(url);
-      if (!response.ok) throw new Error(`Xerces runtime asset failed: ${url}`);
+      if (!response.ok)
+        throw new Error(`Standards runtime asset failed: ${url}`);
       await response.arrayBuffer();
     }
     for (const mount of [running.rootUrl, running.nestedUrl]) {
@@ -107,7 +118,9 @@ export async function verifyHostileMimeBuild(
       throw new Error('WASM was not served as application/octet-stream.');
     }
     const glueRequests = requests.filter(({ pathname }) =>
-      /\/xerces-runtime-[\w-]+\.js$/u.test(pathname),
+      /\/(?:xerces-runtime|libxml2-relaxng-runtime)-[\w-]+\.js$/u.test(
+        pathname,
+      ),
     );
     if (
       glueRequests.length === 0 ||
@@ -115,14 +128,18 @@ export async function verifyHostileMimeBuild(
         ({ contentType }) => !contentType.startsWith('text/javascript'),
       )
     ) {
-      throw new Error('Xerces JavaScript was not served with JavaScript MIME.');
+      throw new Error(
+        'Standards runtime JavaScript was not served with JavaScript MIME.',
+      );
     }
     return {
       rootAssetCount,
       nestedAssetCount,
       requestCount: requests.length,
       worker: staticResult.worker,
-      runtime: staticResult.xercesRuntime,
+      relaxNgWorker: staticResult.relaxNgWorker,
+      xercesRuntime: staticResult.xercesRuntime,
+      relaxNgRuntime: staticResult.relaxNgRuntime,
     };
   } finally {
     await running.close();

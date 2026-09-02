@@ -144,7 +144,7 @@ describe('Task 9.2 AppShell worker progress and cancellation', () => {
       );
       expect(await screen.findByText('Parsing large.dtd.')).toBeVisible();
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-      for (const name of ['Opening DTD', 'Open XSD', 'Open ZIP']) {
+      for (const name of ['Opening DTD', 'Open XSD', 'Open RNG', 'Open ZIP']) {
         expect(within(banner).getByRole('button', { name })).toBeDisabled();
       }
 

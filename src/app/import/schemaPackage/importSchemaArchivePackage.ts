@@ -3,6 +3,7 @@ import {
   validateSchemaProject,
   type SchemaNode,
   type SchemaNodeId,
+  type SchemaNodeKind,
   type SchemaProject,
   type SchemaSourceMarkupByNodeId,
 } from '../../../schema/model';
@@ -393,7 +394,9 @@ function unionRecord<T>(
 }
 
 function nodeKindOrder(node: SchemaNode): number {
-  const index = schemaNodeKinds.indexOf(node.kind);
+  const index = (schemaNodeKinds as readonly SchemaNodeKind[]).indexOf(
+    node.kind,
+  );
   return index < 0 ? schemaNodeKinds.length : index;
 }
 

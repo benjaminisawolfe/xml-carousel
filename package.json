@@ -25,6 +25,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:relaxng-production": "vitest run src/standards/relaxng/adapter.test.ts src/standards/relaxng/productionValidator.test.ts src/standards/relaxng/workerProtocol.test.ts src/standards/relaxng/workerClient.test.ts",
+    "test:rng-import": "vitest run src/standards/relaxng/productionValidator.test.ts src/schema/relaxng/standaloneRelaxNgProject.test.ts src/app/import/standaloneRelaxNgImport.test.ts src/tests/StandaloneRngImportIntegration.test.ts src/ui/layout/TopBarImport.test.ts",
     "lint": "eslint .",
     "format": "prettier --write . --ignore-unknown",
     "format:check": "prettier --check . --ignore-unknown",

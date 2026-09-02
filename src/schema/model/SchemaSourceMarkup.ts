@@ -20,7 +20,7 @@ export interface SchemaSourceMarkupFragment {
 }
 
 export interface SchemaNodeSourceMarkup {
-  readonly syntax: 'dtd' | 'xsd';
+  readonly syntax: 'dtd' | 'xsd' | 'rng';
   readonly fragments: readonly SchemaSourceMarkupFragment[];
 }
 

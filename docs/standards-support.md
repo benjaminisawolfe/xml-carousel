@@ -8,19 +8,39 @@ and its [acceptance gate](technical/complete-visualization-acceptance-gate.md).
 
 ## Supported inputs and validation authority
 
-XML Carousel accepts standalone `.dtd` and `.xsd` files and ZIP packages that
-preserve a multi-file project's relative paths. Apache Xerces-C++ 3.3.0,
-compiled to WebAssembly, is the authoritative parser and validator for XML 1.0,
-standalone DTD grammar preparation, and XML Schema 1.0 / XSD 1.0 within the
-implemented controlled-project architecture. XSD 1.1 is not supported. XML
-instance documents are conformance-harness inputs, not an XML Carousel product
-input format.
+XML Carousel accepts standalone `.dtd`, `.xsd`, and RELAX NG XML-syntax `.rng`
+files, plus ZIP packages that preserve a DTD/XSD project's relative paths.
+Apache Xerces-C++ 3.3.0, compiled to WebAssembly, is the authoritative parser
+and validator for XML 1.0, standalone DTD grammar preparation, and XML Schema
+1.0 / XSD 1.0 within the implemented controlled-project architecture. libxml2
+RELAX NG 2.15.3, also compiled to WebAssembly, is the authoritative validator
+for standalone `.rng` input. XSD 1.1 is not supported. RELAX NG Compact Syntax
+(`.rnc`) is also not supported. XML instance documents are conformance-harness
+inputs, not an XML Carousel product input format.
 
 Only after Xerces accepts input do XML Carousel's TypeScript layers extract
 source-preserving structures, build the normalized project, and prepare the
 user interface. Those layers are not a second standards validator. A
 presentation limitation must not turn otherwise Xerces-valid input into a
 standards-invalid result.
+
+## Standalone RELAX NG XML syntax
+
+**Open RNG** validates the selected `.rng` bytes in a dedicated disposable
+worker. The worker passes the exact selected bytes to libxml2 and does not
+resolve `include` or `externalRef` targets from the disk, network, or another
+unsupplied source. A required dependency therefore produces a missing or
+security-blocked result; the standalone path performs zero external fetches.
+
+A valid schema activates a deliberately minimal source-first project: one
+RELAX NG schema node, no inferred structural relationships, the deterministic
+filename identity, the validation engine identity, and the complete retained
+source. Navigation, Inspector, Search, and source view remain truthful, but
+structural RELAX NG extraction and visualization are not yet available. The UI
+reports that limitation as a nonfatal visualization finding rather than
+pretending the source-only preview is a complete semantic graph. Invalid,
+blocked, cancelled, and internal-failure attempts leave the active project
+unchanged.
 
 ## DTD support
 
@@ -73,10 +93,12 @@ The deterministic release gate is:
 npm run acceptance:complete-visualization
 ```
 
-`npm run validate` invokes it. Current accepted evidence is 221/221 complete,
-with zero partial, misleading, retained-unreachable, or source-only rows. This
-is an implementation-completeness result for the supported presentation
-contracts, not proof of universal standards coverage.
+`npm run validate` invokes it. Current accepted DTD/XSD/ZIP evidence is 221/221
+complete, with zero partial, misleading, retained-unreachable, or source-only
+rows. The intentionally source-first standalone RELAX NG preview is outside
+that historical matrix until its structural presentation tasks are complete.
+The result is an implementation-completeness statement for the matrix's
+supported presentation contracts, not proof of universal standards coverage.
 
 Matrix terminology means:
 
@@ -162,6 +184,6 @@ zoom telemetry.
 | Visualization release decision | `docs/technical/complete-visualization-acceptance-gate.md` |
 | Application license | `LICENSE` |
 | Third-party attribution and fixture terms | `docs/third-party-licensing.md` |
-| Distributed production notices | `THIRD_PARTY_NOTICES.txt` and Xerces runtime attribution files |
-| Runtime identities and attribution hashes | `src/standards/xerces/runtime/runtime-manifest.json` |
+| Distributed production notices | `THIRD_PARTY_NOTICES.txt` and emitted standards-runtime attribution files |
+| Runtime identities and attribution hashes | `src/standards/xerces/runtime/runtime-manifest.json` and `src/standards/relaxng/runtime/runtime-manifest.json` |
 | Maintainer release procedure | `docs/release-checklist.md` |

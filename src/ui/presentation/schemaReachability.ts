@@ -5,6 +5,7 @@ import {
 import {
   schemaEdgeKinds,
   schemaNodeKinds,
+  type CompleteVisualizationSchemaNodeKind,
   type SchemaEdgeKind,
   type SchemaNodeKind,
 } from '../../schema/model';
@@ -133,7 +134,7 @@ const schemaNodeKindLabels = {
   dtdComment: 'DTD comment',
   dtdProcessingInstruction: 'DTD processing instruction',
   dtdDependency: 'Project-local DTD dependency',
-} satisfies Record<SchemaNodeKind, string>;
+} satisfies Record<CompleteVisualizationSchemaNodeKind, string>;
 
 const schemaEdgeRelationshipLabels = {
   contains: 'contains child',
@@ -227,7 +228,9 @@ const inspectorFirstKinds = new Set<SchemaNodeKind>([
   'dtdProcessingInstruction',
 ]);
 
-function nodeContract(kind: SchemaNodeKind): SchemaNodeReachabilityContract {
+function nodeContract(
+  kind: CompleteVisualizationSchemaNodeKind,
+): SchemaNodeReachabilityContract {
   const hasDirectNavigation = directNavigationKinds.has(kind);
   const isInspectorFirst = inspectorFirstKinds.has(kind);
   const hasUserSource = kind !== 'builtInType';
@@ -306,6 +309,48 @@ export const schemaNodeReachabilityContracts = Object.freeze(
     schemaNodeKinds.map((kind) => [kind, nodeContract(kind)]),
   ) as Record<SchemaNodeKind, SchemaNodeReachabilityContract>,
 );
+
+const standaloneRelaxNgReachabilityContract = Object.freeze({
+  kind: 'relaxNgSchema' as const,
+  kindLabel: 'RELAX NG schema',
+  primaryRoute: 'sourceView' as const,
+  secondaryRoutes: Object.freeze([
+    'navigation',
+    'search',
+    'carousel',
+    'inspector',
+  ] as const),
+  navigation: Object.freeze({
+    availability: 'direct' as const,
+    action: 'center' as const,
+    target: 'schema-node' as const,
+    focusResult: 'carousel-card' as const,
+  }),
+  search: Object.freeze({
+    availability: 'direct' as const,
+    action: 'center' as const,
+    target: 'schema-node' as const,
+    focusResult: 'carousel-card' as const,
+  }),
+  carousel: Object.freeze({
+    availability: 'direct' as const,
+    action: 'center' as const,
+    target: 'schema-node' as const,
+    focusResult: 'carousel-card' as const,
+  }),
+  inspector: Object.freeze({
+    availability: 'direct' as const,
+    action: 'inspect' as const,
+    target: 'node-inspector' as const,
+    focusResult: 'inspector-heading' as const,
+  }),
+  sourceView: Object.freeze({
+    availability: 'direct' as const,
+    action: 'open-source' as const,
+    target: 'node-source-markup' as const,
+    focusResult: 'source-markup' as const,
+  }),
+}) satisfies SchemaNodeReachabilityContract;
 
 export const schemaEdgeReachabilityContracts = Object.freeze(
   Object.fromEntries(
@@ -407,6 +452,7 @@ export const task1317PresentationRowIds = Object.freeze([
 export function schemaNodeReachability(
   kind: SchemaNodeKind,
 ): SchemaNodeReachabilityContract {
+  if (kind === 'relaxNgSchema') return standaloneRelaxNgReachabilityContract;
   return schemaNodeReachabilityContracts[kind];
 }
 

@@ -258,6 +258,7 @@ export function isSourceMarkupSyntaxCompatible(
   nodeKind: SchemaNodeKind,
   syntax: SchemaNodeSourceMarkup['syntax'],
 ): boolean {
+  if (syntax === 'rng') return nodeKind === 'relaxNgSchema';
   return syntax === 'dtd'
     ? dtdSourceMarkupNodeKinds.includes(nodeKind)
     : xsdSourceMarkupNodeKinds.includes(nodeKind);

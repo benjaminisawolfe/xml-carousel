@@ -14,7 +14,12 @@ export type {
   SchemaSourceRange,
 } from './SchemaSourceMarkup';
 export type { SchemaEdgeKind, SchemaNodeKind } from './schemaKinds';
-export { schemaEdgeKinds, schemaNodeKinds } from './schemaKinds';
+export {
+  schemaEdgeKinds,
+  schemaNodeKinds,
+  standaloneSchemaPreviewNodeKinds,
+} from './schemaKinds';
+export type { CompleteVisualizationSchemaNodeKind } from './schemaKinds';
 export {
   formatOccurrence,
   getContainedChildren,

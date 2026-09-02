@@ -374,6 +374,9 @@ describe('application shell', () => {
       within(topBar).getByRole('button', { name: 'Open XSD' }),
     ).toBeEnabled();
     expect(
+      within(topBar).getByRole('button', { name: 'Open RNG' }),
+    ).toBeEnabled();
+    expect(
       within(topBar).getByRole('button', { name: 'Open ZIP' }),
     ).toBeEnabled();
     expect(
@@ -400,6 +403,7 @@ describe('application shell', () => {
     expect(appShellSource).not.toContain('createDtdFileImportController');
     expect(appShellSource).toContain('importController.openDtd(file)');
     expect(appShellSource).toContain('importController.openXsd(file)');
+    expect(appShellSource).toContain('importController.openRng(file)');
     expect(appShellSource).toContain('importController.openZip(file)');
     expect(appShellSource).toContain('topBar.focusOpenButton(format)');
     expect(appShellSource.match(/<ImportErrorAlert/g)).toHaveLength(1);

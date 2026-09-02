@@ -2,6 +2,7 @@ import type { DtdImportDiagnostic } from '../../schema/dtd';
 import type { XsdImportDiagnostic } from '../../schema/xsd';
 import type { SchemaPackageImportDiagnostic } from './schemaPackage';
 import type { SchemaWorkerFailureDiagnostic } from '../../workers/schemaImportWorkerProtocol';
+import type { StandardsBoundaryDiagnostic } from '../../standards/types';
 import {
   createSchemaDiagnosticReport,
   normalizeSchemaDiagnostics,
@@ -9,13 +10,14 @@ import {
   type SchemaDiagnosticReport,
 } from './schemaDiagnosticReport';
 
-export type SchemaFileFormat = 'dtd' | 'xsd' | 'zip';
+export type SchemaFileFormat = 'dtd' | 'xsd' | 'rng' | 'zip';
 
 export type SchemaFileDiagnostic =
   | DtdImportDiagnostic
   | XsdImportDiagnostic
   | SchemaPackageImportDiagnostic
   | SchemaWorkerFailureDiagnostic
+  | StandardsBoundaryDiagnostic
   | {
       readonly stage: 'file';
       readonly format: SchemaFileFormat;
@@ -83,6 +85,7 @@ function messageWithContext(
 function fallbackMessage(format: SchemaFileFormat): string {
   if (format === 'dtd') return 'The selected DTD could not be imported.';
   if (format === 'xsd') return 'The selected XSD could not be imported.';
+  if (format === 'rng') return 'The selected RNG could not be imported.';
   return 'The selected ZIP schema package could not be imported.';
 }
 
