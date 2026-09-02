@@ -177,18 +177,37 @@ describe('standalone RNG application workflow', () => {
     );
   });
 
-  it('rejects .rnc truthfully without starting the RELAX NG worker', async () => {
+  it('opens .rnc through the RELAX NG worker and retains exact Compact Syntax', async () => {
     const worker = vi.spyOn(RngImportWorker.prototype, 'postMessage');
     const { container } = render(AppShell);
     const input = container.querySelector<HTMLInputElement>('#rng-file-input')!;
-    setFile(input, 'compact.rnc', 'start = empty');
+    const source = '## compact\nstart = element root { text }\n';
+    setFile(input, 'compact.rnc', source);
 
     await fireEvent.change(input);
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'RELAX NG Compact Syntax (.rnc) is not supported yet. Choose a .rng file.',
+    const heading = await screen.findByRole('heading', {
+      name: 'compact.rnc',
+    });
+    expect(heading).toBeVisible();
+    expect(worker).toHaveBeenCalledTimes(1);
+    await fireEvent.click(
+      screen.getByRole('button', { name: /inspect compact\.rnc/i }),
     );
-    expect(worker).not.toHaveBeenCalled();
+    expect(
+      screen.getAllByText('RELAX NG Compact Syntax').length,
+    ).toBeGreaterThan(0);
+    const inspector = screen.getByRole('complementary', {
+      name: 'Schema inspector',
+    });
+    await fireEvent.click(
+      within(inspector).getByRole('button', { name: /view source/i }),
+    );
+    const dialog = await screen.findByRole('dialog', { name: 'compact.rnc' });
+    expect(
+      within(dialog).getByLabelText('Retained source for compact.rnc')
+        .textContent,
+    ).toBe(source);
     worker.mockRestore();
   });
 });

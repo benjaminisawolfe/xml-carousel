@@ -14,10 +14,12 @@ Standards authority is routed by schema language:
 
 - Apache Xerces-C++ WebAssembly remains authoritative for DTD and XSD 1.0.
   RELAX NG work must not migrate either existing format away from Xerces.
-- For RELAX NG XML syntax, libxml2 WebAssembly is the preferred production
-  candidate, subject to Task 17.2 evidence.
-- The production Compact Syntax front end remains a Task 17.2 evidence-based
-  decision. RNV is a candidate front end, not an accepted standards authority.
+- libxml2 2.15.3 WebAssembly is the sole production RELAX NG validity
+  authority. XML syntax reaches it directly; Compact Syntax reaches it through
+  the deterministic Task 17.8 validation mapping.
+- The production Compact Syntax front end is project-authored TypeScript. RNV,
+  Trang, and Jing remain development evidence/oracles, not browser runtimes or
+  production authorities.
 - Jing is an independent development and conformance comparator.
 - Trang is an independent RNG/RNC translation oracle.
 
@@ -83,9 +85,14 @@ original `.rnc` in View source, Copy source, source identity, source location,
 diagnostic source presentation, package identity, or any other user-facing
 source surface.
 
-Equivalent `.rng` and `.rnc` schemas should eventually yield equivalent
+Equivalent `.rng` and `.rnc` schemas yield equivalent
 semantic graphs and relationship meaning while retaining distinct original
 source. Task 17.8 owns that executable equivalence and fidelity contract.
+
+The Compact front end is browser/worker-safe, deterministic, supplied-files
+only, and dependency-free. Native lexical/syntax diagnostics are emitted before
+libxml2 startup. Its transient XML and generated line map exist only within the
+attempt; no generated member is added to source storage or ZIP inventory.
 
 ## Validator and extractor separation
 
@@ -123,4 +130,3 @@ schema-specific tests.
   gates. Do not redefine the existing DTD/XSD/ZIP 221/221 matrix.
 - **17.10:** stabilize end-to-end behavior and update current-facing product,
   release, and support documentation for `0.3.0`.
-

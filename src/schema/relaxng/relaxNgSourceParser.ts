@@ -1,5 +1,9 @@
 import { parseXsdXml, type XsdXmlElementAst } from '../xsd';
 import { relaxNgStructureNamespace } from './relaxNgSemanticModel';
+import {
+  isRelaxNgCompactPath,
+  parseRelaxNgCompactSyntax,
+} from './relaxNgCompactSyntax';
 
 export interface RelaxNgSourceReference {
   readonly kind: 'rng-include' | 'rng-external-ref';
@@ -16,11 +20,30 @@ export function parseRelaxNgXmlSource(
   return parseXsdXml(sourceText, sourceFileId);
 }
 
+export function parseRelaxNgSource(
+  sourceText: string,
+  sourceFileId: string,
+  path: string,
+) {
+  if (isRelaxNgCompactPath(path)) {
+    const compact = parseRelaxNgCompactSyntax(sourceText, sourceFileId);
+    if (!compact.document) {
+      throw new Error(
+        compact.diagnostics[0]?.message ??
+          'The RELAX NG Compact Syntax source could not be parsed.',
+      );
+    }
+    return { document: compact.document, diagnostics: [] };
+  }
+  return parseRelaxNgXmlSource(sourceText, sourceFileId);
+}
+
 export function extractRelaxNgSourceReferences(
   sourceText: string,
   sourceFileId: string,
+  path = 'source.rng',
 ): readonly RelaxNgSourceReference[] {
-  const parsed = parseRelaxNgXmlSource(sourceText, sourceFileId);
+  const parsed = parseRelaxNgSource(sourceText, sourceFileId, path);
   const references: RelaxNgSourceReference[] = [];
   const visit = (element: XsdXmlElementAst): void => {
     if (

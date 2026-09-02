@@ -57,7 +57,7 @@ XSD 1.1 remains unsupported.
 ## ZIP packages
 
 `src/app/import/schemaArchive/` validates ZIP metadata and discovers `.dtd`,
-`.xsd`, and `.rng` members using canonical safe paths.
+`.xsd`, `.rng`, and `.rnc` members using canonical safe paths.
 `src/app/import/schemaPackage/`
 decodes bounded entries, imports each member, remaps source-local IDs, merges
 the normalized projects, resolves eligible XSD references across package
@@ -72,11 +72,12 @@ for each otherwise-unreachable cycle; supporting files remain in the map and
 package metadata. Relative parent segments are accepted only when canonical
 resolution from the referring schema stays inside the virtual root.
 
-RNG package sources use the same controlled path authority and retain one
+RELAX NG package sources use the same controlled path authority and retain one
 `relaxNgSchema` source-document node per supplied member. A namespace-aware
-reuse of the XSD XML lexical/parser primitives extracts only RELAX NG
-`include` and `externalRef` `href` values and their reliable source ranges; it
-is not a validator. Exact canonical targets resolve without basename fallback.
+XML parser handles `.rng`; the project-authored Compact Syntax front end handles
+`.rnc`. Both project only RELAX NG `include` and `externalRef` targets and
+reliable original-source ranges; neither is a validator. Exact canonical
+targets resolve without basename fallback or `.rng`/`.rnc` substitution.
 Missing, blocked, and genuinely ambiguous relationships retain their literal
 targets without fabricating target documents. RNG roots are documents with no
 inbound resolved RNG dependency, plus one deterministic representative for
@@ -86,11 +87,15 @@ each otherwise-unreachable cycle.
 
 `src/standards/relaxng/` owns the libxml2 RELAX NG 2.15.3 WebAssembly adapter,
 typed worker protocol, disposable worker client, and production worker.
-Standalone `.rng` imports transfer the exact selected bytes to this worker;
+Standalone `.rng` and `.rnc` imports transfer the exact selected bytes to this worker;
 the worker validates only the one supplied virtual file and has no network or
-host-filesystem resolver. After a standards-valid result, `src/schema/relaxng/`
-reuses the namespace-aware XML source AST to build a clone-safe, source-ranged
-RELAX NG semantic model. `relaxNgPresentationProjector.ts` maps that retained
+host-filesystem resolver. `.rnc` is parsed in the worker by
+`relaxNgCompactSyntax.ts`; its neutral AST retains original Compact Syntax
+ranges while a deterministic serializer provides transient XML bytes to
+libxml2. Generated line mappings translate reliable diagnostics back to
+original `.rnc` coordinates. After a standards-valid result,
+`src/schema/relaxng/` builds the same semantic model from either source AST.
+`relaxNgPresentationProjector.ts` maps that retained
 model into Search, Navigation, carousel, Inspector, and source-markup entities
 without reparsing source. A grammar's effective start is the preferred initial
 focus. If semantic extraction is absent or fails nonfatally, the original
@@ -104,7 +109,8 @@ DTD/XSD roots continue through Xerces only. DTD/XSD-only ZIPs do not load the
 RELAX NG runtime, and worker termination discards both engines' attempt state.
 After root validation, the package worker models only accepted RNG
 root/dependency closures, reusing Task 17.5 relationship identities for include
-and externalRef binding. Eligible documents are projected once into shared
+and externalRef binding. Validation maps contain only the root's syntax family,
+so explicit cross-syntax references cannot resolve accidentally. Eligible documents are projected once into shared
 presentation nodes; includes and references link to targets rather than
 copying or recursively expanding them. Invalid and blocked RNG members remain
 source-first.
@@ -196,7 +202,7 @@ combination.
 ## Source markup and safe text
 
 DTD and XSD importers retain declaration-oriented source excerpts keyed by
-normalized node ID. RELAX NG retains the complete `.rng` source once on each
+normalized node ID. RELAX NG retains the complete `.rng` or `.rnc` source once on each
 source-document node and projects exact semantic ranges as bounded excerpts.
 `sourceMarkupPresentation.ts` is the central presentation
 boundary for source identity, explicit location precision, and safe fragment

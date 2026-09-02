@@ -85,7 +85,9 @@ export function buildStandaloneRelaxNgProject(
         properties: Object.freeze([
           Object.freeze({
             label: 'Syntax',
-            value: 'RELAX NG XML syntax',
+            value: /\.rnc$/iu.test(filename)
+              ? 'RELAX NG Compact Syntax'
+              : 'RELAX NG XML syntax',
           }),
           Object.freeze({
             label: 'Engine',

@@ -302,11 +302,14 @@ export async function executeSchemaImportWorkerRequest(
         const results: RelaxNgValidationResult[] = [];
         for (let index = 0; index < roots.length; index += 1) {
           const root = roots[index]!;
+          const compactSyntax = /\.rnc$/iu.test(root.entryPath);
           results.push(
             await validate({
               attemptId: `${request.requestId}:rng-root:${index + 1}`,
               entryPath: root.entryPath,
-              files,
+              files: files.filter(
+                ({ path }) => /\.rnc$/iu.test(path) === compactSyntax,
+              ),
             }),
           );
         }

@@ -1,0 +1,8 @@
+namespace p = "urn:parts"
+default namespace = "urn:names"
+
+start = element root {
+  element (p:item | local) { text }*,
+  element p:* - p:blocked { empty }?,
+  attribute * - secret { text }*
+}

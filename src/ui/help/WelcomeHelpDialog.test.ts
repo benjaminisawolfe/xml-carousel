@@ -43,10 +43,10 @@ describe('reusable welcome and Help dialog', () => {
       'Apache Xerces-C++ is the authoritative XML, DTD, and XML Schema 1.0 validator.',
     );
     expect(dialog).toHaveTextContent(
-      'libxml2 RELAX NG is the authoritative standalone and ZIP-package .rng validator.',
+      'libxml2 RELAX NG is the authoritative standalone and ZIP-package .rng/.rnc validator.',
     );
     expect(dialog).toHaveTextContent(
-      'Standards-valid RELAX NG XML syntax is presented through its retained semantic model',
+      'Standards-valid RELAX NG XML or Compact Syntax is presented through one retained semantic model',
     );
     expect(
       within(dialog).getByRole('link', { name: 'XML Carousel licence' }),

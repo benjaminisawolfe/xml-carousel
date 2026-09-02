@@ -221,6 +221,77 @@ describe('committed libxml2 RELAX NG production runtime', () => {
     });
   });
 
+  it('uses the project Compact Syntax front end and libxml2 authority for RNC projects', async () => {
+    const encode = (path: string, source: string): RelaxNgProjectFile => ({
+      path,
+      bytes: new TextEncoder().encode(source),
+    });
+    const result = await validate('compact-project', 'main.rnc', [
+      encode('main.rnc', 'include "defs.rnc"\nstart = element root { shared }'),
+      encode('defs.rnc', 'shared = attribute id { token }?'),
+    ]);
+    expect(result).toMatchObject({
+      status: 'valid',
+      diagnostics: [],
+      metrics: { fileCount: 2 },
+    });
+    expect(result.dependencyRequests).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ outcome: 'resolved' }),
+      ]),
+    );
+  });
+
+  it('reports native RNC syntax errors without loading libxml2', async () => {
+    const provider = vi.fn(async () => adapter);
+    const result = await validateWithProductionRelaxNg(
+      {
+        attemptId: 'compact-syntax-error',
+        entryPath: 'broken.rnc',
+        files: [
+          {
+            path: 'broken.rnc',
+            bytes: new TextEncoder().encode(
+              'start = element root { text | empty, text }',
+            ),
+          },
+        ],
+      },
+      provider,
+    );
+    expect(provider).not.toHaveBeenCalled();
+    expect(result.status).toBe('invalid');
+    expect(result.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'rnc:mixed-binary-operators',
+          fileName: 'broken.rnc',
+          line: 1,
+          source: 'rng',
+        }),
+      ]),
+    );
+  });
+
+  it('maps translated libxml2 diagnostics back to original RNC coordinates', async () => {
+    const result = await validate('compact-standards-error', 'invalid.rnc', [
+      {
+        path: 'invalid.rnc',
+        bytes: new TextEncoder().encode(
+          '## invalid root\nstart = attribute root { text }',
+        ),
+      },
+    ]);
+    expect(result.status).toBe('invalid');
+    expect(result.diagnostics[0]).toMatchObject({
+      category: 'standards-invalid',
+      fileName: 'invalid.rnc',
+      source: 'rng',
+    });
+    expect(result.diagnostics[0]?.line).toBeGreaterThanOrEqual(1);
+    expect(JSON.stringify(result)).not.toContain('<grammar');
+  });
+
   it('reports the native include recursion limit as a resource limit', async () => {
     const files: RelaxNgProjectFile[] = Array.from(
       { length: 66 },

@@ -3,9 +3,8 @@
 ## Overview
 
 XML Carousel is a browser-based explorer for XML schema definitions. It turns
-DTD, XSD, standalone RELAX NG XML-syntax schemas, and ZIP schema packages into
-an inspectable project. DTD and XSD projects provide connected cards; the
-initial RELAX NG path provides a source-first standards-validation preview.
+DTD, XSD, standalone RELAX NG XML or Compact Syntax schemas, and ZIP schema
+packages into an inspectable semantic project.
 
 The application is a static, local-first site. Selected files are read and
 processed in the browser, including parsing work performed in a Web Worker. No
@@ -37,16 +36,16 @@ control and follow the visible control labels.
 
 - XML 1.0 DTD grammar and XML Schema 1.0 validity through the authoritative
   Apache Xerces-C++ 3.3.0 WebAssembly engine
-- Standalone RELAX NG XML syntax (`.rng`) validity through the authoritative
-  libxml2 RELAX NG 2.15.3 WebAssembly engine, with exact retained source and a
-  source-first project preview
+- Standalone RELAX NG XML (`.rng`) and Compact Syntax (`.rnc`) validity through
+  the authoritative libxml2 RELAX NG 2.15.3 WebAssembly engine, with exact
+  retained source and one shared semantic presentation
 - Complete supported DTD and XSD 1.0 presentation through Navigation, Search,
   carousel focus, inspector, source view, and package inventory
-- ZIP packages containing DTD, XSD, and RELAX NG XML-syntax files, with
+- ZIP packages containing DTD, XSD, and RELAX NG `.rng`/`.rnc` files, with
   project-local dependencies resolved only from explicitly supplied members
   and preserved relative paths
-- Source-first RELAX NG package inventory for namespace-correct `include` and
-  `externalRef` relationships, including retained missing and blocked targets
+- RELAX NG package inventory and semantic graphs for source-correct `include`
+  and `externalRef` relationships, including retained missing and blocked targets
 - Worker-based import with progress and cancellation
 - Precise declaration, reference, ownership, type, derivation, substitution,
   dependency, redefinition, source, and package relationships
@@ -59,9 +58,8 @@ control and follow the visible control labels.
 
 The deterministic DTD/XSD/ZIP supported-presentation gate is currently 221/221
 complete. That result is an implementation-completeness statement for those
-documented contracts, not a claim to support every XML-related standard or the
-initial source-first RELAX NG preview. XSD 1.1 and RELAX NG Compact Syntax
-(`.rnc`) are not supported. See [Standards support](docs/standards-support.md) and
+documented contracts, not a claim to support every XML-related standard. XSD
+1.1 is not supported. See [Standards support](docs/standards-support.md) and
 [Known limitations](docs/known-limitations.md).
 
 ## Multi-file projects and security
@@ -170,11 +168,11 @@ authoritative XML, DTD, and XML Schema 1.0 validator within the controlled
 project architecture. XML Carousel's post-Xerces extraction and presentation
 layers are not a second validator. XSD 1.1, XML-instance product import,
 network retrieval, and host-filesystem discovery remain outside scope. libxml2
-RELAX NG is authoritative for standalone and ZIP-supplied `.rng` validity.
+RELAX NG is authoritative for standalone and ZIP-supplied `.rng` and `.rnc` validity.
 ZIP packages can safely resolve local `include` and `externalRef` targets from
 their supplied RNG members while retaining missing or blocked references.
-Structural RELAX NG pattern visualization and Compact Syntax remain future
-work.
+Both syntaxes share structural RELAX NG presentation while retaining truthful,
+syntax-specific original source.
 
 ## Licence
 

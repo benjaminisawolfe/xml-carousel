@@ -226,7 +226,7 @@
       id="rng-file-input"
       class="file-input"
       type="file"
-      accept=".rng,application/xml,text/xml"
+      accept=".rng,.rnc,application/xml,text/xml,application/relax-ng-compact-syntax"
       tabindex="-1"
       hidden
       onchange={(event) => void handleFileSelection('rng', event)}

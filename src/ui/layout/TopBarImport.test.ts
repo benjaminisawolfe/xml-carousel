@@ -172,7 +172,10 @@ describe('coordinated schema-file top-bar controls', () => {
 
     expect(dtd).toHaveAttribute('accept', '.dtd,application/xml-dtd');
     expect(xsd).toHaveAttribute('accept', '.xsd,application/xml,text/xml');
-    expect(rng).toHaveAttribute('accept', '.rng,application/xml,text/xml');
+    expect(rng).toHaveAttribute(
+      'accept',
+      '.rng,.rnc,application/xml,text/xml,application/relax-ng-compact-syntax',
+    );
     expect(zip).toHaveAttribute(
       'accept',
       '.zip,application/zip,application/x-zip-compressed',

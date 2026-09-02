@@ -8,15 +8,17 @@ and its [acceptance gate](technical/complete-visualization-acceptance-gate.md).
 
 ## Supported inputs and validation authority
 
-XML Carousel accepts standalone `.dtd`, `.xsd`, and RELAX NG XML-syntax `.rng`
-files, plus ZIP packages that preserve DTD, XSD, and RNG project-relative
+XML Carousel accepts standalone `.dtd`, `.xsd`, RELAX NG XML-syntax `.rng`, and
+RELAX NG Compact Syntax `.rnc` files, plus ZIP packages that preserve DTD, XSD,
+and RELAX NG project-relative
 paths.
 Apache Xerces-C++ 3.3.0, compiled to WebAssembly, is the authoritative parser
 and validator for XML 1.0, standalone DTD grammar preparation, and XML Schema
 1.0 / XSD 1.0 within the implemented controlled-project architecture. libxml2
 RELAX NG 2.15.3, also compiled to WebAssembly, is the authoritative validator
-for standalone and ZIP-supplied `.rng` input. XSD 1.1 is not supported. RELAX
-NG Compact Syntax (`.rnc`) is also not supported. XML instance documents are
+for standalone and ZIP-supplied `.rng` and internally translated `.rnc` input.
+The `.rnc` lexer/parser and source map are project-authored TypeScript; generated
+XML is transient and never replaces original source. XSD 1.1 is not supported. XML instance documents are
 conformance-harness inputs, not an XML Carousel product input format.
 
 Only after Xerces accepts input do XML Carousel's TypeScript layers extract
@@ -25,31 +27,30 @@ user interface. Those layers are not a second standards validator. A
 presentation limitation must not turn otherwise Xerces-valid input into a
 standards-invalid result.
 
-## Standalone RELAX NG XML syntax
+## Standalone RELAX NG
 
-**Open RNG** validates the selected `.rng` bytes in a dedicated disposable
-worker. The worker passes the exact selected bytes to libxml2 and does not
+**Open RNG** validates selected `.rng` or `.rnc` bytes in a dedicated disposable
+worker. XML syntax reaches libxml2 directly; Compact Syntax is parsed and
+serialized to deterministic transient XML in memory. The worker does not
 resolve `include` or `externalRef` targets from the disk, network, or another
 unsupplied source. A required dependency therefore produces a missing or
 security-blocked result; the standalone path performs zero external fetches.
 
-A valid schema activates a deliberately minimal source-first project: one
-RELAX NG schema node, no inferred structural relationships, the deterministic
-filename identity, the validation engine identity, and the complete retained
-source. Navigation, Inspector, Search, and source view remain truthful, but
-structural RELAX NG extraction and visualization are not yet available. The UI
-reports that limitation as a nonfatal visualization finding rather than
-pretending the source-only preview is a complete semantic graph. Invalid,
+A valid schema activates the shared RELAX NG semantic model and presentation:
+grammar starts, definitions, patterns, name classes, datatypes, annotations,
+Search, Navigation, carousel, Inspector, semantic zoom, and exact retained
+source. Equivalent XML and Compact Syntax project to equivalent meaning while
+retaining distinct filenames, lexical text, and ranges. Invalid,
 blocked, cancelled, and internal-failure attempts leave the active project
 unchanged.
 
-## RELAX NG XML syntax in ZIP packages
+## RELAX NG in ZIP packages
 
-**Open ZIP** recognizes case-insensitive `.rng` members and retains one
+**Open ZIP** recognizes case-insensitive `.rng` and `.rnc` members and retains one
 source-document node and the complete exact UTF-8 source for each member.
-libxml2 receives all and only supplied RNG members and validates deterministic
-RNG roots; Xerces continues to receive DTD/XSD roots and their controlled
-resources. The engines remain separate standards authorities.
+libxml2 receives all and only supplied same-syntax-family RELAX NG members and
+validates deterministic roots; Xerces continues to receive DTD/XSD roots and
+their controlled resources. There is no implicit `.rnc`/`.rng` substitution.
 
 RELAX NG `include` and `externalRef` relationships are extracted
 namespace-correctly for package inventory, Problems, Search, and source
@@ -57,9 +58,9 @@ routing. Safe local targets resolve by exact canonical package path. Literal
 targets remain visible when missing or blocked by external-URI, filesystem, or
 root-traversal policy, and no target document is fabricated. A standards-invalid
 or dependency-blocked RNG document can remain inspectable with a truthful
-entry status. This package representation is intentionally source-only; grammar
-and pattern normalization and rich structural visualization are not yet
-implemented.
+entry status. Accepted members use the same bounded semantic graph and rich
+presentation as standalone input; shared targets and cycles remain links rather
+than expanded copies.
 
 ## DTD support
 
@@ -147,8 +148,8 @@ stays inside the virtual project root.
 XML Carousel does not crawl the host filesystem, inherit siblings from the
 selected file's original disk folder, use ambiguous basename fallback, retrieve
 remote schemas, resolve arbitrary `file:` URLs, or escape the controlled root.
-Unsafe archive paths are blocked. Binary and ignored entries, including
-unsupported `.rnc` members, are classified rather than parsed, and missing
+Unsafe archive paths are blocked. Binary and ignored entries are classified
+rather than parsed, and missing
 supplied dependencies are reported.
 
 For example, opening `foundry-common.xsd` by itself fails when

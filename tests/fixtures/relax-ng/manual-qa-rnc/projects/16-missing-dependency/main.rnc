@@ -1,0 +1,2 @@
+include "missing.rnc"
+start = element missing-demo { empty }

@@ -1,0 +1,1 @@
+beta = element beta { attribute id { token }, text }

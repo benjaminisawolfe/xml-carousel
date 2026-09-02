@@ -1,0 +1,2 @@
+include "shared.rnc"
+start = element b { shared }

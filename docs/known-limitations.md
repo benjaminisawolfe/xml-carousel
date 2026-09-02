@@ -12,12 +12,12 @@ an XML Carousel product input, so instance-dependent DTD and XSD constraints
 cannot be evaluated from a standalone grammar alone.
 
 libxml2 RELAX NG 2.15.3 is authoritative for standalone and ZIP-supplied RELAX
-NG XML-syntax `.rng` validity. These paths remain source-first: they retain and
-expose complete source but do not yet extract a structural RELAX NG
-grammar/pattern graph. ZIP packages can resolve local `include` and
-`externalRef` targets only from safely supplied `.rng` members, while missing
-and blocked references remain visible. RELAX NG Compact Syntax (`.rnc`) is not
-supported. Neither workflow searches for or fetches dependencies.
+NG XML `.rng` and Compact Syntax `.rnc` validity. Compact Syntax uses a
+project-authored, in-memory front end; Task 17.9 still owns broader external
+conformance-corpus evidence. ZIP packages resolve local `include` and
+`externalRef` targets only from safely supplied members of the same syntax
+family, while missing and blocked references remain visible. Neither workflow
+searches for or fetches dependencies, and there is no cross-syntax fallback.
 
 The 221/221 complete-visualization result covers the DTD/XSD/ZIP presentation
 contracts enumerated by the repository matrix. It does not include the
