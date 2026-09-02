@@ -1,5 +1,8 @@
 import type { SchemaSourceRange } from '../../../schema/model';
-import { parseXsdXml, type XsdXmlElementAst } from '../../../schema/xsd';
+import {
+  extractRelaxNgSourceReferences,
+  relaxNgStructureNamespace,
+} from '../../../schema/relaxng';
 import type { SchemaPackageSourceText } from './schemaPackageDecoding';
 import type {
   SchemaPackageDiagnostic,
@@ -10,7 +13,7 @@ import {
   resolveControlledProjectPath,
 } from './schemaPackageUtilities';
 
-export const relaxNgStructureNamespace = 'http://relaxng.org/ns/structure/1.0';
+export { relaxNgStructureNamespace };
 
 export interface RelaxNgPackageReference {
   readonly kind: 'rng-include' | 'rng-external-ref';
@@ -29,46 +32,17 @@ export function extractRelaxNgPackageReferences(
   source: SchemaPackageSourceText,
 ): readonly RelaxNgPackageReference[] {
   if (source.entry.format !== 'rng') return [];
-  const parsed = parseXsdXml(source.sourceText, source.sourceFileId);
-  const references: RelaxNgPackageReference[] = [];
-
-  const visit = (element: XsdXmlElementAst): void => {
-    if (
-      element.namespaceUri === relaxNgStructureNamespace &&
-      (element.localName === 'include' || element.localName === 'externalRef')
-    ) {
-      const href = element.attributes.find(
-        (attribute) =>
-          attribute.localName === 'href' &&
-          attribute.namespaceUri === undefined,
-      );
-      if (href) {
-        references.push({
-          kind:
-            element.localName === 'include'
-              ? 'rng-include'
-              : 'rng-external-ref',
-          rawTarget: href.value,
-          sourcePath: source.entry.packageRelativePath,
-          sourceFileId: source.sourceFileId,
-          range: href.valueContentRange,
-          sourceOrder: element.sourceOrder,
-        });
-      }
-    }
-    for (const child of element.children) {
-      if (child.kind === 'element') visit(child);
-    }
-  };
-  for (const child of parsed.document.children) {
-    if (child.kind === 'element') visit(child);
-  }
-  return references.sort(
-    (left, right) =>
-      left.sourceOrder - right.sourceOrder ||
-      compareUnicodeCodePoints(left.kind, right.kind) ||
-      compareUnicodeCodePoints(left.rawTarget, right.rawTarget),
-  );
+  return extractRelaxNgSourceReferences(source.sourceText, source.sourceFileId)
+    .map((reference) => ({
+      ...reference,
+      sourcePath: source.entry.packageRelativePath,
+    }))
+    .sort(
+      (left, right) =>
+        left.sourceOrder - right.sourceOrder ||
+        compareUnicodeCodePoints(left.kind, right.kind) ||
+        compareUnicodeCodePoints(left.rawTarget, right.rawTarget),
+    );
 }
 
 export function buildRelaxNgPackageRelationships(

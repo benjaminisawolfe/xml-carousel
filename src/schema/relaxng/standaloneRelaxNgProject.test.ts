@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { selectNodeSourceMarkup } from '../../ui/presentation/sourceMarkupPresentation';
 import { formatSchemaNodeKind } from '../../ui/carousel/nodePresentation';
-import { buildStandaloneRelaxNgProject } from './standaloneRelaxNgProject';
+import { buildProjectSearchIndex } from '../../app/search';
+import {
+  buildRelaxNgSemanticModel,
+  buildStandaloneRelaxNgProject,
+} from './index';
 
 describe('standalone RELAX NG source-first project', () => {
   it('builds one deterministic durable node with exact retained full source', () => {
@@ -70,5 +74,37 @@ describe('standalone RELAX NG source-first project', () => {
       severity: 'warning',
       category: 'visualization',
     });
+  });
+
+  it('retains semantic metadata without changing the source-first presentation graph', () => {
+    const sourceText =
+      '<grammar xmlns="http://relaxng.org/ns/structure/1.0"><start><ref name="semantic-only-secret"/></start><define name="semantic-only-secret"><element name="semantic-only-secret"><text/></element></define></grammar>';
+    const semanticModel = buildRelaxNgSemanticModel({
+      sources: [
+        {
+          sourceFileId: 'imported-rng-source:model.rng',
+          path: 'model.rng',
+          sourceText,
+        },
+      ],
+    }).model!;
+    const result = buildStandaloneRelaxNgProject({
+      filename: 'model.rng',
+      sourceText,
+      engine: { name: 'libxml2 RELAX NG', version: '2.15.3' },
+      semanticModel,
+      semanticFindings: [],
+    });
+
+    expect(result.semanticModel).toEqual(semanticModel);
+    expect(result.semanticFindings).toEqual([]);
+    expect(result.project.nodes).toHaveLength(1);
+    expect(result.project.edges).toEqual([]);
+    expect(result.project.nodes[0]!.kind).toBe('relaxNgSchema');
+    const search = buildProjectSearchIndex({
+      project: result.project,
+      sourceFilename: 'model.rng',
+    });
+    expect(JSON.stringify(search)).not.toContain('semantic-only-secret');
   });
 });

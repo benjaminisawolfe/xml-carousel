@@ -57,6 +57,7 @@ import type {
   SchemaPackageSummary,
 } from './schemaPackageTypes';
 import type { RelaxNgValidationResult } from '../../../standards/relaxng';
+import { buildRelaxNgSemanticModel } from '../../../schema/relaxng';
 import {
   clonePlainValue,
   compareUnicodeCodePoints,
@@ -1461,6 +1462,33 @@ export async function importSchemaArchivePackage(
     new Set(rngRoots.map(({ entryPath }) => entryPath)),
     rngStandardsStatusByPath,
   );
+  const eligibleRngSemanticSources = rngSources
+    .filter(
+      ({ entry }) =>
+        rngStandardsStatusByPath.get(entry.packageRelativePath) ===
+        'accepted-schema-source',
+    )
+    .map((source) => ({
+      sourceFileId: source.sourceFileId,
+      path: source.entry.packageRelativePath,
+      sourceText: source.sourceText,
+    }));
+  const rngSemantic =
+    eligibleRngSemanticSources.length === 0
+      ? undefined
+      : buildRelaxNgSemanticModel({
+          sources: eligibleRngSemanticSources,
+          relationships: rngRelationships.map((relationship) => ({
+            id: relationship.id,
+            kind: relationship.kind as 'rng-include' | 'rng-external-ref',
+            rawTarget: relationship.rawTarget,
+            sourcePath: relationship.sourcePath,
+            ...(relationship.targetPath === undefined
+              ? {}
+              : { targetPath: relationship.targetPath }),
+            status: relationship.status,
+          })),
+        });
 
   reportPackageProgress(execution, { phase: 'finalizing' });
   const validation = validateSchemaProject(resolvedProject);
@@ -1537,5 +1565,8 @@ export async function importSchemaArchivePackage(
       manifest,
     ).map(clonePlainValue),
     visualization: clonePlainValue(assembled.visualization),
+    ...(rngSemantic?.model === undefined
+      ? {}
+      : { relaxNgSemanticModel: clonePlainValue(rngSemantic.model) }),
   });
 }

@@ -1,0 +1,1 @@
+<element xmlns="http://relaxng.org/ns/structure/1.0" name="catalog-a"><zeroOrMore><externalRef href="shared/item.rng"/></zeroOrMore></element>

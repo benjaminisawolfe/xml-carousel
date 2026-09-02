@@ -1,0 +1,294 @@
+{
+  "formatVersion": 1,
+  "provenance": "Project-authored XML Carousel Task 17.6 fixtures.",
+  "entries": [
+    {
+      "path": "01-basic-grammar.rng",
+      "kind": "rng",
+      "expectedOutcome": "valid",
+      "byteSize": 568,
+      "sha256": "f4bda3f9c5f7e42be9bf57e76a47dff4307136a114c3345273c3b72600724161",
+      "largeFixture": false,
+      "primarySemanticAreas": ["grammar", "start", "define", "ref"]
+    },
+    {
+      "path": "02-pattern-operators.rng",
+      "kind": "rng",
+      "expectedOutcome": "valid",
+      "byteSize": 643,
+      "sha256": "43c7dac2ef22d03e4665792b679cbaa6cbe31824a8760dda08907d87042be842",
+      "largeFixture": false,
+      "primarySemanticAreas": [
+        "choice",
+        "group",
+        "interleave",
+        "repetition",
+        "mixed",
+        "list"
+      ]
+    },
+    {
+      "path": "03-name-classes.rng",
+      "kind": "rng",
+      "expectedOutcome": "valid",
+      "byteSize": 650,
+      "sha256": "4572c2f2f54f6068d8560bf714f3f030e83147f4d33ad7a3c9cbd83cfc2fdd10",
+      "largeFixture": false,
+      "primarySemanticAreas": [
+        "name",
+        "anyName",
+        "nsName",
+        "name-class choice",
+        "exclusions"
+      ]
+    },
+    {
+      "path": "04-datatypes-and-values.rng",
+      "kind": "rng",
+      "expectedOutcome": "valid",
+      "byteSize": 597,
+      "sha256": "ed5c26fb14649a382a288dcafbc578f5c3f0f96b123c569873f4403f2e21abfb",
+      "largeFixture": false,
+      "primarySemanticAreas": [
+        "data",
+        "param",
+        "except",
+        "value",
+        "datatypeLibrary"
+      ]
+    },
+    {
+      "path": "05-annotations-and-compatibility.rng",
+      "kind": "rng",
+      "expectedOutcome": "valid",
+      "byteSize": 643,
+      "sha256": "d7273411058e46791284e86c5441da17a0f1fc229c953a7732c1af30db1b520f",
+      "largeFixture": false,
+      "primarySemanticAreas": [
+        "documentation",
+        "defaultValue",
+        "foreign content"
+      ]
+    },
+    {
+      "path": "06-nested-grammar-parent-ref.rng",
+      "kind": "rng",
+      "expectedOutcome": "valid",
+      "byteSize": 419,
+      "sha256": "f63d0ce1bddce3a86b6ee061840bd7b7ae461ad1575cc23c580bfa1d4c9af464",
+      "largeFixture": false,
+      "primarySemanticAreas": ["nested grammar", "parentRef", "scope binding"]
+    },
+    {
+      "path": "07-large-semantic-model-a.rng",
+      "kind": "rng",
+      "expectedOutcome": "valid",
+      "byteSize": 11283,
+      "sha256": "77c2671ce17a9279f06d352e24f492fa642e3bc41c705294faaca3a885f8fa8b",
+      "largeFixture": true,
+      "primarySemanticAreas": [
+        "large catalog grammar",
+        "combine",
+        "datatypes",
+        "annotations"
+      ]
+    },
+    {
+      "path": "08-large-semantic-model-b.rng",
+      "kind": "rng",
+      "expectedOutcome": "valid",
+      "byteSize": 11308,
+      "sha256": "2d66da71c4bfef10d3b275798d17601dc3955c82599ca8c680731418ab30f035",
+      "largeFixture": true,
+      "primarySemanticAreas": [
+        "large publishing grammar",
+        "nested grammar",
+        "name classes"
+      ]
+    },
+    {
+      "path": "09-invalid-schema.rng",
+      "kind": "rng",
+      "expectedOutcome": "standards-invalid",
+      "byteSize": 166,
+      "sha256": "5339078e605eb0887488e3e89530cb11ffbf7f5b7dfb1c28dd98007c2f685f95",
+      "largeFixture": false,
+      "primarySemanticAreas": ["invalid undefined reference"]
+    },
+    {
+      "path": "10-blocked-external-ref.rng",
+      "kind": "rng",
+      "expectedOutcome": "blocked-dependency",
+      "byteSize": 160,
+      "sha256": "2ac3ab100b45d13b7dd9d945ea8d5eda5004b91cb510e56e1f3d1d8b318b9f50",
+      "largeFixture": false,
+      "primarySemanticAreas": ["blocked HTTPS externalRef", "no retrieval"]
+    },
+    {
+      "path": "11-multi-file-includes.zip",
+      "kind": "zip",
+      "expectedOutcome": "package-semantic-model",
+      "byteSize": 1049,
+      "sha256": "3ad8c0a96a8cd76b5e69a691505eb0816a4d00d67d07bbd58b8203bf58d5f183",
+      "largeFixture": false,
+      "primarySemanticAreas": [
+        "resolved include",
+        "include definitions",
+        "combine"
+      ],
+      "members": ["main.rng", "parts/common.rng", "parts/types.rng"],
+      "expectedRngRoots": ["main.rng"],
+      "expectedResolvedRelationships": [
+        "main.rng -> parts/common.rng",
+        "main.rng -> parts/types.rng"
+      ],
+      "expectedMissingOrBlockedRelationships": []
+    },
+    {
+      "path": "12-external-ref-project.zip",
+      "kind": "zip",
+      "expectedOutcome": "package-semantic-model",
+      "byteSize": 629,
+      "sha256": "daf8a26f6a0332b071674b8367f2dc6195387bd455a05a467200ab7ced5c0820",
+      "largeFixture": false,
+      "primarySemanticAreas": ["resolved externalRef", "nested relative path"],
+      "members": ["main.rng", "patterns/address.rng"],
+      "expectedRngRoots": ["main.rng"],
+      "expectedResolvedRelationships": ["main.rng -> patterns/address.rng"],
+      "expectedMissingOrBlockedRelationships": []
+    },
+    {
+      "path": "13-shared-dependency.zip",
+      "kind": "zip",
+      "expectedOutcome": "package-semantic-model",
+      "byteSize": 739,
+      "sha256": "bf3c7134f71df4d94ddaf717b9a638a307c360be4022f82e6cc53d7aa625bb17",
+      "largeFixture": false,
+      "primarySemanticAreas": [
+        "shared dependency",
+        "multiple independent RNG roots"
+      ],
+      "members": ["catalog-a.rng", "catalog-b.rng", "shared/item.rng"],
+      "expectedRngRoots": ["catalog-a.rng", "catalog-b.rng"],
+      "expectedResolvedRelationships": [
+        "catalog-a.rng -> shared/item.rng",
+        "catalog-b.rng -> shared/item.rng"
+      ],
+      "expectedMissingOrBlockedRelationships": []
+    },
+    {
+      "path": "14-nested-include-project.zip",
+      "kind": "zip",
+      "expectedOutcome": "package-semantic-model",
+      "byteSize": 738,
+      "sha256": "0eb1f0b8788ee48e63f7f80a9f4d3dc6c9f183e9f9d039083bf03f372461a442",
+      "largeFixture": false,
+      "primarySemanticAreas": ["nested include", "safe parent normalization"],
+      "members": [
+        "schemas/common/base.rng",
+        "schemas/levels/first.rng",
+        "schemas/main.rng"
+      ],
+      "expectedRngRoots": ["schemas/main.rng"],
+      "expectedResolvedRelationships": [
+        "schemas/main.rng -> schemas/levels/first.rng",
+        "schemas/levels/first.rng -> schemas/common/base.rng"
+      ],
+      "expectedMissingOrBlockedRelationships": []
+    },
+    {
+      "path": "15-mixed-large-rng-project.zip",
+      "kind": "zip",
+      "expectedOutcome": "package-semantic-model",
+      "byteSize": 23064,
+      "sha256": "64953e59b79fe7f2574f868585c1dd1025b83f5406a5c7ae8519101fac590efb",
+      "largeFixture": true,
+      "primarySemanticAreas": [
+        "large models",
+        "multiple roots",
+        "mixed small and large members"
+      ],
+      "members": [
+        "large/catalog-model.rng",
+        "large/publishing-model.rng",
+        "readme-schema.rng"
+      ],
+      "expectedRngRoots": [
+        "large/catalog-model.rng",
+        "large/publishing-model.rng",
+        "readme-schema.rng"
+      ],
+      "expectedResolvedRelationships": [],
+      "expectedMissingOrBlockedRelationships": []
+    },
+    {
+      "path": "16-missing-dependency.zip",
+      "kind": "zip",
+      "expectedOutcome": "source-first-with-relationship-findings",
+      "byteSize": 460,
+      "sha256": "d260df4fdf4c67a64ee8f355cb3740d4cee1c1ed98cc7c8183d92a1dac70081a",
+      "largeFixture": false,
+      "primarySemanticAreas": [
+        "missing include",
+        "source-first failure retention"
+      ],
+      "members": ["main.rng", "support.rng"],
+      "expectedRngRoots": ["main.rng", "support.rng"],
+      "expectedResolvedRelationships": [],
+      "expectedMissingOrBlockedRelationships": [
+        "main.rng -> absent/definitions.rng (missing)"
+      ]
+    },
+    {
+      "path": "17-blocked-external-uri.zip",
+      "kind": "zip",
+      "expectedOutcome": "source-first-with-relationship-findings",
+      "byteSize": 619,
+      "sha256": "ecd972717f03c4589845e8f857813b35d8f02bb2b4d1faed0a99315c80029f27",
+      "largeFixture": false,
+      "primarySemanticAreas": [
+        "blocked HTTPS",
+        "blocked file URI",
+        "no retrieval"
+      ],
+      "members": ["file-root.rng", "https-root.rng", "local-support.rng"],
+      "expectedRngRoots": [
+        "file-root.rng",
+        "https-root.rng",
+        "local-support.rng"
+      ],
+      "expectedResolvedRelationships": [],
+      "expectedMissingOrBlockedRelationships": [
+        "https-root.rng -> https://example.invalid/common.rng (blocked)",
+        "file-root.rng -> file:///tmp/local.rng (blocked)"
+      ]
+    },
+    {
+      "path": "18-cycle-project.zip",
+      "kind": "zip",
+      "expectedOutcome": "package-semantic-model",
+      "byteSize": 1014,
+      "sha256": "88b456f434cb18d1d0480744503056a1d109a067adff19e7118bdda87ca1358b",
+      "largeFixture": false,
+      "primarySemanticAreas": [
+        "include cycle",
+        "externalRef cycle",
+        "bounded graph binding"
+      ],
+      "members": [
+        "external-a.rng",
+        "external-b.rng",
+        "include-a.rng",
+        "include-b.rng"
+      ],
+      "expectedRngRoots": ["external-a.rng", "include-a.rng"],
+      "expectedResolvedRelationships": [
+        "include-a.rng -> include-b.rng",
+        "include-b.rng -> include-a.rng",
+        "external-a.rng -> external-b.rng",
+        "external-b.rng -> external-a.rng"
+      ],
+      "expectedMissingOrBlockedRelationships": []
+    }
+  ]
+}

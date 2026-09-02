@@ -2,6 +2,10 @@
 
 import { validateWithProductionRelaxNg } from './productionValidator';
 import {
+  buildRelaxNgSemanticModel,
+  deriveStandaloneRelaxNgSourceFileId,
+} from '../../schema/relaxng';
+import {
   isRelaxNgWorkerRequestMessage,
   type RelaxNgWorkerResultMessage,
 } from './workerProtocol';
@@ -23,8 +27,51 @@ workerScope.addEventListener('message', (event: MessageEvent<unknown>) => {
 
   const request = event.data.request;
   void validateWithProductionRelaxNg(request)
-    .then((result) => {
+    .then((standardsResult) => {
       if (terminal) return;
+      let result = standardsResult;
+      if (standardsResult.status === 'valid') {
+        try {
+          const entry = request.files.find(
+            ({ path }) => path === request.entryPath,
+          );
+          if (entry) {
+            const sourceText = new TextDecoder('utf-8', { fatal: true }).decode(
+              entry.bytes,
+            );
+            const semantic = buildRelaxNgSemanticModel({
+              sources: [
+                {
+                  sourceFileId: deriveStandaloneRelaxNgSourceFileId(
+                    request.entryPath,
+                  ),
+                  path: request.entryPath,
+                  sourceText,
+                },
+              ],
+            });
+            result = {
+              ...standardsResult,
+              ...(semantic.model === undefined
+                ? {}
+                : { semanticModel: semantic.model }),
+              semanticFindings: semantic.findings,
+            };
+          }
+        } catch {
+          result = {
+            ...standardsResult,
+            semanticFindings: [
+              {
+                id: 'rng-semantic:finding:worker',
+                code: 'semantic-extractor-internal',
+                message:
+                  'Semantic extraction failed after standards validation; the standards result remains authoritative.',
+              },
+            ],
+          };
+        }
+      }
       const message: RelaxNgWorkerResultMessage = {
         type: 'relaxng:result',
         result,

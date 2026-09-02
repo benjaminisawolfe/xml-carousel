@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+         xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+         xmlns:p="urn:xml-carousel:publishing"
+         xmlns:workflow="urn:xml-carousel:workflow"
+         ns="urn:xml-carousel:publishing"
+         datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <a:documentation xml:lang="en">A project-authored publishing grammar with recursive sections, semantic inline content, tables, media, citations, and workflow metadata.</a:documentation>
+  <workflow:fixture phase="draft">Designed for source-order, range, annotation, and graph-binding manual QA.</workflow:fixture>
+
+  <start><ref name="publication"/></start>
+
+  <define name="publication">
+    <element name="publication">
+      <attribute name="id"><data type="ID"/></attribute>
+      <attribute name="kind"><choice><value>book</value><value>article</value><value>manual</value><value>report</value></choice></attribute>
+      <ref name="frontMatter"/>
+      <ref name="bodyMatter"/>
+      <optional><ref name="backMatter"/></optional>
+    </element>
+  </define>
+
+  <define name="frontMatter">
+    <element name="front">
+      <element name="title"><ref name="phrase"/></element>
+      <optional><element name="subtitle"><ref name="phrase"/></element></optional>
+      <oneOrMore><element name="creator"><ref name="agent"/></element></oneOrMore>
+      <optional><element name="abstract"><ref name="blockContent"/></element></optional>
+      <zeroOrMore><element name="keyword"><data type="token"/></element></zeroOrMore>
+      <optional><element name="revision"><ref name="revision"/></element></optional>
+    </element>
+  </define>
+
+  <define name="bodyMatter">
+    <element name="body">
+      <oneOrMore><ref name="section"/></oneOrMore>
+    </element>
+  </define>
+
+  <define name="backMatter">
+    <element name="back">
+      <optional><element name="appendices"><oneOrMore><ref name="section"/></oneOrMore></element></optional>
+      <optional><element name="bibliography"><zeroOrMore><ref name="bibliographyEntry"/></zeroOrMore></element></optional>
+      <optional><element name="index"><zeroOrMore><ref name="indexEntry"/></zeroOrMore></element></optional>
+      <optional><element name="glossary"><zeroOrMore><ref name="glossaryEntry"/></zeroOrMore></element></optional>
+    </element>
+  </define>
+
+  <define name="section">
+    <element name="section">
+      <attribute name="id"><data type="ID"/></attribute>
+      <optional><attribute name="role"><data type="token"/></attribute></optional>
+      <element name="heading"><ref name="phrase"/></element>
+      <oneOrMore><choice><ref name="block"/><ref name="section"/></choice></oneOrMore>
+    </element>
+  </define>
+
+  <define name="block" combine="choice"><ref name="paragraph"/></define>
+  <define name="block" combine="choice"><ref name="listBlock"/></define>
+  <define name="block" combine="choice"><ref name="quoteBlock"/></define>
+  <define name="block" combine="choice"><ref name="codeBlock"/></define>
+  <define name="block" combine="choice"><ref name="figure"/></define>
+  <define name="block" combine="choice"><ref name="table"/></define>
+  <define name="block" combine="choice"><ref name="admonition"/></define>
+
+  <define name="paragraph">
+    <element name="para"><ref name="phrase"/></element>
+  </define>
+
+  <define name="phrase">
+    <mixed><zeroOrMore><ref name="inline"/></zeroOrMore></mixed>
+  </define>
+
+  <define name="inline" combine="choice"><element name="em"><ref name="phrase"/></element></define>
+  <define name="inline" combine="choice"><element name="strong"><ref name="phrase"/></element></define>
+  <define name="inline" combine="choice"><element name="code"><text/></element></define>
+  <define name="inline" combine="choice"><element name="term"><ref name="phrase"/></element></define>
+  <define name="inline" combine="choice"><element name="link"><attribute name="href"><data type="anyURI"/></attribute><ref name="phrase"/></element></define>
+  <define name="inline" combine="choice"><element name="xref"><attribute name="target"><data type="IDREF"/></attribute><empty/></element></define>
+  <define name="inline" combine="choice"><element name="citation"><attribute name="target"><data type="IDREF"/></attribute><optional><ref name="phrase"/></optional></element></define>
+  <define name="inline" combine="choice"><element name="p:semantic"><attribute name="property"><data type="token"/></attribute><ref name="phrase"/></element></define>
+
+  <define name="listBlock">
+    <choice>
+      <element name="ordered-list"><oneOrMore><ref name="listItem"/></oneOrMore></element>
+      <element name="unordered-list"><oneOrMore><ref name="listItem"/></oneOrMore></element>
+      <element name="definition-list"><oneOrMore><ref name="definitionItem"/></oneOrMore></element>
+    </choice>
+  </define>
+
+  <define name="listItem">
+    <element name="item"><oneOrMore><ref name="block"/></oneOrMore></element>
+  </define>
+
+  <define name="definitionItem">
+    <element name="definition-item">
+      <element name="term"><ref name="phrase"/></element>
+      <element name="definition"><oneOrMore><ref name="block"/></oneOrMore></element>
+    </element>
+  </define>
+
+  <define name="quoteBlock">
+    <element name="quote">
+      <oneOrMore><ref name="paragraph"/></oneOrMore>
+      <optional><element name="attribution"><ref name="phrase"/></element></optional>
+    </element>
+  </define>
+
+  <define name="codeBlock">
+    <element name="code-block">
+      <optional><attribute name="language"><data type="token"/></attribute></optional>
+      <optional><attribute name="line-numbers" a:defaultValue="false"><data type="boolean"/></attribute></optional>
+      <text/>
+    </element>
+  </define>
+
+  <define name="figure">
+    <element name="figure">
+      <attribute name="id"><data type="ID"/></attribute>
+      <optional><element name="title"><ref name="phrase"/></element></optional>
+      <choice><ref name="image"/><ref name="mediaObject"/></choice>
+      <optional><element name="caption"><ref name="blockContent"/></element></optional>
+    </element>
+  </define>
+
+  <define name="image">
+    <element name="image">
+      <attribute name="src"><data type="anyURI"/></attribute>
+      <attribute name="alt"><text/></attribute>
+      <optional><attribute name="width"><data type="positiveInteger"/></attribute></optional>
+      <optional><attribute name="height"><data type="positiveInteger"/></attribute></optional>
+      <empty/>
+    </element>
+  </define>
+
+  <define name="mediaObject">
+    <element name="media">
+      <attribute name="src"><data type="anyURI"/></attribute>
+      <attribute name="type"><data type="token"/></attribute>
+      <optional><element name="transcript"><ref name="blockContent"/></element></optional>
+    </element>
+  </define>
+
+  <define name="table">
+    <element name="table">
+      <attribute name="id"><data type="ID"/></attribute>
+      <optional><element name="title"><ref name="phrase"/></element></optional>
+      <optional><element name="thead"><oneOrMore><ref name="tableRow"/></oneOrMore></element></optional>
+      <element name="tbody"><oneOrMore><ref name="tableRow"/></oneOrMore></element>
+      <optional><element name="tfoot"><oneOrMore><ref name="tableRow"/></oneOrMore></element></optional>
+    </element>
+  </define>
+
+  <define name="tableRow">
+    <element name="row"><oneOrMore><ref name="tableCell"/></oneOrMore></element>
+  </define>
+
+  <define name="tableCell">
+    <element>
+      <choice><name>cell</name><name>header-cell</name></choice>
+      <optional><attribute name="colspan"><data type="positiveInteger"/></attribute></optional>
+      <optional><attribute name="rowspan"><data type="positiveInteger"/></attribute></optional>
+      <zeroOrMore><choice><ref name="paragraph"/><ref name="listBlock"/></choice></zeroOrMore>
+    </element>
+  </define>
+
+  <define name="admonition">
+    <element name="admonition">
+      <attribute name="kind"><choice><value>note</value><value>tip</value><value>warning</value><value>danger</value></choice></attribute>
+      <optional><element name="title"><ref name="phrase"/></element></optional>
+      <oneOrMore><ref name="block"/></oneOrMore>
+    </element>
+  </define>
+
+  <define name="blockContent">
+    <oneOrMore><choice><ref name="paragraph"/><ref name="listBlock"/><ref name="quoteBlock"/></choice></oneOrMore>
+  </define>
+
+  <define name="agent">
+    <attribute name="role"><choice><value>author</value><value>editor</value><value>reviewer</value><value>translator</value></choice></attribute>
+    <element name="name"><ref name="phrase"/></element>
+    <optional><element name="email"><data type="string"><except><value>unknown</value></except></data></element></optional>
+    <zeroOrMore><element name="identifier"><attribute name="scheme"><data type="token"/></attribute><data type="token"/></element></zeroOrMore>
+  </define>
+
+  <define name="revision">
+    <attribute name="number"><data type="positiveInteger"/></attribute>
+    <attribute name="date"><data type="date"/></attribute>
+    <attribute name="status" a:defaultValue="draft"><choice><value>draft</value><value>review</value><value>approved</value><value>published</value></choice></attribute>
+    <optional><element name="summary"><ref name="phrase"/></element></optional>
+    <zeroOrMore><element name="change"><ref name="phrase"/></element></zeroOrMore>
+  </define>
+
+  <define name="bibliographyEntry">
+    <element name="entry">
+      <attribute name="id"><data type="ID"/></attribute>
+      <oneOrMore><element name="author"><ref name="phrase"/></element></oneOrMore>
+      <element name="title"><ref name="phrase"/></element>
+      <optional><element name="container-title"><ref name="phrase"/></element></optional>
+      <optional><element name="published"><data type="gYear"/></element></optional>
+      <zeroOrMore><element name="identifier"><data type="token"/></element></zeroOrMore>
+    </element>
+  </define>
+
+  <define name="indexEntry">
+    <element name="index-entry">
+      <element name="term"><ref name="phrase"/></element>
+      <oneOrMore><element name="target"><attribute name="ref"><data type="IDREF"/></attribute><empty/></element></oneOrMore>
+      <zeroOrMore><ref name="indexEntry"/></zeroOrMore>
+    </element>
+  </define>
+
+  <define name="glossaryEntry">
+    <element name="glossary-entry">
+      <attribute name="id"><data type="ID"/></attribute>
+      <element name="term"><ref name="phrase"/></element>
+      <element name="definition"><ref name="blockContent"/></element>
+      <zeroOrMore><element name="see"><attribute name="target"><data type="IDREF"/></attribute><empty/></element></zeroOrMore>
+    </element>
+  </define>
+
+  <define name="foreignExtension">
+    <element>
+      <anyName><except><nsName ns="urn:xml-carousel:publishing"/></except></anyName>
+      <zeroOrMore>
+        <choice>
+          <attribute><anyName/><text/></attribute>
+          <text/>
+          <element><anyName/><zeroOrMore><choice><text/><attribute><anyName/><text/></attribute></choice></zeroOrMore></element>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="scopedInline">
+    <grammar>
+      <start><parentRef name="inline"/></start>
+      <define name="inline"><notAllowed/></define>
+    </grammar>
+  </define>
+</grammar>

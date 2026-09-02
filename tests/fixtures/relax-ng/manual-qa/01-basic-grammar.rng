@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0" ns="urn:xml-carousel:catalog">
+  <start>
+    <ref name="catalog"/>
+  </start>
+  <define name="catalog">
+    <element name="catalog">
+      <zeroOrMore>
+        <ref name="book"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="book">
+    <element name="book">
+      <attribute name="id"><text/></attribute>
+      <element name="title"><text/></element>
+      <optional><element name="subtitle"><text/></element></optional>
+    </element>
+  </define>
+</grammar>
