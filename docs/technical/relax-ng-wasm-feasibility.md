@@ -301,7 +301,9 @@ introduced.
 - Exact source ranges require a source-aware extractor over retained text;
   libxml2 DOM lines are not ranges.
 - `xmlRelaxNGDumpTree` is not a model API.
-- No production-quality browser Compact Syntax parser is selected.
+- At Task 17.2 completion no production-quality browser Compact Syntax parser
+  was selected. Task 17.8 later resolved this item with the project-authored,
+  source-preserving TypeScript front end described below.
 - The bounded external sample is not exhaustive conformance; Task 17.9 owns the
   full authority/gate.
 
@@ -323,3 +325,21 @@ remains the DTD/XSD authority. Task 17.3 must not expose `.rng` or `.rnc` in the
 UI; Task 17.4 may ship `.rng` first. A later bounded Compact Syntax evaluation
 must select a source-preserving, in-memory, project-loader-capable browser front
 end before `.rnc` is enabled.
+
+## Task 17.8 resolution note
+
+Task 17.8 preserves the Task 17.2 historical result: RNV was not promoted,
+Trang/Jing remain development oracles, and libxml2 has not become a Compact
+Syntax parser. The previously open front-end problem is resolved by
+`relaxNgCompactSyntax.ts`, a project-authored TypeScript lexer/parser with exact
+original ranges, native diagnostics, annotation preservation, reference
+projection, a neutral semantic AST, and deterministic in-memory RNC-to-RNG XML
+validation serialization.
+
+The serialized XML is transient and never user-visible. A generated-line to
+original-range map translates reliable libxml2 diagnostics; unavailable
+coordinates are omitted. Package validation supplies only same-syntax-family
+members through the existing virtual resolver, so there is no remote access,
+host filesystem access, basename guessing, or implicit `.rnc`/`.rng`
+substitution. No new production dependency, Java runtime, or executable was
+added. Task 17.9 still owns broader external conformance-corpus evidence.

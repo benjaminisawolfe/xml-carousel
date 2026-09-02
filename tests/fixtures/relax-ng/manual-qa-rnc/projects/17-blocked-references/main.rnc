@@ -1,0 +1,4 @@
+start = (
+  external "https://example.invalid/remote.rnc" |
+  external "file:///tmp/local.rnc"
+)

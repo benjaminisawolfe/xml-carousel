@@ -1,0 +1,2 @@
+include "b.rnc"
+a = element a { b? }

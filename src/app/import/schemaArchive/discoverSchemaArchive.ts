@@ -184,7 +184,7 @@ function classifySchemaFormat(
 ): SchemaArchiveEntryFormat | undefined {
   if (/\.xsd$/iu.test(canonicalPath)) return 'xsd';
   if (/\.dtd$/iu.test(canonicalPath)) return 'dtd';
-  if (/\.rng$/iu.test(canonicalPath)) return 'rng';
+  if (/\.(?:rng|rnc)$/iu.test(canonicalPath)) return 'rng';
   return undefined;
 }
 
@@ -518,7 +518,7 @@ export async function discoverSchemaArchive(
     return failure([
       freezeDiagnostic(
         'no-schema-files',
-        'The ZIP archive does not contain any .xsd, .dtd, or .rng files.',
+        'The ZIP archive does not contain any .xsd, .dtd, .rng, or .rnc files.',
       ),
     ]);
   }

@@ -30,7 +30,7 @@ import {
   type RelaxNgSemanticPackageRelationship,
   type RelaxNgStartClause,
 } from './relaxNgSemanticModel';
-import { parseRelaxNgXmlSource } from './relaxNgSourceParser';
+import { parseRelaxNgSource } from './relaxNgSourceParser';
 
 interface SemanticContext {
   readonly sourceFileId: string;
@@ -957,9 +957,10 @@ export function buildRelaxNgSemanticModel(
     left.path.localeCompare(right.path),
   )) {
     try {
-      const parsed = parseRelaxNgXmlSource(
+      const parsed = parseRelaxNgSource(
         source.sourceText,
         source.sourceFileId,
+        source.path,
       );
       const root = parsed.document.root;
       if (!root || root.namespaceUri !== relaxNgStructureNamespace) {

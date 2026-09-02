@@ -1,0 +1,14 @@
+default namespace = "urn:xml-carousel:catalog"
+
+## Basic catalog grammar
+start = catalog
+
+catalog = element catalog {
+  book*
+}
+
+book = element book {
+  attribute id { text },
+  element title { text },
+  element subtitle { text }?
+}

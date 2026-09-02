@@ -98,6 +98,85 @@ describe('Task 17.5 RELAX NG package resolution', () => {
     ).toEqual(['common&amp;base.rng', 'patterns/name.rng']);
   });
 
+  it('extracts RNC references with original ranges and forbids cross-syntax fallback', () => {
+    const compact = rngSource(
+      'schemas/main.rnc',
+      'include "parts/common.rnc"\nstart = external "patterns/item.rnc"',
+    );
+    const references = extractRelaxNgPackageReferences(compact);
+    expect(
+      references.map(({ kind, rawTarget, range }) => ({
+        kind,
+        rawTarget,
+        source: compact.sourceText.slice(range.start.offset, range.end.offset),
+      })),
+    ).toEqual([
+      {
+        kind: 'rng-include',
+        rawTarget: 'parts/common.rnc',
+        source: 'parts/common.rnc',
+      },
+      {
+        kind: 'rng-external-ref',
+        rawTarget: 'patterns/item.rnc',
+        source: 'patterns/item.rnc',
+      },
+    ]);
+
+    const crossSyntax = rngSource(
+      'cross/main.rnc',
+      'include "dependency.rng"\nstart = empty',
+    );
+    expect(
+      buildRelaxNgPackageRelationships(
+        [
+          crossSyntax,
+          rngSource('cross/dependency.rng', `<empty xmlns="${rngNamespace}"/>`),
+        ],
+        new Set(['cross/main.rnc', 'cross/dependency.rng']),
+      ).find(({ rawTarget }) => rawTarget === 'dependency.rng'),
+    ).toMatchObject({ status: 'missing' });
+  });
+
+  it('imports an RNC-only package with shared semantic projection and exact source identity', async () => {
+    const main =
+      '## compact package\ninclude "parts/common.rnc"\nstart = element catalog { shared* }';
+    const common = 'shared = element item { text }';
+    const result = await importSchemaArchivePackage(
+      {
+        filename: 'compact-project.zip',
+        data: await zipBytes({
+          'main.rnc': main,
+          'parts/common.rnc': common,
+        }),
+      },
+      undefined,
+      {
+        async validateRelaxNg({ files, roots }) {
+          return roots.map((_, index) =>
+            validRngResult(`compact:${index}`, files.length),
+          );
+        },
+      },
+    );
+    expect(result.status).toBe('success');
+    if (result.status !== 'success') return;
+    expect(result.summary.rngSourceCount).toBe(2);
+    expect(result.relaxNgSemanticModel?.documents).toHaveLength(2);
+    expect(
+      result.entries.find(
+        ({ packageRelativePath }) => packageRelativePath === 'main.rnc',
+      ),
+    ).toMatchObject({
+      kind: 'rng-source',
+      sourceText: main,
+      rootCandidate: true,
+    });
+    expect(JSON.stringify(result.sourceMarkupByNodeId)).not.toContain(
+      '<grammar',
+    );
+  });
+
   it('resolves safe parents exactly and classifies missing and blocked targets', () => {
     const sources = [
       rngSource(
@@ -403,22 +482,23 @@ describe('Task 17.5 RELAX NG package resolution', () => {
       {
         files: [
           'missing-root.rng',
+          'notes.rnc',
           'root/main.rng',
           'shared/common.rng',
           'shared/pattern.rng',
         ],
-        roots: ['missing-root.rng', 'root/main.rng'],
+        roots: ['missing-root.rng', 'notes.rnc', 'root/main.rng'],
       },
     ]);
     expect(result.summary).toMatchObject({
-      schemaSourceCount: 4,
-      rngSourceCount: 4,
+      schemaSourceCount: 5,
+      rngSourceCount: 5,
       xsdSourceCount: 0,
       dtdSourceCount: 0,
     });
     expect(
       result.project.nodes.filter(({ kind }) => kind === 'relaxNgSchema'),
-    ).toHaveLength(4);
+    ).toHaveLength(5);
     expect(
       result.project.edges.filter(({ kind }) => kind === 'dependsOnSchema'),
     ).toHaveLength(2);
@@ -427,8 +507,9 @@ describe('Task 17.5 RELAX NG package resolution', () => {
         ({ packageRelativePath }) => packageRelativePath === 'notes.rnc',
       ),
     ).toMatchObject({
-      kind: 'ignored',
-      standardsStatus: 'not-a-schema-source',
+      kind: 'rng-source',
+      standardsStatus: 'accepted-schema-source',
+      sourceText: 'start = empty',
     });
     const main = result.entries.find(
       ({ packageRelativePath }) => packageRelativePath === 'root/main.rng',
@@ -506,7 +587,12 @@ describe('Task 17.5 RELAX NG package resolution', () => {
     expect(result.visualization.summary.completeness).toBe('partial');
     expect(
       result.relaxNgSemanticModel?.documents.map(({ path }) => path),
-    ).toEqual(['root/main.rng', 'shared/common.rng', 'shared/pattern.rng']);
+    ).toEqual([
+      'notes.rnc',
+      'root/main.rng',
+      'shared/common.rng',
+      'shared/pattern.rng',
+    ]);
     expect(
       result.relaxNgSemanticModel?.documents.some(
         ({ path }) => path === 'missing-root.rng',

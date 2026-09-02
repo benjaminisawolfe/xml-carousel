@@ -1,0 +1,8 @@
+datatypes xsd = "http://www.w3.org/2001/XMLSchema-datatypes"
+
+start = element values {
+  attribute version { xsd:string "1" },
+  element count { xsd:integer { minInclusive = "0" } },
+  element code { xsd:token - "forbidden" },
+  element multiline { "first" ~ " second" }
+}

@@ -1,0 +1,9 @@
+start = element outer {
+  item,
+  grammar {
+    start = parent item
+    item = element inner { empty }
+  }
+}
+
+item = element inherited { text }

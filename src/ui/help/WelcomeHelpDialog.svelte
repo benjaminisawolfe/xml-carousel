@@ -202,10 +202,11 @@
         <p>
           Apache Xerces-C++ is the authoritative XML, DTD, and XML Schema 1.0
           validator. libxml2 RELAX NG is the authoritative standalone and
-          ZIP-package .rng validator. XML Carousel resolves only safely supplied
-          package dependencies and does not retrieve remote or host-filesystem
-          dependencies. Standards-valid RELAX NG XML syntax is presented through
-          its retained semantic model, with exact source links where available.
+          ZIP-package .rng/.rnc validator. XML Carousel resolves only safely
+          supplied package dependencies and does not retrieve remote or
+          host-filesystem dependencies. Standards-valid RELAX NG XML or Compact
+          Syntax is presented through one retained semantic model, while source
+          links and Copy Source keep the exact syntax originally supplied.
         </p>
         <p>
           Read the bundled <a href="./LICENSE.txt">XML Carousel licence</a>

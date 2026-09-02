@@ -16,6 +16,11 @@ import type {
   RelaxNgValidationRequest,
   RelaxNgValidationResult,
 } from './types';
+import {
+  isRelaxNgCompactPath,
+  parseRelaxNgCompactSyntax,
+  type RelaxNgCompactGeneratedSource,
+} from '../../schema/relaxng';
 
 const runtimeModuleUrl = new URL(
   './runtime/libxml2-relaxng-runtime.js',
@@ -162,8 +167,15 @@ function normalizeNativeDiagnostic(
   status: RelaxNgValidationResult['status'],
   projectPaths: readonly string[],
   dependencyRequests: readonly RelaxNgDependencyRequest[],
+  compactSources: ReadonlyMap<string, RelaxNgCompactGeneratedSource>,
 ): StandardsBoundaryDiagnostic {
   const fileName = safeProjectPath(diagnostic.source, projectPaths);
+  const compactSource =
+    fileName === undefined ? undefined : compactSources.get(fileName);
+  const compactRange =
+    compactSource === undefined || diagnostic.line <= 0
+      ? undefined
+      : compactSource.lineRanges[diagnostic.line];
   return {
     stage: 'standards',
     code: `libxml2-relaxng:${diagnostic.domain}:${diagnostic.nativeCode}`,
@@ -171,7 +183,14 @@ function normalizeNativeDiagnostic(
     message: safeDiagnosticMessage(diagnostic.message),
     category: categoryFor(status, diagnostic, dependencyRequests),
     ...(fileName === undefined ? {} : { fileName }),
-    ...(diagnostic.line > 0 ? { line: diagnostic.line } : {}),
+    ...(compactRange === undefined
+      ? compactSource === undefined && diagnostic.line > 0
+        ? { line: diagnostic.line }
+        : {}
+      : {
+          line: compactRange.start.line,
+          column: compactRange.start.column,
+        }),
     source: 'rng',
   };
 }
@@ -232,13 +251,73 @@ export async function validateWithProductionRelaxNg(
     ]);
   }
 
+  const compactSources = new Map<string, RelaxNgCompactGeneratedSource>();
+  const translatedFiles: RelaxNgValidationRequest['files'][number][] = [];
+  for (let index = 0; index < request.files.length; index += 1) {
+    const file = request.files[index]!;
+    const path = policy.normalizedPaths[index]!;
+    if (!isRelaxNgCompactPath(path)) {
+      translatedFiles.push({ path, bytes: file.bytes });
+      continue;
+    }
+    let sourceText: string;
+    try {
+      sourceText = new TextDecoder('utf-8', { fatal: true }).decode(file.bytes);
+    } catch {
+      return {
+        attemptId: request.attemptId,
+        engine: { name: 'libxml2 RELAX NG', version: '2.15.3' },
+        status: 'invalid',
+        diagnostics: [
+          {
+            stage: 'standards',
+            code: 'rnc:invalid-utf8',
+            severity: 'error',
+            message: 'RELAX NG Compact Syntax source must be valid UTF-8.',
+            category: 'standards-invalid',
+            fileName: path,
+            source: 'rng',
+          },
+        ],
+        dependencyRequests: [],
+        metrics: metricsFor(request),
+      };
+    }
+    const parsed = parseRelaxNgCompactSyntax(
+      sourceText,
+      `relax-ng-validation:${path}`,
+    );
+    if (parsed.diagnostics.length > 0 || !parsed.generated) {
+      return {
+        attemptId: request.attemptId,
+        engine: { name: 'libxml2 RELAX NG', version: '2.15.3' },
+        status: 'invalid',
+        diagnostics: parsed.diagnostics.map((diagnostic) => ({
+          stage: 'standards' as const,
+          code: diagnostic.code,
+          severity: 'error' as const,
+          message: `Compact Syntax ${diagnostic.kind} error: ${diagnostic.message}`,
+          category: 'standards-invalid' as const,
+          fileName: path,
+          line: diagnostic.range.start.line,
+          column: diagnostic.range.start.column,
+          source: 'rng' as const,
+        })),
+        dependencyRequests: [],
+        metrics: metricsFor(request),
+      };
+    }
+    compactSources.set(path, parsed.generated);
+    translatedFiles.push({
+      path,
+      bytes: new TextEncoder().encode(parsed.generated.xml),
+    });
+  }
+
   const normalizedRequest = {
     ...request,
     entryPath,
-    files: request.files.map((file, index) => ({
-      path: policy.normalizedPaths[index]!,
-      bytes: file.bytes,
-    })),
+    files: translatedFiles,
   };
 
   let adapter: RelaxNgAdapter;
@@ -289,6 +368,7 @@ export async function validateWithProductionRelaxNg(
           native.status,
           policy.normalizedPaths,
           dependencyRequests,
+          compactSources,
         ),
       ),
     );
@@ -300,8 +380,11 @@ export async function validateWithProductionRelaxNg(
       dependencyRequests,
       metrics: {
         elapsedMs: native.elapsedMs,
-        fileCount: native.fileCount,
-        inputBytes: native.inputBytes,
+        fileCount: request.files.length,
+        inputBytes: request.files.reduce(
+          (total, file) => total + file.bytes.length,
+          0,
+        ),
       },
     };
   } catch {

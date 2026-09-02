@@ -1,0 +1,3 @@
+include "a.rnc"
+start = a
+b = element b { a? }

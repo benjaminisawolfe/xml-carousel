@@ -1,0 +1,11 @@
+default namespace = "urn:operators"
+
+start = element operators {
+  (element choice-a { empty } | element choice-b { text }),
+  (attribute left { text } & attribute right { text }),
+  element optional { text }?,
+  element repeated { text }*,
+  element required { text }+,
+  element mixed-content { mixed { element inline { text }* } },
+  element token-list { list { token } }
+}

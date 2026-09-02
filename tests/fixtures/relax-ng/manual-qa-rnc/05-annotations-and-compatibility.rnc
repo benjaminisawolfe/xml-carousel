@@ -1,0 +1,10 @@
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace meta = "urn:xml-carousel:manual-qa"
+
+## Documentation shorthand remains original Compact Syntax.
+[ meta:review = "safe inert metadata" ]
+start = element annotated {
+  [ a:defaultValue = "42" ] attribute code { token }?,
+  """multiline
+literal""" >> meta:note [ "following annotation" ]
+}

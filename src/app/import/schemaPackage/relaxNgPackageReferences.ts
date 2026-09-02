@@ -32,17 +32,27 @@ export function extractRelaxNgPackageReferences(
   source: SchemaPackageSourceText,
 ): readonly RelaxNgPackageReference[] {
   if (source.entry.format !== 'rng') return [];
-  return extractRelaxNgSourceReferences(source.sourceText, source.sourceFileId)
-    .map((reference) => ({
-      ...reference,
-      sourcePath: source.entry.packageRelativePath,
-    }))
-    .sort(
-      (left, right) =>
-        left.sourceOrder - right.sourceOrder ||
-        compareUnicodeCodePoints(left.kind, right.kind) ||
-        compareUnicodeCodePoints(left.rawTarget, right.rawTarget),
-    );
+  try {
+    return extractRelaxNgSourceReferences(
+      source.sourceText,
+      source.sourceFileId,
+      source.entry.packageRelativePath,
+    )
+      .map((reference) => ({
+        ...reference,
+        sourcePath: source.entry.packageRelativePath,
+      }))
+      .sort(
+        (left, right) =>
+          left.sourceOrder - right.sourceOrder ||
+          compareUnicodeCodePoints(left.kind, right.kind) ||
+          compareUnicodeCodePoints(left.rawTarget, right.rawTarget),
+      );
+  } catch {
+    // Native Compact Syntax diagnostics or libxml2 XML diagnostics remain the
+    // authority for malformed sources; package graph discovery stays bounded.
+    return [];
+  }
 }
 
 export function buildRelaxNgPackageRelationships(
@@ -63,7 +73,9 @@ export function buildRelaxNgPackageRelationships(
         resolution.status === 'blocked'
           ? 'blocked'
           : resolution.path !== undefined &&
-              suppliedRngPaths.has(resolution.path)
+              suppliedRngPaths.has(resolution.path) &&
+              /\.rnc$/iu.test(reference.sourcePath) ===
+                /\.rnc$/iu.test(resolution.path)
             ? 'resolved'
             : 'missing';
       relationships.push({

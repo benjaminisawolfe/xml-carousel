@@ -17,6 +17,18 @@ export {
 } from './relaxNgSourceParser';
 export { validateRelaxNgSemanticModel } from './validateRelaxNgSemanticModel';
 export {
+  areRelaxNgSemanticallyEquivalent,
+  relaxNgSemanticMeaning,
+} from './relaxNgSemanticEquivalence';
+export {
+  isRelaxNgCompactPath,
+  parseRelaxNgCompactSyntax,
+  type RelaxNgCompactDiagnostic,
+  type RelaxNgCompactDiagnosticKind,
+  type RelaxNgCompactGeneratedSource,
+  type RelaxNgCompactParseResult,
+} from './relaxNgCompactSyntax';
+export {
   relaxNgCompatibilityAnnotationsNamespace,
   relaxNgStructureNamespace,
   type RelaxNgAnnotationAttribute,

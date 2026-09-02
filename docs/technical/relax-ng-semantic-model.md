@@ -2,8 +2,8 @@
 
 ## Boundary
 
-Task 17.6 adds an internal, source-preserving semantic model for standards-valid
-RELAX NG XML syntax. libxml2 RELAX NG 2.15.3 remains the only production
+Tasks 17.6 and 17.8 provide one internal, source-preserving semantic model for
+standards-valid RELAX NG XML and Compact Syntax. libxml2 RELAX NG 2.15.3 remains the only production
 validity authority. The TypeScript extractor and binder never reject a schema,
 replace libxml2 diagnostics, or turn a semantic limitation into standards
 invalidity.
@@ -19,14 +19,19 @@ without changing the retained semantic authority or reparsing source.
 The pipeline is:
 
 ```text
-retained RNG source
-  -> existing namespace-aware XSD XML lexer/parser and source map
+retained .rng -> namespace-aware XML parser ----┐
+                                                ├-> neutral RELAX NG AST
+retained .rnc -> source-preserving RNC parser --┘
   -> RELAX NG source parser boundary
   -> package-reference projection
   -> semantic construction and graph binding
 ```
 
-`relaxNgSourceParser.ts` is the one lower-level RELAX NG source traversal.
+`relaxNgSourceParser.ts` is the shared lower-level RELAX NG source traversal.
+It dispatches XML only to the XML parser and Compact Syntax only to the RNC
+front end. The latter creates XML-shaped AST nodes whose ranges and raw lexical
+text still point into the original `.rnc`; it does not pretend the source was
+XML.
 Task 17.5 `include`/`externalRef` extraction now projects from it, so package
 resolution and semantic extraction cannot diverge through separate XML lexers.
 The package reference projection remains usable for readable invalid or blocked
@@ -60,7 +65,7 @@ offsets.
 Source-backed records retain `sourceFileId`, a UTF-16 source range, and source
 order. Named or valued constructs additionally retain reliable attribute or
 content ranges for `name`, `href`, `combine`, `type`, `datatypeLibrary`, `ns`,
-value, and param data where the shared XML AST provides them. Missing precision
+value, and param data where the syntax-specific source AST provides them. Missing precision
 is omitted rather than fabricated. Exact lexical value source is retained
 separately from decoded semantic value.
 
@@ -137,6 +142,12 @@ attribute-pattern metadata. This is preservation, not a second DTD
 Compatibility validator, and no raw metadata is rendered as HTML.
 
 ## Integration, lifecycle, and findings
+
+`relaxNgSemanticEquivalence.ts` removes only syntax/source identity and maps
+graph references to stable semantic signatures. Paired tests compare grammar,
+pattern, name-class, datatype, annotation, binding, and relationship meaning
+while separately asserting distinct filenames, source IDs, lexical text, and
+ranges.
 
 The dedicated standalone worker appends semantic data only after a `valid`
 libxml2 result. If extraction fails, the worker returns the unchanged valid

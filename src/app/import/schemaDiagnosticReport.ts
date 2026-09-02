@@ -141,7 +141,7 @@ function diagnosticSource(
   if (stage === 'file' || stage === 'worker') return 'project';
   if (fileName?.toLocaleLowerCase().endsWith('.dtd')) return 'dtd';
   if (fileName?.toLocaleLowerCase().endsWith('.xsd')) return 'xsd';
-  if (fileName?.toLocaleLowerCase().endsWith('.rng')) return 'rng';
+  if (/\.(?:rng|rnc)$/iu.test(fileName ?? '')) return 'rng';
   if (!stage) return undefined;
   if (context.format === 'dtd') return 'dtd';
   if (context.format === 'xsd') return 'xsd';

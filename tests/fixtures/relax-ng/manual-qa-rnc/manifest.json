@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "provenance": "Project-authored for XML Carousel Task 17.8; no third-party corpus content.",
+  "equivalence": [
+    {
+      "file": "equivalence/representative-basic.rnc",
+      "sha256": "3388dafcb952794e167b3436b121fa062dd43fb7bb776f75d471cbf0e4a65d6a"
+    },
+    {
+      "file": "equivalence/representative-basic.rng",
+      "sha256": "8f0207e89e38a2a74c15c60fe4eb9392353816249ea93b0a846cae30ce3b88a5"
+    }
+  ],
+  "loose": [
+    {
+      "file": "01-basic-grammar.rnc",
+      "sha256": "d8cca889c87bea6b45e6aa1afae1d426f6ee2fa38a95ca479102743cdcecd8ea",
+      "expected": "valid"
+    },
+    {
+      "file": "02-pattern-operators.rnc",
+      "sha256": "808b6953f33dd3f903715163eb2c58972d3137fe6e7f4261ce04dbc41a51de86",
+      "expected": "valid"
+    },
+    {
+      "file": "03-name-classes.rnc",
+      "sha256": "5a5e3d668a6325344d2c1dc9f32845c8615b9e425ff700b7a3edd92259c7697b",
+      "expected": "valid"
+    },
+    {
+      "file": "04-datatypes-and-values.rnc",
+      "sha256": "94c397803ac8ec3096199a3bf6ccf27c05048cf9b6e8467fa9152ba190cceffc",
+      "expected": "valid"
+    },
+    {
+      "file": "05-annotations-and-compatibility.rnc",
+      "sha256": "c0303808a69ac535194d6d5f2319d9bf1744b0ff03faac5ed21c1344449e6074",
+      "expected": "valid"
+    },
+    {
+      "file": "06-nested-grammar-parent-ref.rnc",
+      "sha256": "bf48bd157dc0573d1940f43aab379fe5cee985219e85fe77cfb62df3e8d74b5c",
+      "expected": "valid"
+    },
+    {
+      "file": "07-large-semantic-model-a.rnc",
+      "sha256": "c59181fe42a03a84c16e598966942d50cc651973b68d55a4a39777f2d402b232",
+      "expected": "valid"
+    },
+    {
+      "file": "08-large-semantic-model-b.rnc",
+      "sha256": "1b5d7024c60867517a34fc9c144a508231c1e54fd8e632c5ea63fe6e1e9ea3fe",
+      "expected": "valid"
+    },
+    {
+      "file": "09-invalid-syntax.rnc",
+      "sha256": "e9ebac18063869219cf409dd597f600c4aedec1c6051da8fe6b3fd1360531150",
+      "expected": "syntax-invalid"
+    },
+    {
+      "file": "10-blocked-external.rnc",
+      "sha256": "0dd37f6cc707d8cc618ae1b395dced8f351750240e83024e7b95d25815fbb974",
+      "expected": "blocked"
+    }
+  ],
+  "packages": [
+    {
+      "name": "11-multi-file-includes",
+      "file": "11-multi-file-includes.zip",
+      "members": ["main.rnc", "parts/common.rnc", "parts/types.rnc"],
+      "sha256": "448fb342b5b8a3c78f765c7c0b7242acb2a55b320823154224eac48c08c5fad9"
+    },
+    {
+      "name": "12-external-project",
+      "file": "12-external-project.zip",
+      "members": ["main.rnc", "patterns/address.rnc"],
+      "sha256": "dfc1b5547f821fd9720b16103763ce972288a30a1aa056a5ce8acbff1f3702e9"
+    },
+    {
+      "name": "13-shared-dependency",
+      "file": "13-shared-dependency.zip",
+      "members": ["a.rnc", "b.rnc", "shared.rnc"],
+      "sha256": "b6670b29650625a8ef4f9a81371c023e9f36630998e6f7669854b6b030630cb5"
+    },
+    {
+      "name": "14-nested-include",
+      "file": "14-nested-include.zip",
+      "members": ["levels/one.rnc", "levels/two/leaf.rnc", "main.rnc"],
+      "sha256": "6da7ae635cacb1a7c813c71278e6d6a3ede2540e6fd677f62c1591d7c2529a72"
+    },
+    {
+      "name": "15-mixed-large-rnc",
+      "file": "15-mixed-large-rnc.zip",
+      "members": ["alpha.rnc", "beta.rnc", "main.rnc"],
+      "sha256": "fa962e229d4a0dc09168637e1cc03c8770eaa20a6a6ad0586ca300f4ae13fbc6"
+    },
+    {
+      "name": "16-missing-dependency",
+      "file": "16-missing-dependency.zip",
+      "members": ["main.rnc"],
+      "sha256": "fdb212d8d29f396b35626fd1649bedcf8ecb2b28e673a5099fb6ef4ce487f7ac"
+    },
+    {
+      "name": "17-blocked-references",
+      "file": "17-blocked-references.zip",
+      "members": ["main.rnc"],
+      "sha256": "5c5bd190084e644f3a9dcaa1fa343b4f12704b233a1766f86fe0a091e8e9ba22"
+    },
+    {
+      "name": "18-cycles",
+      "file": "18-cycles.zip",
+      "members": ["a.rnc", "b.rnc"],
+      "sha256": "2446c222707a54e1902412529fe72d5a4c5a5b54e6de910dee916a2de5c3c613"
+    },
+    {
+      "name": "19-mixed-inventory",
+      "file": "19-mixed-inventory.zip",
+      "members": ["compact.rnc", "schema.dtd", "schema.xsd", "xml.rng"],
+      "sha256": "29f46c135e8335f2e718eca7d652941139fe5ad3df7b320908ca22c9e6c804ae"
+    }
+  ]
+}

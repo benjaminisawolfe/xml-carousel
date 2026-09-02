@@ -1,0 +1,6 @@
+default namespace = "urn:test"
+
+start = element root {
+  attribute id { token },
+  (element item { text } | empty)*
+}

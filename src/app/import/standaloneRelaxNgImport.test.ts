@@ -2,7 +2,10 @@ import { get } from 'svelte/store';
 import { describe, expect, it, vi } from 'vitest';
 import { importDtdSource } from '../../schema/dtd';
 import { importXsdSource } from '../../schema/xsd';
-import { buildRelaxNgSemanticModel } from '../../schema/relaxng';
+import {
+  buildRelaxNgSemanticModel,
+  type StandaloneRelaxNgImportResult,
+} from '../../schema/relaxng';
 import type {
   RelaxNgValidationRequest,
   RelaxNgValidationResult,
@@ -128,7 +131,8 @@ describe('standalone RNG import controller', () => {
     expect(Array.from(request!.files[0]!.bytes)).toEqual(
       Array.from(new TextEncoder().encode(sourceText)),
     );
-    const activated = activateRelaxNg.mock.calls[0]![0];
+    const activated = activateRelaxNg.mock
+      .calls[0]![0] as StandaloneRelaxNgImportResult;
     expect(activated.project.nodes).toHaveLength(1);
     expect(
       activated.sourceMarkupByNodeId[activated.initialFocusNodeId]!
@@ -142,26 +146,71 @@ describe('standalone RNG import controller', () => {
     });
   });
 
-  it('rejects Compact Syntax and other extensions before reading or starting a worker', async () => {
+  it('accepts RNC, activates its semantic start, and retains Compact Syntax source identity', async () => {
+    const sourceText =
+      '## exact Compact source\nstart = element bøøk { attribute id { token }?, text }\n';
+    const semanticModel = buildRelaxNgSemanticModel({
+      sources: [
+        {
+          sourceFileId: 'imported-rng-source:schema.rnc',
+          path: 'schema.rnc',
+          sourceText,
+        },
+      ],
+    }).model;
+    const activateRelaxNg = vi.fn((result) => ({
+      applied: true as const,
+      state: {
+        project: result.project,
+        origin: 'imported' as const,
+        sourceFilename: 'schema.rnc',
+      },
+    }));
+    const controller = createSchemaFileImportController(
+      dependencies({
+        startRelaxNgValidation: (request) =>
+          completedAttempt(
+            request,
+            validationResult(request.attemptId, { semanticModel }),
+          ),
+        activateRelaxNg,
+      }),
+    );
+
+    await expect(
+      controller.openRng(readableFile('schema.rnc', sourceText)),
+    ).resolves.toMatchObject({ status: 'success', filename: 'schema.rnc' });
+    const activated = activateRelaxNg.mock
+      .calls[0]![0] as StandaloneRelaxNgImportResult;
+    expect(activated.project.sourceFiles).toEqual([
+      expect.objectContaining({ filename: 'schema.rnc' }),
+    ]);
+    expect(
+      activated.project.nodes
+        .flatMap(({ properties }) => properties ?? [])
+        .find(({ label }) => label === 'Syntax'),
+    ).toMatchObject({ value: 'RELAX NG Compact Syntax' });
+    expect(JSON.stringify(activated.sourceMarkupByNodeId)).toContain(
+      'element bøøk',
+    );
+    expect(JSON.stringify(activated.sourceMarkupByNodeId)).not.toContain(
+      '<grammar',
+    );
+  });
+
+  it('rejects extensions outside the two RELAX NG source syntaxes before reading or starting a worker', async () => {
     const readRelaxNg = vi.fn();
     const startRelaxNgValidation = vi.fn();
     const controller = createSchemaFileImportController(
       dependencies({ readRelaxNg, startRelaxNgValidation }),
     );
 
-    await controller.openRng(readableFile('schema.rnc'));
-    expect(get(controller.state)).toMatchObject({
-      status: 'failure',
-      format: 'rng',
-      presentation: {
-        message:
-          'RELAX NG Compact Syntax (.rnc) is not supported yet. Choose a .rng file.',
-      },
-    });
     await controller.openRng(readableFile('schema.xml'));
     expect(get(controller.state)).toMatchObject({
       status: 'failure',
-      presentation: { message: 'Choose a file with a .rng extension.' },
+      presentation: {
+        message: 'Choose a file with a .rng or .rnc extension.',
+      },
     });
     expect(readRelaxNg).not.toHaveBeenCalled();
     expect(startRelaxNgValidation).not.toHaveBeenCalled();

@@ -1,0 +1,8 @@
+default namespace = "urn:large:b"
+start = element registry { (group-one | group-two)+ }
+group-one = element group-one { (member-a & member-b?) }
+group-two = element group-two { (member-c | member-d)* }
+member-a = element member-a { text }
+member-b = element member-b { text }
+member-c = element member-c { text }
+member-d = element member-d { text }

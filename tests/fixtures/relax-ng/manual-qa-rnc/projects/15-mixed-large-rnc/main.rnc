@@ -1,0 +1,3 @@
+include "alpha.rnc"
+include "beta.rnc"
+start = element mixed-large { (alpha | beta)* }

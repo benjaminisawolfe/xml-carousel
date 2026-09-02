@@ -1,0 +1,7 @@
+default namespace = "urn:large:a"
+start = element collection { (entry-a | entry-b | entry-c | entry-d | entry-e)* }
+entry-a = element entry-a { attribute id { token }, text }
+entry-b = element entry-b { attribute id { token }, text }
+entry-c = element entry-c { attribute id { token }, text }
+entry-d = element entry-d { attribute id { token }, text }
+entry-e = element entry-e { attribute id { token }, text }

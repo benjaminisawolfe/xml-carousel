@@ -169,7 +169,7 @@ export function isSchemaFilename(
       : format === 'xsd'
         ? 'xsd'
         : format === 'rng'
-          ? 'rng'
+          ? '(?:rng|rnc)'
           : 'zip';
   return new RegExp(`\\.${extension}$`, 'i').test(
     normalizeSchemaFilename(filename),
@@ -261,7 +261,7 @@ function unsupportedExtensionMessage(format: SchemaFileFormat): string {
   if (format === 'dtd') return 'Choose a file with a .dtd extension.';
   if (format === 'xsd') return 'Choose a file with a .xsd extension.';
   if (format === 'rng') {
-    return 'Choose a file with a .rng extension.';
+    return 'Choose a file with a .rng or .rnc extension.';
   }
   return 'Choose a file with a .zip extension.';
 }
@@ -888,9 +888,7 @@ export function createSchemaFileImportController(
       return Promise.resolve({ status: 'stale' });
     }
     if (!isSchemaFilename('rng', filename)) {
-      const message = filename.toLocaleLowerCase().endsWith('.rnc')
-        ? 'RELAX NG Compact Syntax (.rnc) is not supported yet. Choose a .rng file.'
-        : unsupportedExtensionMessage('rng');
+      const message = unsupportedExtensionMessage('rng');
       return Promise.resolve(
         failureOutcome(
           'rng',

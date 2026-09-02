@@ -85,7 +85,8 @@ function messageWithContext(
 function fallbackMessage(format: SchemaFileFormat): string {
   if (format === 'dtd') return 'The selected DTD could not be imported.';
   if (format === 'xsd') return 'The selected XSD could not be imported.';
-  if (format === 'rng') return 'The selected RNG could not be imported.';
+  if (format === 'rng')
+    return 'The selected RELAX NG schema could not be imported.';
   return 'The selected ZIP schema package could not be imported.';
 }
 

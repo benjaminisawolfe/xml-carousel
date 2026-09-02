@@ -1,0 +1,3 @@
+include "parts/common.rnc"
+include "parts/types.rnc"
+start = element catalog { common*, typed? }
