@@ -17,6 +17,7 @@ export type { SchemaEdgeKind, SchemaNodeKind } from './schemaKinds';
 export {
   schemaEdgeKinds,
   schemaNodeKinds,
+  relaxNgPresentationNodeKinds,
   standaloneSchemaPreviewNodeKinds,
 } from './schemaKinds';
 export type { CompleteVisualizationSchemaNodeKind } from './schemaKinds';

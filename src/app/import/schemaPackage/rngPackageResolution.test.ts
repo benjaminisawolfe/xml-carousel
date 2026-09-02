@@ -2,6 +2,7 @@ import JSZip from 'jszip';
 import { describe, expect, it } from 'vitest';
 import type { RelaxNgValidationResult } from '../../../standards/relaxng';
 import { buildProjectSearchIndex } from '../../search';
+import { buildSchemaSetOutlinePresentation } from '../../../ui/presentation/schemaSetOutlinePresentation';
 import { importSchemaArchivePackage } from './importSchemaArchivePackage';
 import {
   buildRelaxNgPackageRelationships,
@@ -11,6 +12,11 @@ import { deriveSchemaPackageSourceFileId } from './schemaPackageRemapping';
 import { selectSchemaPackageEntryRoots } from './schemaPackageEntryRoots';
 import type { SchemaPackageImportExecution } from './schemaPackageTypes';
 import type { SchemaPackageSourceText } from './schemaPackageDecoding';
+import includeMain from '../../../../tests/fixtures/relax-ng/manual-qa/projects/11-multi-file-includes/main.rng?raw';
+import includeCommon from '../../../../tests/fixtures/relax-ng/manual-qa/projects/11-multi-file-includes/parts/common.rng?raw';
+import includeTypes from '../../../../tests/fixtures/relax-ng/manual-qa/projects/11-multi-file-includes/parts/types.rng?raw';
+import externalMain from '../../../../tests/fixtures/relax-ng/manual-qa/projects/12-external-ref-project/main.rng?raw';
+import externalAddress from '../../../../tests/fixtures/relax-ng/manual-qa/projects/12-external-ref-project/patterns/address.rng?raw';
 
 const rngNamespace = 'http://relaxng.org/ns/structure/1.0';
 
@@ -221,7 +227,7 @@ describe('Task 17.5 RELAX NG package resolution', () => {
     ).toMatchObject({
       dependentCount: 2,
       sharedDependency: true,
-      nodeCount: 1,
+      nodeCount: 2,
     });
     expect(
       result.entries
@@ -242,6 +248,102 @@ describe('Task 17.5 RELAX NG package resolution', () => {
     expect(structuredClone(result.relaxNgSemanticModel)).toEqual(
       result.relaxNgSemanticModel,
     );
+    expect(new Set(result.project.nodes.map(({ id }) => id)).size).toBe(
+      result.project.nodes.length,
+    );
+    expect(
+      result.project.nodes.filter(
+        ({ sourceFileId }) =>
+          sourceFileId ===
+          result.sources.find(
+            ({ packageRelativePath }) => packageRelativePath === 'shared.rng',
+          )?.sourceFileId,
+      ),
+    ).toHaveLength(2);
+  });
+
+  it('presents resolved includes and external references as shared package semantics', async () => {
+    const result = await importSchemaArchivePackage(
+      {
+        filename: 'rng-semantic-package.zip',
+        data: await zipBytes({
+          'include/main.rng': includeMain,
+          'include/parts/common.rng': includeCommon,
+          'include/parts/types.rng': includeTypes,
+          'external/main.rng': externalMain,
+          'external/patterns/address.rng': externalAddress,
+        }),
+      },
+      undefined,
+      {
+        async validateRelaxNg({ files, roots }) {
+          return roots.map((_, index) =>
+            validRngResult(`semantic:${index}`, files.length),
+          );
+        },
+      },
+    );
+
+    expect(result.status).toBe('success');
+    if (result.status !== 'success') return;
+    expect(
+      result.project.nodes.find(({ id }) => id === result.initialFocusNodeId)
+        ?.kind,
+    ).toBe('relaxNgElement');
+    expect(
+      result.project.nodes.filter(({ kind }) => kind === 'relaxNgInclude'),
+    ).toHaveLength(2);
+    expect(
+      result.project.nodes.filter(
+        ({ kind }) => kind === 'relaxNgExternalReference',
+      ),
+    ).toHaveLength(1);
+    const labelDefinitions = result.project.nodes.filter(
+      ({ kind, name }) => kind === 'relaxNgDefinition' && name === 'label',
+    );
+    expect(labelDefinitions).toHaveLength(2);
+    expect(new Set(labelDefinitions.map(({ id }) => id)).size).toBe(2);
+    expect(
+      result.relaxNgSemanticModel?.documents.filter(
+        ({ path }) => path === 'include/parts/types.rng',
+      ),
+    ).toHaveLength(1);
+    expect(
+      result.entries
+        .filter(({ kind }) => kind === 'rng-source')
+        .every(({ visualizationStatus }) => visualizationStatus === 'complete'),
+    ).toBe(true);
+    expect(result.visualization.summary).toMatchObject({
+      completeness: 'complete',
+      totalFindingCount: 0,
+    });
+
+    const outline = buildSchemaSetOutlinePresentation({
+      archiveFilename: result.manifest.archiveFilename,
+      manifest: result.manifest,
+      project: result.project,
+      sources: result.sources,
+      entries: result.entries,
+      summary: result.summary,
+      unresolvedReferences: result.unresolvedReferences,
+    });
+    expect(
+      outline.sources
+        .find(({ filename }) => filename === 'include/main.rng')
+        ?.groups.map(({ label }) => label),
+    ).toEqual(
+      expect.arrayContaining([
+        'Start symbols',
+        'Named definitions',
+        'Includes',
+        'Grammar scopes',
+      ]),
+    );
+    expect(
+      outline.sources
+        .find(({ filename }) => filename === 'external/main.rng')
+        ?.groups.map(({ label }) => label),
+    ).toContain('References');
   });
 
   it('retains source-only nodes, relationships, Problems, inventory, and Search', async () => {
@@ -334,7 +436,7 @@ describe('Task 17.5 RELAX NG package resolution', () => {
     expect(main).toMatchObject({
       kind: 'rng-source',
       standardsStatus: 'accepted-schema-source',
-      visualizationStatus: 'source-only',
+      visualizationStatus: 'complete',
       dependencyCount: 2,
     });
     expect(
@@ -410,6 +512,31 @@ describe('Task 17.5 RELAX NG package resolution', () => {
         ({ path }) => path === 'missing-root.rng',
       ),
     ).toBe(false);
+    const outline = buildSchemaSetOutlinePresentation({
+      archiveFilename: result.manifest.archiveFilename,
+      manifest: result.manifest,
+      project: result.project,
+      sources: result.sources,
+      entries: result.entries,
+      summary: result.summary,
+      unresolvedReferences: result.unresolvedReferences,
+    });
+    expect(
+      outline.sources
+        .find(({ filename }) => filename === 'root/main.rng')
+        ?.groups.map(({ label }) => label),
+    ).toEqual(
+      expect.arrayContaining([
+        'RELAX NG source document',
+        'Includes',
+        'Grammar scopes',
+      ]),
+    );
+    expect(
+      outline.sources
+        .find(({ filename }) => filename === 'missing-root.rng')
+        ?.groups.map(({ label }) => label),
+    ).toEqual(['RELAX NG source document']);
   });
 
   it('keeps Xerces and libxml2 inputs separate in a mixed package', async () => {

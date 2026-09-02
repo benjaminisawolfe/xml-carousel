@@ -757,14 +757,21 @@ export function createSchemaFileImportController(
       importResult.visualization.findings,
       { attemptId, format: 'rng', attemptedFileName: filename },
     );
-    activeWarningState = {
-      status: 'warning',
-      format: 'rng',
-      filename,
-      diagnostics: visualizationDiagnostics,
-      totalWarningCount: importResult.visualization.summary.totalFindingCount,
-      visualizationSummary: importResult.visualization.summary,
-    };
+    activeWarningState =
+      visualizationDiagnostics.length > 0 ||
+      importResult.visualization.summary.completeness === 'partial'
+        ? {
+            status: 'warning',
+            format: 'rng',
+            filename,
+            diagnostics: visualizationDiagnostics,
+            totalWarningCount:
+              importResult.visualization.summary.totalFindingCount,
+            ...(importResult.visualization.summary.completeness === 'partial'
+              ? { visualizationSummary: importResult.visualization.summary }
+              : {}),
+          }
+        : undefined;
     diagnosticReportStore.set(undefined);
     publishActiveWarningOrIdle();
     return { status: 'success', format: 'rng', filename };

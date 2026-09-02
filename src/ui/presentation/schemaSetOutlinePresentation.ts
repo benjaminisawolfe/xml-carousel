@@ -625,6 +625,48 @@ function dtdGroups(
   );
 }
 
+function relaxNgGroups(
+  input: SchemaSetOutlineInput,
+  sourceFileId: string,
+  sourceNodes: readonly SchemaNode[],
+): readonly SchemaSetNodeGroupPresentation[] {
+  const definitions = [
+    ['relax-ng-source', 'RELAX NG source document', ['relaxNgSchema']],
+    ['relax-ng-starts', 'Start symbols', ['relaxNgStart']],
+    ['relax-ng-definitions', 'Named definitions', ['relaxNgDefinition']],
+    ['relax-ng-elements', 'Element patterns', ['relaxNgElement']],
+    ['relax-ng-attributes', 'Attribute patterns', ['relaxNgAttribute']],
+    [
+      'relax-ng-references',
+      'References',
+      ['relaxNgReference', 'relaxNgExternalReference'],
+    ],
+    ['relax-ng-includes', 'Includes', ['relaxNgInclude']],
+    ['relax-ng-grammars', 'Grammar scopes', ['relaxNgGrammar']],
+    [
+      'relax-ng-patterns',
+      'Patterns and name classes',
+      ['relaxNgPattern', 'relaxNgNameClass'],
+    ],
+  ] as const;
+  return definitions
+    .map(([key, label, kinds]) =>
+      group(
+        input,
+        sourceFileId,
+        key,
+        label,
+        sourceNodes.filter(({ kind }) =>
+          (kinds as readonly SchemaNodeKind[]).includes(kind),
+        ),
+        true,
+      ),
+    )
+    .filter(
+      (value): value is SchemaSetNodeGroupPresentation => value !== undefined,
+    );
+}
+
 function sourceFilename(
   project: SchemaProject,
   sourceFileId: string | undefined,
@@ -722,7 +764,8 @@ export function buildSchemaSetOutlinePresentation(
             ? 'DTD'
             : 'RELAX NG',
       sourceOrder: source.sourceOrder,
-      nodeCount: source.nodeCount,
+      nodeCount:
+        source.format === 'rng' ? sourceNodes.length : source.nodeCount,
       rootCount: source.rootNodeIds.length,
       unresolvedReferenceCount: unresolvedReferences.length,
       groups:
@@ -735,19 +778,7 @@ export function buildSchemaSetOutlinePresentation(
             )
           : source.format === 'dtd'
             ? dtdGroups(input, source.sourceFileId, sourceNodes, rootIds)
-            : [
-                group(
-                  input,
-                  source.sourceFileId,
-                  'relax-ng-source',
-                  'RELAX NG source document',
-                  sourceNodes.filter(({ kind }) => kind === 'relaxNgSchema'),
-                  true,
-                ),
-              ].filter(
-                (value): value is SchemaSetNodeGroupPresentation =>
-                  value !== undefined,
-              ),
+            : relaxNgGroups(input, source.sourceFileId, sourceNodes),
       unresolvedReferences,
     } satisfies SchemaSetSourcePresentation;
   });

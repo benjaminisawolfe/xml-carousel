@@ -23,9 +23,11 @@ runtime dependency.
 source-file records, relationship kinds, validation, and indexed query
 helpers. DTD, XSD, sample, and package imports all converge on this model.
 Format-specific detail stays in metadata maps owned by the active-project
-store rather than changing the shared graph shape. The standalone RELAX NG
-preview also uses this model, but deliberately activates only one source-first
-schema node until structural RELAX NG normalization is implemented.
+store. RELAX NG keeps its normalized semantic model in active-project metadata
+and projects semantic identities, bindings, and source ranges through a small
+adapter into the same presentation graph. Original `relaxNgSchema`
+source-document nodes remain present for source-first fallback and package
+orientation.
 
 Stable node IDs connect the normalized graph, search index, navigation path,
 inspector target, and presentation state. `validateSchemaProject.ts` checks a
@@ -88,9 +90,11 @@ Standalone `.rng` imports transfer the exact selected bytes to this worker;
 the worker validates only the one supplied virtual file and has no network or
 host-filesystem resolver. After a standards-valid result, `src/schema/relaxng/`
 reuses the namespace-aware XML source AST to build a clone-safe, source-ranged
-RELAX NG semantic model. The active project retains that internal model while
-continuing to expose the intentionally minimal source-first presentation and
-complete original text; presentation relationships are not invented yet.
+RELAX NG semantic model. `relaxNgPresentationProjector.ts` maps that retained
+model into Search, Navigation, carousel, Inspector, and source-markup entities
+without reparsing source. A grammar's effective start is the preferred initial
+focus. If semantic extraction is absent or fails nonfatally, the original
+source-document node and complete text remain the usable fallback.
 
 Standalone validation remains separate from the Xerces DTD/XSD/ZIP worker
 because the engine protocols have different responsibilities. For an RNG ZIP,
@@ -100,7 +104,10 @@ DTD/XSD roots continue through Xerces only. DTD/XSD-only ZIPs do not load the
 RELAX NG runtime, and worker termination discards both engines' attempt state.
 After root validation, the package worker models only accepted RNG
 root/dependency closures, reusing Task 17.5 relationship identities for include
-and externalRef binding. Invalid and blocked RNG members remain source-first.
+and externalRef binding. Eligible documents are projected once into shared
+presentation nodes; includes and references link to targets rather than
+copying or recursively expanding them. Invalid and blocked RNG members remain
+source-first.
 
 ## Worker protocol and lifecycle
 
@@ -110,7 +117,8 @@ and externalRef binding. Invalid and blocked RNG members remain source-first.
 events, and one terminal success or failure. The runtime parses, builds, and
 prepares the search index off the main thread. Standalone RNG validation uses
 its dedicated RELAX NG worker protocol and returns only standards validation
-outcomes; the controller builds the small source-first project after success.
+outcomes; after success the controller builds the source document and semantic
+presentation project from the worker-retained model.
 
 `schemaFileImportController.ts` owns one shared revision and active-task
 authority across DTD, XSD, RNG, and ZIP. A new request, explicit cancellation,
@@ -188,8 +196,9 @@ combination.
 ## Source markup and safe text
 
 DTD and XSD importers retain declaration-oriented source excerpts keyed by
-normalized node ID; the standalone RELAX NG preview retains the complete `.rng`
-text as its one node's source range. `sourceMarkupPresentation.ts` is the central presentation
+normalized node ID. RELAX NG retains the complete `.rng` source once on each
+source-document node and projects exact semantic ranges as bounded excerpts.
+`sourceMarkupPresentation.ts` is the central presentation
 boundary for source identity, explicit location precision, and safe fragment
 selection. It uses a supplied standalone filename or a package-relative path,
 rejects absolute paths, and omits identity or coordinates when the retained

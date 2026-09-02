@@ -1,5 +1,6 @@
 import {
   getSchemaNode,
+  relaxNgPresentationNodeKinds,
   type SchemaNodeId,
   type SchemaNodeKind,
   type SchemaNodeSourceMarkup,
@@ -258,7 +259,11 @@ export function isSourceMarkupSyntaxCompatible(
   nodeKind: SchemaNodeKind,
   syntax: SchemaNodeSourceMarkup['syntax'],
 ): boolean {
-  if (syntax === 'rng') return nodeKind === 'relaxNgSchema';
+  if (syntax === 'rng') {
+    return (relaxNgPresentationNodeKinds as readonly SchemaNodeKind[]).includes(
+      nodeKind,
+    );
+  }
   return syntax === 'dtd'
     ? dtdSourceMarkupNodeKinds.includes(nodeKind)
     : xsdSourceMarkupNodeKinds.includes(nodeKind);

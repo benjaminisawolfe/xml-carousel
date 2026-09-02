@@ -204,7 +204,8 @@
           validator. libxml2 RELAX NG is the authoritative standalone and
           ZIP-package .rng validator. XML Carousel resolves only safely supplied
           package dependencies and does not retrieve remote or host-filesystem
-          dependencies; structural RELAX NG visualization is not available yet.
+          dependencies. Standards-valid RELAX NG XML syntax is presented through
+          its retained semantic model, with exact source links where available.
         </p>
         <p>
           Read the bundled <a href="./LICENSE.txt">XML Carousel licence</a>

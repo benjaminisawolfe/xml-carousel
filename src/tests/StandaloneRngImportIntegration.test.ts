@@ -119,19 +119,23 @@ describe('standalone RNG application workflow', () => {
       name: 'annotation.rng',
     });
     await waitFor(() => expect(heading).toHaveFocus());
-    expect(screen.getByText('RELAX NG schema')).toBeVisible();
+    expect(screen.getAllByText('RELAX NG schema').length).toBeGreaterThan(0);
     await fireEvent.click(
       screen.getByRole('button', { name: /inspect annotation\.rng/i }),
     );
     expect(heading).toBeVisible();
-    expect(screen.getByText('RELAX NG XML syntax')).toBeVisible();
-    expect(screen.getByText('libxml2 RELAX NG 2.15.3')).toBeVisible();
+    expect(screen.getAllByText('RELAX NG XML syntax').length).toBeGreaterThan(
+      0,
+    );
+    expect(
+      screen.getAllByText('libxml2 RELAX NG 2.15.3').length,
+    ).toBeGreaterThan(0);
     const warning = container.querySelector<HTMLElement>(
       '[data-schema-import-warning]',
     )!;
     expect(
       within(warning).getByText(
-        'This RELAX NG schema is standards-valid. Structural RELAX NG visualization is not available yet; the complete retained source remains available.',
+        'This RELAX NG schema is standards-valid, but semantic presentation data is unavailable; the complete retained source remains available.',
       ),
     ).toBeVisible();
 

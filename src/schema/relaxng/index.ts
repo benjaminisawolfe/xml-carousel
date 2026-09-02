@@ -6,6 +6,11 @@ export {
 } from './standaloneRelaxNgProject';
 export { buildRelaxNgSemanticModel } from './relaxNgSemanticBuilder';
 export {
+  projectRelaxNgSemanticPresentation,
+  type RelaxNgPresentationProjection,
+  type RelaxNgPresentationProjectionInput,
+} from './relaxNgPresentationProjector';
+export {
   extractRelaxNgSourceReferences,
   parseRelaxNgXmlSource,
   type RelaxNgSourceReference,

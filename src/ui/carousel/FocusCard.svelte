@@ -222,7 +222,12 @@
       </section>
 
       {#if summary.xsdProperties.length > 0}
-        <dl class="xsd-metadata" aria-label="XSD orientation">
+        <dl
+          class="xsd-metadata"
+          aria-label={summary.kind.startsWith('relaxNg')
+            ? 'RELAX NG semantic orientation'
+            : 'XSD orientation'}
+        >
           {#each summary.xsdProperties as property (property.id)}
             <div title={`${property.label}: ${property.value}`}>
               <dt>{property.label}</dt>

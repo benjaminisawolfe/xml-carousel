@@ -5,6 +5,7 @@ import {
 import {
   schemaEdgeKinds,
   schemaNodeKinds,
+  relaxNgPresentationNodeKinds,
   type CompleteVisualizationSchemaNodeKind,
   type SchemaEdgeKind,
   type SchemaNodeKind,
@@ -310,47 +311,71 @@ export const schemaNodeReachabilityContracts = Object.freeze(
   ) as Record<SchemaNodeKind, SchemaNodeReachabilityContract>,
 );
 
-const standaloneRelaxNgReachabilityContract = Object.freeze({
-  kind: 'relaxNgSchema' as const,
-  kindLabel: 'RELAX NG schema',
-  primaryRoute: 'sourceView' as const,
-  secondaryRoutes: Object.freeze([
-    'navigation',
-    'search',
-    'carousel',
-    'inspector',
-  ] as const),
-  navigation: Object.freeze({
-    availability: 'direct' as const,
-    action: 'center' as const,
-    target: 'schema-node' as const,
-    focusResult: 'carousel-card' as const,
-  }),
-  search: Object.freeze({
-    availability: 'direct' as const,
-    action: 'center' as const,
-    target: 'schema-node' as const,
-    focusResult: 'carousel-card' as const,
-  }),
-  carousel: Object.freeze({
-    availability: 'direct' as const,
-    action: 'center' as const,
-    target: 'schema-node' as const,
-    focusResult: 'carousel-card' as const,
-  }),
-  inspector: Object.freeze({
-    availability: 'direct' as const,
-    action: 'inspect' as const,
-    target: 'node-inspector' as const,
-    focusResult: 'inspector-heading' as const,
-  }),
-  sourceView: Object.freeze({
-    availability: 'direct' as const,
-    action: 'open-source' as const,
-    target: 'node-source-markup' as const,
-    focusResult: 'source-markup' as const,
-  }),
-}) satisfies SchemaNodeReachabilityContract;
+const relaxNgNodeKindLabels = {
+  relaxNgSchema: 'RELAX NG schema',
+  relaxNgGrammar: 'RELAX NG grammar',
+  relaxNgStart: 'RELAX NG start symbol',
+  relaxNgDefinition: 'RELAX NG named definition',
+  relaxNgElement: 'RELAX NG element pattern',
+  relaxNgAttribute: 'RELAX NG attribute pattern',
+  relaxNgReference: 'RELAX NG named reference',
+  relaxNgExternalReference: 'RELAX NG external reference',
+  relaxNgInclude: 'RELAX NG include',
+  relaxNgPattern: 'RELAX NG pattern',
+  relaxNgNameClass: 'RELAX NG name class',
+} satisfies Record<(typeof relaxNgPresentationNodeKinds)[number], string>;
+
+const relaxNgReachabilityContracts = Object.freeze(
+  Object.fromEntries(
+    relaxNgPresentationNodeKinds.map((kind) => [
+      kind,
+      Object.freeze({
+        kind,
+        kindLabel: relaxNgNodeKindLabels[kind],
+        primaryRoute: 'navigation',
+        secondaryRoutes: Object.freeze([
+          'search',
+          'carousel',
+          'inspector',
+          'sourceView',
+        ] as const),
+        navigation: Object.freeze({
+          availability: 'direct',
+          action: 'center',
+          target: 'schema-node',
+          focusResult: 'carousel-card',
+        }),
+        search: Object.freeze({
+          availability: 'direct',
+          action: 'center',
+          target: 'schema-node',
+          focusResult: 'carousel-card',
+        }),
+        carousel: Object.freeze({
+          availability: 'direct',
+          action: 'center',
+          target: 'schema-node',
+          focusResult: 'carousel-card',
+        }),
+        inspector: Object.freeze({
+          availability: 'direct',
+          action: 'inspect',
+          target: 'node-inspector',
+          focusResult: 'inspector-heading',
+        }),
+        sourceView: Object.freeze({
+          availability: 'direct',
+          action: 'open-source',
+          target: 'node-source-markup',
+          focusResult: 'source-markup',
+        }),
+      } satisfies SchemaNodeReachabilityContract),
+    ]),
+  ) as unknown as Record<
+    (typeof relaxNgPresentationNodeKinds)[number],
+    SchemaNodeReachabilityContract
+  >,
+);
 
 export const schemaEdgeReachabilityContracts = Object.freeze(
   Object.fromEntries(
@@ -493,7 +518,11 @@ export const task1317PresentationRowIds = Object.freeze([
 export function schemaNodeReachability(
   kind: SchemaNodeKind,
 ): SchemaNodeReachabilityContract {
-  if (kind === 'relaxNgSchema') return standaloneRelaxNgReachabilityContract;
+  if ((relaxNgPresentationNodeKinds as readonly string[]).includes(kind)) {
+    return relaxNgReachabilityContracts[
+      kind as (typeof relaxNgPresentationNodeKinds)[number]
+    ];
+  }
   return schemaNodeReachabilityContracts[kind];
 }
 
