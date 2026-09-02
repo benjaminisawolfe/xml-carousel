@@ -16,6 +16,7 @@ import {
   type DtdNormalizedContentKind,
 } from '../../../schema/dtd';
 import { importXsdSource, type XsdMetadataByNodeId } from '../../../schema/xsd';
+import { buildStandaloneRelaxNgProject } from '../../../schema/relaxng';
 import {
   discoverSchemaArchive,
   type SchemaArchiveBinary,
@@ -52,8 +53,10 @@ import type {
   SchemaPackageEntrySummary,
   SchemaPackageFileRelationship,
   SchemaPackageSourceSummary,
+  SchemaPackageStandardsStatus,
   SchemaPackageSummary,
 } from './schemaPackageTypes';
+import type { RelaxNgValidationResult } from '../../../standards/relaxng';
 import {
   clonePlainValue,
   compareUnicodeCodePoints,
@@ -61,6 +64,10 @@ import {
   resolveControlledProjectPath,
 } from './schemaPackageUtilities';
 import { selectSchemaPackageEntryRoots } from './schemaPackageEntryRoots';
+import {
+  buildRelaxNgPackageRelationships,
+  relaxNgRelationshipDiagnostics,
+} from './relaxNgPackageReferences';
 import { resolveSchemaPackageXsdReferences } from './xsdPackageReferenceResolver';
 import { createVisualizationFailureDiagnostic } from '../../../standards/xerces';
 import {
@@ -351,10 +358,19 @@ function importSources(
       imported =
         source.entry.format === 'dtd'
           ? dependencies.importDtd(source.sourceText, options)
-          : dependencies.importXsd(source.sourceText, {
-              ...options,
-              unresolvedReferencePolicy: 'deferForPackage',
-            });
+          : source.entry.format === 'xsd'
+            ? dependencies.importXsd(source.sourceText, {
+                ...options,
+                unresolvedReferencePolicy: 'deferForPackage',
+              })
+            : buildStandaloneRelaxNgProject({
+                filename: source.entry.packageRelativePath,
+                sourceText: source.sourceText,
+                engine: {
+                  name: 'libxml2 RELAX NG',
+                  version: '2.15.3',
+                },
+              });
     } catch {
       diagnostics.push(sourceImportFailure(source));
       continue;
@@ -729,7 +745,14 @@ function buildFileRelationships(
   sourceSummaries: readonly SchemaPackageSourceSummary[],
   suppliedPaths: ReadonlySet<string>,
 ): readonly SchemaPackageFileRelationship[] {
-  const relationships: SchemaPackageFileRelationship[] = [];
+  const rngPaths = new Set(
+    sources
+      .filter(({ entry }) => entry.format === 'rng')
+      .map(({ entry }) => entry.packageRelativePath),
+  );
+  const relationships: SchemaPackageFileRelationship[] = [
+    ...buildRelaxNgPackageRelationships(sources, rngPaths),
+  ];
   for (const source of sources) {
     if (source.entry.format !== 'xsd') continue;
     const markup = source.sourceText
@@ -758,6 +781,9 @@ function buildFileRelationships(
           ? {}
           : { targetPath: resolution.path }),
         status,
+        ...(resolution.blockedReason === undefined
+          ? {}
+          : { blockedReason: resolution.blockedReason }),
       });
       index += 1;
     }
@@ -787,11 +813,16 @@ function buildFileRelationships(
       sourcePath,
       ...(resolution.path === undefined ? {} : { targetPath: resolution.path }),
       status,
+      ...(resolution.blockedReason === undefined
+        ? {}
+        : { blockedReason: resolution.blockedReason }),
     });
   }
   return relationships.sort(
     (left, right) =>
       compareUnicodeCodePoints(left.sourcePath, right.sourcePath) ||
+      (left.range?.start.offset ?? Number.MAX_SAFE_INTEGER) -
+        (right.range?.start.offset ?? Number.MAX_SAFE_INTEGER) ||
       compareUnicodeCodePoints(left.kind, right.kind) ||
       compareUnicodeCodePoints(left.rawTarget, right.rawTarget) ||
       compareUnicodeCodePoints(left.id, right.id),
@@ -808,6 +839,10 @@ function buildPackagePresentationMetadata(input: {
   readonly initialFocusNodeId: SchemaNodeId;
   readonly sourceMarkupByNodeId: SchemaSourceMarkupByNodeId;
   readonly standardsApplied: boolean;
+  readonly rngStandardsStatusByPath: ReadonlyMap<
+    string,
+    SchemaPackageStandardsStatus
+  >;
 }): {
   readonly entries: readonly SchemaPackageEntrySummary[];
   readonly summary: SchemaPackageSummary;
@@ -865,7 +900,9 @@ function buildPackagePresentationMetadata(input: {
       root.entryPath,
       root.format === 'dtd'
         ? 'Independent supplied DTD validation root'
-        : 'Unreferenced schema root or deterministic cycle representative',
+        : root.format === 'rng'
+          ? 'Unreferenced RELAX NG root or deterministic cycle representative'
+          : 'Unreferenced schema root or deterministic cycle representative',
     ]),
   );
   const selectedSource = input.sources.find(
@@ -883,7 +920,9 @@ function buildPackagePresentationMetadata(input: {
         ? 'xsd-source'
         : entry.kind === 'dtd'
           ? 'dtd-source'
-          : entry.kind;
+          : entry.kind === 'rng'
+            ? 'rng-source'
+            : entry.kind;
     const dependencies =
       dependenciesByPath.get(entry.packageRelativePath) ?? [];
     const dependents = dependentsByPath.get(entry.packageRelativePath) ?? [];
@@ -893,7 +932,8 @@ function buildPackagePresentationMetadata(input: {
     const blockedRelationshipCount = dependencies.filter(
       ({ status }) => status === 'blocked',
     ).length;
-    const schemaSource = kind === 'xsd-source' || kind === 'dtd-source';
+    const schemaSource =
+      kind === 'xsd-source' || kind === 'dtd-source' || kind === 'rng-source';
     const auxiliary = kind === 'auxiliary';
     const nodeCount = source?.nodeCount ?? 0;
     const declarationNodeCount = source
@@ -934,22 +974,29 @@ function buildPackagePresentationMetadata(input: {
         ? {}
         : { sourceText: safeText, encoding: 'UTF-8' }),
       ...(source === undefined ? {} : { sourceFileId: source.sourceFileId }),
-      standardsStatus: schemaSource
-        ? input.standardsApplied
-          ? 'accepted-schema-source'
-          : 'not-independently-validated'
-        : auxiliary
-          ? 'accepted-auxiliary-dependency'
-          : 'not-a-schema-source',
-      visualizationStatus: schemaSource
-        ? declarationNodeCount === 0
-          ? 'no-navigable-declarations'
-          : 'complete'
-        : auxiliary
-          ? 'auxiliary'
-          : entry.directory
-            ? 'not-applicable'
-            : 'ignored',
+      standardsStatus:
+        kind === 'rng-source'
+          ? (input.rngStandardsStatusByPath.get(entry.packageRelativePath) ??
+            'not-independently-validated')
+          : schemaSource
+            ? input.standardsApplied
+              ? 'accepted-schema-source'
+              : 'not-independently-validated'
+            : auxiliary
+              ? 'accepted-auxiliary-dependency'
+              : 'not-a-schema-source',
+      visualizationStatus:
+        kind === 'rng-source'
+          ? 'source-only'
+          : schemaSource
+            ? declarationNodeCount === 0
+              ? 'no-navigable-declarations'
+              : 'complete'
+            : auxiliary
+              ? 'auxiliary'
+              : entry.directory
+                ? 'not-applicable'
+                : 'ignored',
       nodeCount,
       searchDocumentCount: nodeCount,
       sourceMarkupCount:
@@ -976,11 +1023,16 @@ function buildPackagePresentationMetadata(input: {
       fileCount: entries.filter(({ kind }) => kind !== 'directory').length,
       directoryCount: entries.filter(({ kind }) => kind === 'directory').length,
       schemaSourceCount: entries.filter(
-        ({ kind }) => kind === 'xsd-source' || kind === 'dtd-source',
+        ({ kind }) =>
+          kind === 'xsd-source' ||
+          kind === 'dtd-source' ||
+          kind === 'rng-source',
       ).length,
       xsdSourceCount: entries.filter(({ kind }) => kind === 'xsd-source')
         .length,
       dtdSourceCount: entries.filter(({ kind }) => kind === 'dtd-source')
+        .length,
+      rngSourceCount: entries.filter(({ kind }) => kind === 'rng-source')
         .length,
       auxiliaryCount: entries.filter(({ kind }) => kind === 'auxiliary').length,
       ignoredCount: entries.filter(({ kind }) => kind === 'ignored').length,
@@ -1013,6 +1065,153 @@ function failure(
     status: 'failure',
     diagnostics: sortDiagnostics(diagnostics, manifest).map(clonePlainValue),
   });
+}
+
+function rngStandardsStatus(
+  result: RelaxNgValidationResult,
+): SchemaPackageStandardsStatus {
+  if (
+    result.diagnostics.some(
+      (diagnostic) => diagnostic.category === 'resource-limit',
+    )
+  ) {
+    return 'resource-limit';
+  }
+  switch (result.status) {
+    case 'valid':
+      return 'accepted-schema-source';
+    case 'invalid':
+      return 'standards-invalid';
+    case 'blocked':
+      return 'blocked-dependency';
+    case 'internal-error':
+      return 'engine-internal';
+  }
+}
+
+function deriveRngStandardsStatuses(
+  rngPaths: readonly string[],
+  roots: readonly { readonly entryPath: string }[],
+  validations: readonly RelaxNgValidationResult[],
+  relationships: readonly SchemaPackageFileRelationship[],
+): ReadonlyMap<string, SchemaPackageStandardsStatus> {
+  const statuses = new Map<string, SchemaPackageStandardsStatus>(
+    rngPaths.map((path) => [path, 'not-independently-validated']),
+  );
+  const dependencies = new Map<string, string[]>();
+  for (const relationship of relationships) {
+    if (
+      relationship.status !== 'resolved' ||
+      !relationship.targetPath ||
+      (relationship.kind !== 'rng-include' &&
+        relationship.kind !== 'rng-external-ref')
+    ) {
+      continue;
+    }
+    const targets = dependencies.get(relationship.sourcePath) ?? [];
+    targets.push(relationship.targetPath);
+    dependencies.set(relationship.sourcePath, targets);
+  }
+  for (const [index, root] of roots.entries()) {
+    const result = validations[index];
+    if (!result) continue;
+    const status = rngStandardsStatus(result);
+    statuses.set(root.entryPath, status);
+    if (status !== 'accepted-schema-source') continue;
+    const pending = [root.entryPath];
+    const visited = new Set<string>();
+    while (pending.length > 0) {
+      const current = pending.pop()!;
+      if (visited.has(current)) continue;
+      visited.add(current);
+      statuses.set(current, 'accepted-schema-source');
+      const targets = [...(dependencies.get(current) ?? [])].sort(
+        compareUnicodeCodePoints,
+      );
+      for (
+        let targetIndex = targets.length - 1;
+        targetIndex >= 0;
+        targetIndex -= 1
+      ) {
+        pending.push(targets[targetIndex]!);
+      }
+    }
+  }
+  return statuses;
+}
+
+function addRngDocumentRelationships(
+  project: SchemaProject,
+  sources: readonly SchemaPackageSourceSummary[],
+  relationships: readonly SchemaPackageFileRelationship[],
+  selectedRootPaths: ReadonlySet<string>,
+  standardsStatusByPath: ReadonlyMap<string, SchemaPackageStandardsStatus>,
+): SchemaProject {
+  const sourceByPath = new Map(
+    sources
+      .filter(({ format }) => format === 'rng')
+      .map((source) => [source.packageRelativePath, source] as const),
+  );
+  const nodeBySourceId = new Map(
+    project.nodes
+      .filter(({ kind }) => kind === 'relaxNgSchema')
+      .map((node) => [node.sourceFileId!, node] as const),
+  );
+  const rngNodeIds = new Set([...nodeBySourceId.values()].map(({ id }) => id));
+  const relationshipEdges = relationships.flatMap((relationship) => {
+    if (
+      relationship.status !== 'resolved' ||
+      !relationship.targetPath ||
+      (relationship.kind !== 'rng-include' &&
+        relationship.kind !== 'rng-external-ref')
+    ) {
+      return [];
+    }
+    const source = sourceByPath.get(relationship.sourcePath);
+    const target = sourceByPath.get(relationship.targetPath);
+    const sourceNode = source && nodeBySourceId.get(source.sourceFileId);
+    const targetNode = target && nodeBySourceId.get(target.sourceFileId);
+    if (!sourceNode || !targetNode) return [];
+    return [
+      {
+        id: `schema-package-rng-edge:${encodeURIComponent(relationship.id)}`,
+        kind: 'dependsOnSchema' as const,
+        sourceNodeId: sourceNode.id,
+        targetNodeId: targetNode.id,
+      },
+    ];
+  });
+  return {
+    ...project,
+    nodes: project.nodes.map((node) => {
+      if (node.kind !== 'relaxNgSchema' || !node.sourceFileId) return node;
+      const source = sources.find(
+        ({ sourceFileId }) => sourceFileId === node.sourceFileId,
+      );
+      const status = source
+        ? standardsStatusByPath.get(source.packageRelativePath)
+        : undefined;
+      return {
+        ...node,
+        properties: [
+          ...(node.properties ?? []).filter(
+            ({ label }) => label !== 'Standards status',
+          ),
+          ...(status === undefined
+            ? []
+            : [{ label: 'Standards status', value: status }]),
+        ],
+      };
+    }),
+    edges: [...project.edges, ...relationshipEdges],
+    rootNodeIds: project.rootNodeIds.filter((nodeId) => {
+      if (!rngNodeIds.has(nodeId)) return true;
+      const source = sources.find(({ rootNodeIds }) =>
+        rootNodeIds.includes(nodeId),
+      );
+      return source ? selectedRootPaths.has(source.packageRelativePath) : false;
+    }),
+  };
 }
 
 export async function importSchemaArchivePackage(
@@ -1058,9 +1257,39 @@ export async function importSchemaArchivePackage(
   ) {
     return failure(decoded.diagnostics, manifest);
   }
+  const allRoots = selectSchemaPackageEntryRoots(decoded.sources);
+  const xercesRoots = allRoots.filter(
+    (
+      root,
+    ): root is { readonly format: 'dtd' | 'xsd'; readonly entryPath: string } =>
+      root.format !== 'rng',
+  );
+  const rngRoots = allRoots.filter(
+    (root): root is { readonly format: 'rng'; readonly entryPath: string } =>
+      root.format === 'rng',
+  );
+  const rngSources = decoded.sources.filter(
+    ({ entry }) => entry.format === 'rng',
+  );
+  const rngPaths = new Set(
+    rngSources.map(({ entry }) => entry.packageRelativePath),
+  );
+  const rngRelationships = buildRelaxNgPackageRelationships(
+    decoded.sources,
+    rngPaths,
+  );
+  const sourceFileIdByPath = new Map(
+    decoded.sources.map((source) => [
+      source.entry.packageRelativePath,
+      source.sourceFileId,
+    ]),
+  );
   let standardsDiagnostics: readonly SchemaPackageImportDiagnostic[] = [];
-  const standardsApplied = execution?.validateStandards !== undefined;
-  if (execution?.validateStandards) {
+  let rngStandardsDiagnostics: readonly SchemaPackageImportDiagnostic[] = [];
+  let rngValidations: readonly RelaxNgValidationResult[] = [];
+  const standardsApplied =
+    execution?.validateStandards !== undefined && xercesRoots.length > 0;
+  if (execution?.validateStandards && xercesRoots.length > 0) {
     reportPackageProgress(execution, { phase: 'validating-standards' });
     let validations;
     try {
@@ -1071,13 +1300,15 @@ export async function importSchemaArchivePackage(
             archivePath: entry.archivePath,
             packageRelativePath: entry.packageRelativePath,
           }))
-        ).map((entry) => ({
-          path: entry.packageRelativePath,
-          bytes: contents
-            .find((content) => content.archivePath === entry.archivePath)!
-            .bytes.slice(),
-        })),
-        roots: selectSchemaPackageEntryRoots(decoded.sources),
+        )
+          .filter((entry) => !rngPaths.has(entry.packageRelativePath))
+          .map((entry) => ({
+            path: entry.packageRelativePath,
+            bytes: contents
+              .find((content) => content.archivePath === entry.archivePath)!
+              .bytes.slice(),
+          })),
+        roots: xercesRoots,
       });
     } catch {
       return failure(
@@ -1102,6 +1333,58 @@ export async function importSchemaArchivePackage(
       return failure(standardsDiagnostics, manifest);
     }
   }
+  if (execution?.validateRelaxNg && rngRoots.length > 0) {
+    reportPackageProgress(execution, { phase: 'validating-standards' });
+    try {
+      rngValidations = await execution.validateRelaxNg({
+        files: rngSources.map((source) => ({
+          path: source.entry.packageRelativePath,
+          bytes: contents
+            .find(
+              (content) => content.archivePath === source.entry.archivePath,
+            )!
+            .bytes.slice(),
+        })),
+        roots: rngRoots,
+      });
+      rngStandardsDiagnostics = rngValidations.flatMap(
+        (validation) => validation.diagnostics,
+      );
+    } catch {
+      rngStandardsDiagnostics = [
+        {
+          stage: 'standards',
+          code: 'relaxng:initialization-failure',
+          severity: 'error',
+          message:
+            "XML Carousel's RELAX NG standards checker could not start; package sources remain available for inspection.",
+          category: 'engine-internal',
+          source: 'project',
+        },
+      ];
+    }
+  }
+  const rngStandardsStatusByPath = deriveRngStandardsStatuses(
+    [...rngPaths],
+    rngRoots,
+    rngValidations,
+    rngRelationships,
+  );
+  if (
+    rngRoots.length > 0 &&
+    execution?.validateRelaxNg !== undefined &&
+    rngValidations.length === 0
+  ) {
+    for (const root of rngRoots) {
+      (
+        rngStandardsStatusByPath as Map<string, SchemaPackageStandardsStatus>
+      ).set(root.entryPath, 'engine-internal');
+    }
+  }
+  const relationshipDiagnostics = relaxNgRelationshipDiagnostics(
+    rngRelationships,
+    sourceFileIdByPath,
+  );
   const imported = importSources(
     [...decoded.sources, ...decoded.auxiliaryDtdSources],
     dependencies,
@@ -1110,12 +1393,16 @@ export async function importSchemaArchivePackage(
   const preAssemblyDiagnostics: SchemaPackageImportDiagnostic[] = [
     ...decoded.diagnostics,
     ...standardsDiagnostics,
+    ...rngStandardsDiagnostics,
+    ...relationshipDiagnostics,
     ...imported.diagnostics,
   ];
   if (
-    preAssemblyDiagnostics.some(
-      (diagnostic) => diagnostic.severity === 'error',
-    ) ||
+    [
+      ...decoded.diagnostics,
+      ...standardsDiagnostics,
+      ...imported.diagnostics,
+    ].some((diagnostic) => diagnostic.severity === 'error') ||
     imported.files.length !==
       manifest.schemaEntries.length + decoded.auxiliaryDtdSources.length
   ) {
@@ -1167,8 +1454,16 @@ export async function importSchemaArchivePackage(
     );
   }
 
+  const resolvedProject = addRngDocumentRelationships(
+    resolution.project,
+    assembled.sources,
+    rngRelationships,
+    new Set(rngRoots.map(({ entryPath }) => entryPath)),
+    rngStandardsStatusByPath,
+  );
+
   reportPackageProgress(execution, { phase: 'finalizing' });
-  const validation = validateSchemaProject(resolution.project);
+  const validation = validateSchemaProject(resolvedProject);
   if (validation.length > 0) {
     if (standardsApplied) {
       return failure(
@@ -1209,17 +1504,18 @@ export async function importSchemaArchivePackage(
     contents,
     decodedSources: decoded.sources,
     auxiliaryDtdSources: decoded.auxiliaryDtdSources,
-    project: resolution.project,
+    project: resolvedProject,
     sources: assembled.sources,
     initialFocusNodeId: assembled.initialFocusNodeId,
     sourceMarkupByNodeId: assembled.sourceMarkupByNodeId,
     standardsApplied,
+    rngStandardsStatusByPath,
   });
 
   return deepFreezePlain({
     status: 'success',
     manifest: clonePlainValue(manifest),
-    project: clonePlainValue(resolution.project),
+    project: clonePlainValue(resolvedProject),
     sources: assembled.sources.map(clonePlainValue),
     entries: packagePresentation.entries.map(clonePlainValue),
     summary: clonePlainValue(packagePresentation.summary),

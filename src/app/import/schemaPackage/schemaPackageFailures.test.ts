@@ -33,6 +33,7 @@ const manifest: SchemaArchiveManifest = {
   schemaEntries: [archiveEntry],
   xsdCount: 0,
   dtdCount: 1,
+  rngCount: 0,
   ignoredFileCount: 0,
   totalFileEntryCount: 1,
 };

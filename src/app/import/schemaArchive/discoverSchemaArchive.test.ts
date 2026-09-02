@@ -85,9 +85,40 @@ describe('schema archive discovery manifest', () => {
       ],
       xsdCount: 1,
       dtdCount: 0,
+      rngCount: 0,
       ignoredFileCount: 0,
       totalFileEntryCount: 1,
     });
+  });
+
+  it('classifies case-insensitive nested RNG sources while leaving RNC unsupported', async () => {
+    const manifest = successfulManifest(
+      await discover([
+        { name: 'project/schema.rnc', dir: false },
+        { name: 'project/nested/SCHEMA.RNG', dir: false },
+        { name: 'project/main.rng', dir: false },
+        { name: 'project/main.dtd', dir: false },
+        { name: 'project/main.xsd', dir: false },
+      ]),
+    );
+
+    expect(manifest).toMatchObject({
+      commonRootDirectory: 'project',
+      xsdCount: 1,
+      dtdCount: 1,
+      rngCount: 2,
+      schemaEntries: [
+        { packageRelativePath: 'main.dtd', format: 'dtd' },
+        { packageRelativePath: 'main.rng', format: 'rng' },
+        { packageRelativePath: 'main.xsd', format: 'xsd' },
+        { packageRelativePath: 'nested/SCHEMA.RNG', format: 'rng' },
+      ],
+    });
+    expect(
+      manifest.entries.find(
+        ({ packageRelativePath }) => packageRelativePath === 'schema.rnc',
+      ),
+    ).toMatchObject({ kind: 'ignored', reason: 'unsupported-file-type' });
   });
 
   it('accepts DTD-only and mixed packages without choosing a primary format', async () => {
@@ -541,7 +572,8 @@ describe('schema archive discovery limits and expected failures', () => {
           stage: 'archive',
           code: 'no-schema-files',
           severity: 'error',
-          message: 'The ZIP archive does not contain any .xsd or .dtd files.',
+          message:
+            'The ZIP archive does not contain any .xsd, .dtd, or .rng files.',
         },
       ],
     });

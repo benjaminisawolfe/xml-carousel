@@ -34,6 +34,10 @@ import type {
   XercesValidationResult,
 } from '../../../standards/xerces';
 import type { VisualizationResult } from '../../../schema/visualization';
+import type {
+  RelaxNgProjectFile,
+  RelaxNgValidationResult,
+} from '../../../standards/relaxng';
 
 export interface LoadedSchemaArchiveEntryContent {
   readonly archivePath: string;
@@ -62,7 +66,10 @@ export type SchemaPackageDiagnosticCode =
   | 'invalid-xsd-reference-target'
   | 'missing-xsd-dependency'
   | 'blocked-xsd-dependency'
-  | 'ambiguous-xsd-dependency';
+  | 'ambiguous-xsd-dependency'
+  | 'missing-rng-dependency'
+  | 'blocked-rng-dependency'
+  | 'ambiguous-rng-dependency';
 
 export interface SchemaPackageDiagnostic {
   readonly stage: 'package';
@@ -75,6 +82,9 @@ export interface SchemaPackageDiagnostic {
   readonly edgeId?: SchemaEdgeId;
   readonly reference?: string;
   readonly range?: SchemaSourceRange;
+  readonly relationshipKind?: SchemaPackageFileRelationship['kind'];
+  readonly relationshipStatus?: SchemaPackageFileRelationship['status'];
+  readonly blockedReason?: SchemaPackageRelationshipBlockedReason;
 }
 
 export type SchemaPackageImportDiagnostic =
@@ -105,7 +115,7 @@ export interface SchemaPackageSourceSummary {
   readonly archiveEntryId: string;
   readonly archivePath: string;
   readonly packageRelativePath: string;
-  readonly format: 'xsd' | 'dtd';
+  readonly format: 'xsd' | 'dtd' | 'rng';
   readonly sourceOrder: number;
   readonly byteLength: number;
   readonly nodeCount: number;
@@ -121,7 +131,14 @@ export const schemaPackageEntryKinds = [
   'directory',
 ] as const;
 
-export type SchemaPackageEntryKind = (typeof schemaPackageEntryKinds)[number];
+/** Task 13.18's frozen complete-visualization gate intentionally remains above. */
+export const allSchemaPackageEntryKinds = [
+  ...schemaPackageEntryKinds,
+  'rng-source',
+] as const;
+
+export type SchemaPackageEntryKind =
+  (typeof allSchemaPackageEntryKinds)[number];
 
 export type SchemaPackageTextStatus = 'text' | 'binary' | 'unavailable';
 
@@ -129,22 +146,39 @@ export type SchemaPackageStandardsStatus =
   | 'accepted-schema-source'
   | 'accepted-auxiliary-dependency'
   | 'not-a-schema-source'
-  | 'not-independently-validated';
+  | 'not-independently-validated'
+  | 'blocked-dependency'
+  | 'standards-invalid'
+  | 'engine-internal'
+  | 'resource-limit';
 
 export type SchemaPackageVisualizationStatus =
   | 'complete'
   | 'no-navigable-declarations'
   | 'auxiliary'
+  | 'source-only'
   | 'ignored'
   | 'not-applicable';
 
+export type SchemaPackageRelationshipBlockedReason =
+  'external-uri' | 'filesystem' | 'traversal';
+
 export interface SchemaPackageFileRelationship {
   readonly id: string;
-  readonly kind: 'include' | 'import' | 'redefine' | 'external-entity';
+  readonly kind:
+    | 'include'
+    | 'import'
+    | 'redefine'
+    | 'external-entity'
+    | 'rng-include'
+    | 'rng-external-ref';
   readonly rawTarget: string;
   readonly sourcePath: string;
   readonly targetPath?: string;
-  readonly status: 'resolved' | 'missing' | 'blocked';
+  readonly status: 'resolved' | 'missing' | 'ambiguous' | 'blocked';
+  readonly candidatePaths?: readonly string[];
+  readonly blockedReason?: SchemaPackageRelationshipBlockedReason;
+  readonly range?: SchemaSourceRange;
 }
 
 /** Clone-safe package/file presentation metadata; binary bytes are excluded. */
@@ -189,6 +223,7 @@ export interface SchemaPackageSummary {
   readonly schemaSourceCount: number;
   readonly xsdSourceCount: number;
   readonly dtdSourceCount: number;
+  readonly rngSourceCount: number;
   readonly auxiliaryCount: number;
   readonly ignoredCount: number;
   readonly blockedCount: number;
@@ -247,6 +282,13 @@ export interface SchemaPackageImportExecution {
       readonly entryPath: string;
     }[];
   }) => Promise<readonly XercesValidationResult[]>;
+  readonly validateRelaxNg?: (input: {
+    readonly files: readonly RelaxNgProjectFile[];
+    readonly roots: readonly {
+      readonly format: 'rng';
+      readonly entryPath: string;
+    }[];
+  }) => Promise<readonly RelaxNgValidationResult[]>;
 }
 
 export interface SchemaPackageImportDependencies {

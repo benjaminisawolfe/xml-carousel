@@ -57,7 +57,7 @@ describe('post-Xerces diagnostic policy', () => {
       'invalid-initial-focus',
       'no-importable-schema',
     ]);
-    expect(Object.keys(packageDiagnosticPolicy)).toHaveLength(17);
+    expect(Object.keys(packageDiagnosticPolicy)).toHaveLength(20);
     expect(Object.keys(archiveDiagnosticPolicy)).toHaveLength(11);
     expect(dtdParseDiagnosticPolicy['unexpected-token']).not.toBe(
       'visualization-warning',

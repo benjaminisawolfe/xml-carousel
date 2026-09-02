@@ -18,6 +18,11 @@ import {
   type XercesValidationRequest,
   type XercesValidationResult,
 } from '../standards/xerces';
+import {
+  validateWithProductionRelaxNg,
+  type RelaxNgValidationRequest,
+  type RelaxNgValidationResult,
+} from '../standards/relaxng';
 
 export interface SchemaImportWorkerRuntimeDependencies {
   readonly importDtd: typeof importDtdSource;
@@ -30,6 +35,9 @@ export interface SchemaImportWorkerRuntimeDependencies {
   readonly validateStandards?: (
     request: XercesValidationRequest,
   ) => Promise<XercesValidationResult>;
+  readonly validateRelaxNg?: (
+    request: RelaxNgValidationRequest,
+  ) => Promise<RelaxNgValidationResult>;
 }
 
 const productionDependencies: SchemaImportWorkerRuntimeDependencies = {
@@ -281,6 +289,22 @@ export async function executeSchemaImportWorkerRequest(
             )({
               attemptId: `${request.requestId}:root:${index + 1}`,
               format: root.format,
+              entryPath: root.entryPath,
+              files,
+            }),
+          );
+        }
+        return results;
+      },
+      validateRelaxNg: async ({ files, roots }) => {
+        const validate =
+          dependencies.validateRelaxNg ?? validateWithProductionRelaxNg;
+        const results: RelaxNgValidationResult[] = [];
+        for (let index = 0; index < roots.length; index += 1) {
+          const root = roots[index]!;
+          results.push(
+            await validate({
+              attemptId: `${request.requestId}:rng-root:${index + 1}`,
               entryPath: root.entryPath,
               files,
             }),

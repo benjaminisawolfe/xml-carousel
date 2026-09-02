@@ -17,6 +17,7 @@ import type {
   XercesValidationRequest,
   XercesValidationResult,
 } from '../standards/xerces';
+import type { RelaxNgValidationRequest } from '../standards/relaxng';
 
 const options = {
   projectId: 'project',
@@ -249,6 +250,65 @@ describe('schema import worker runtime', () => {
         currentSourceFilename: 'types.xsd',
       },
     ]);
+  });
+
+  it('loads the RELAX NG package authority only for ZIPs containing RNG sources', async () => {
+    const validateRelaxNg = vi.fn(
+      async (request: RelaxNgValidationRequest) => ({
+        attemptId: request.attemptId,
+        engine: {
+          name: 'libxml2 RELAX NG' as const,
+          version: '2.15.3' as const,
+        },
+        status: 'valid' as const,
+        diagnostics: [],
+        dependencyRequests: [],
+        metrics: {
+          elapsedMs: 1,
+          fileCount: request.files.length,
+          inputBytes: request.files.reduce(
+            (total, file) => total + file.bytes.length,
+            0,
+          ),
+        },
+      }),
+    );
+    const dependencies = testDependencies({ validateRelaxNg });
+
+    await executeSchemaImportWorkerRequest(
+      {
+        type: 'import',
+        requestId: 'dtd-only-zip',
+        format: 'zip',
+        filename: 'dtd-only.zip',
+        data: await makeZip({ 'schema.dtd': '<!ELEMENT root EMPTY>' }),
+      },
+      vi.fn(),
+      dependencies,
+    );
+    expect(validateRelaxNg).not.toHaveBeenCalled();
+
+    const rngResult = await executeSchemaImportWorkerRequest(
+      {
+        type: 'import',
+        requestId: 'rng-zip',
+        format: 'zip',
+        filename: 'rng.zip',
+        data: await makeZip({
+          'main.rng':
+            '<grammar xmlns="http://relaxng.org/ns/structure/1.0"><include href="common.rng"/></grammar>',
+          'common.rng': '<empty xmlns="http://relaxng.org/ns/structure/1.0"/>',
+        }),
+      },
+      vi.fn(),
+      dependencies,
+    );
+    expect(rngResult.importResult.status).toBe('success');
+    expect(validateRelaxNg).toHaveBeenCalledTimes(1);
+    expect(validateRelaxNg.mock.calls[0]?.[0]).toMatchObject({
+      entryPath: 'main.rng',
+      files: [{ path: 'common.rng' }, { path: 'main.rng' }],
+    });
   });
 
   it('continues unresolved package warnings through finalization', async () => {

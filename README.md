@@ -42,8 +42,11 @@ control and follow the visible control labels.
   source-first project preview
 - Complete supported DTD and XSD 1.0 presentation through Navigation, Search,
   carousel focus, inspector, source view, and package inventory
-- ZIP packages containing DTD and XSD files, with project-local dependencies
-  resolved only from explicitly supplied members and preserved relative paths
+- ZIP packages containing DTD, XSD, and RELAX NG XML-syntax files, with
+  project-local dependencies resolved only from explicitly supplied members
+  and preserved relative paths
+- Source-first RELAX NG package inventory for namespace-correct `include` and
+  `externalRef` relationships, including retained missing and blocked targets
 - Worker-based import with progress and cancellation
 - Precise declaration, reference, ownership, type, derivation, substitution,
   dependency, redefinition, source, and package relationships
@@ -167,8 +170,10 @@ authoritative XML, DTD, and XML Schema 1.0 validator within the controlled
 project architecture. XML Carousel's post-Xerces extraction and presentation
 layers are not a second validator. XSD 1.1, XML-instance product import,
 network retrieval, and host-filesystem discovery remain outside scope. libxml2
-RELAX NG is authoritative for standalone `.rng` validity; structural RELAX NG
-visualization, Compact Syntax, and RELAX NG package resolution remain future
+RELAX NG is authoritative for standalone and ZIP-supplied `.rng` validity.
+ZIP packages can safely resolve local `include` and `externalRef` targets from
+their supplied RNG members while retaining missing or blocked references.
+Structural RELAX NG pattern visualization and Compact Syntax remain future
 work.
 
 ## Licence

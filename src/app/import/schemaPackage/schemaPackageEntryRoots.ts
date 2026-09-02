@@ -1,6 +1,7 @@
 import { resolveXercesProjectReference } from '../../../standards/xerces/pathPolicy';
 import type { SchemaPackageSourceText } from './schemaPackageDecoding';
 import { compareUnicodeCodePoints } from './schemaPackageUtilities';
+import { buildRelaxNgPackageRelationships } from './relaxNgPackageReferences';
 
 const xsdDependencyPattern =
   /<(?:[\w.-]+:)?(?:include|import)\b[^>]*\bschemaLocation\s*=\s*(['"])(.*?)\1[^>]*>/giu;
@@ -24,7 +25,10 @@ function dependencyReferences(sourceText: string): readonly string[] {
  */
 export function selectSchemaPackageEntryRoots(
   sources: readonly SchemaPackageSourceText[],
-): readonly { readonly format: 'dtd' | 'xsd'; readonly entryPath: string }[] {
+): readonly {
+  readonly format: 'dtd' | 'xsd' | 'rng';
+  readonly entryPath: string;
+}[] {
   const xsdPaths = sources
     .filter(({ entry }) => entry.format === 'xsd')
     .map(({ entry }) => entry.packageRelativePath)
@@ -76,6 +80,47 @@ export function selectSchemaPackageEntryRoots(
     visit(path);
   }
 
+  const rngPaths = sources
+    .filter(({ entry }) => entry.format === 'rng')
+    .map(({ entry }) => entry.packageRelativePath)
+    .sort(compareUnicodeCodePoints);
+  const rngPathSet = new Set(rngPaths);
+  const rngDependencies = new Map<string, Set<string>>(
+    rngPaths.map((path) => [path, new Set<string>()]),
+  );
+  const rngReferenced = new Set<string>();
+  for (const relationship of buildRelaxNgPackageRelationships(
+    sources,
+    rngPathSet,
+  )) {
+    if (relationship.status !== 'resolved' || !relationship.targetPath)
+      continue;
+    rngDependencies.get(relationship.sourcePath)?.add(relationship.targetPath);
+    rngReferenced.add(relationship.targetPath);
+  }
+  const selectedRng = rngPaths.filter((path) => !rngReferenced.has(path));
+  const reachableRng = new Set<string>();
+  const visitRng = (start: string): void => {
+    const pending = [start];
+    while (pending.length > 0) {
+      const current = pending.pop()!;
+      if (reachableRng.has(current)) continue;
+      reachableRng.add(current);
+      const targets = [...(rngDependencies.get(current) ?? [])].sort(
+        compareUnicodeCodePoints,
+      );
+      for (let index = targets.length - 1; index >= 0; index -= 1) {
+        pending.push(targets[index]!);
+      }
+    }
+  };
+  selectedRng.forEach(visitRng);
+  for (const path of rngPaths) {
+    if (reachableRng.has(path)) continue;
+    selectedRng.push(path);
+    visitRng(path);
+  }
+
   const roots = [
     ...sources
       .filter(({ entry }) => entry.format === 'dtd')
@@ -84,6 +129,10 @@ export function selectSchemaPackageEntryRoots(
         entryPath: entry.packageRelativePath,
       })),
     ...selected.map((entryPath) => ({ format: 'xsd' as const, entryPath })),
+    ...selectedRng.map((entryPath) => ({
+      format: 'rng' as const,
+      entryPath,
+    })),
   ];
   return roots.sort((left, right) =>
     compareUnicodeCodePoints(left.entryPath, right.entryPath),

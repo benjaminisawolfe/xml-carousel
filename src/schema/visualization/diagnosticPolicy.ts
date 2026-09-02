@@ -227,6 +227,9 @@ export const packageDiagnosticPolicy = Object.freeze({
   'missing-xsd-dependency': resolution,
   'blocked-xsd-dependency': 'security-resource-failure',
   'ambiguous-xsd-dependency': resolution,
+  'missing-rng-dependency': resolution,
+  'blocked-rng-dependency': 'security-resource-failure',
+  'ambiguous-rng-dependency': resolution,
 }) satisfies Readonly<
   Record<SchemaPackageDiagnosticCode, PostXercesDiagnosticClassification>
 >;

@@ -263,6 +263,7 @@ function cloneSchemaPackageManifest(
         }),
     xsdCount: manifest.xsdCount,
     dtdCount: manifest.dtdCount,
+    rngCount: manifest.rngCount,
     ignoredFileCount: manifest.ignoredFileCount,
     totalFileEntryCount: manifest.totalFileEntryCount,
   };
@@ -271,12 +272,21 @@ function cloneSchemaPackageManifest(
 function cloneSchemaPackageEntry(
   entry: SchemaPackageEntrySummary,
 ): SchemaPackageEntrySummary {
+  const cloneRelationship = (
+    relationship: SchemaPackageEntrySummary['dependencies'][number],
+  ) => ({
+    ...relationship,
+    ...(relationship.candidatePaths === undefined
+      ? {}
+      : { candidatePaths: [...relationship.candidatePaths] }),
+    ...(relationship.range === undefined
+      ? {}
+      : { range: cloneSourceRange(relationship.range) }),
+  });
   return {
     ...entry,
-    dependencies: entry.dependencies.map((relationship) => ({
-      ...relationship,
-    })),
-    dependents: entry.dependents.map((relationship) => ({ ...relationship })),
+    dependencies: entry.dependencies.map(cloneRelationship),
+    dependents: entry.dependents.map(cloneRelationship),
   };
 }
 

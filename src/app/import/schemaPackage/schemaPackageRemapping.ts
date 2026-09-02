@@ -32,6 +32,7 @@ import {
   compareUnicodeCodePoints,
 } from './schemaPackageUtilities';
 import type { VisualizationResult } from '../../../schema/visualization';
+import type { StandaloneRelaxNgImportResult } from '../../../schema/relaxng';
 
 type SuccessfulDtdImport = Extract<DtdImportResult, { status: 'success' }>;
 type SuccessfulXsdImport = Extract<XsdImportResult, { status: 'success' }>;
@@ -40,7 +41,8 @@ export interface SchemaPackageRemapInput {
   readonly entry: SchemaArchiveSchemaEntry;
   readonly sourceFileId: string;
   readonly byteLength: number;
-  readonly imported: SuccessfulDtdImport | SuccessfulXsdImport;
+  readonly imported:
+    SuccessfulDtdImport | SuccessfulXsdImport | StandaloneRelaxNgImportResult;
 }
 
 export interface SchemaPackageRemappedFile {
@@ -467,7 +469,7 @@ export function remapSchemaPackageFile(
     schemaLevelComments = imported.schemaLevelComments.map((comment) =>
       commentsByOriginalId.get(comment.commentId)!,
     );
-  } else {
+  } else if ('xsdMetadataByNodeId' in imported) {
     xsdMetadataByNodeId = remapXsdMetadata(
       imported.xsdMetadataByNodeId,
       nodeIds,
@@ -495,7 +497,10 @@ export function remapSchemaPackageFile(
         nodeIds,
       ),
       xsdMetadataByNodeId,
-      diagnostics: remapDiagnostics(imported.diagnostics, nodeIds),
+      diagnostics:
+        'diagnostics' in imported
+          ? remapDiagnostics(imported.diagnostics, nodeIds)
+          : [],
       visualization: clonePlainValue(imported.visualization),
     },
   };

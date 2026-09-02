@@ -39,12 +39,25 @@ export interface ControlledProjectPathResolution {
   readonly status: 'resolved' | 'blocked';
   readonly detail: string;
   readonly path?: string;
+  readonly blockedReason?: 'external-uri' | 'filesystem' | 'traversal';
 }
 
 export function resolveControlledProjectPath(
   referringPath: string,
   rawTarget: string,
 ): ControlledProjectPathResolution {
+  if (
+    (/^[A-Za-z][A-Za-z0-9+.-]*:/u.test(rawTarget) &&
+      !/^file:/iu.test(rawTarget) &&
+      !/^[A-Za-z]:/u.test(rawTarget)) ||
+    /[?#]/u.test(rawTarget)
+  ) {
+    return {
+      status: 'blocked',
+      detail: 'Blocked: external URI or unsupported URI component',
+      blockedReason: 'external-uri',
+    };
+  }
   if (
     rawTarget.includes('\\') ||
     rawTarget.startsWith('/') ||
@@ -54,18 +67,36 @@ export function resolveControlledProjectPath(
     return {
       status: 'blocked',
       detail: 'Blocked: absolute, scheme, or non-project path',
+      blockedReason: 'filesystem',
     };
   }
   let decoded: string;
   try {
     decoded = decodeURIComponent(rawTarget);
   } catch {
-    return { status: 'blocked', detail: 'Blocked: invalid encoded path' };
+    return {
+      status: 'blocked',
+      detail: 'Blocked: invalid encoded path',
+      blockedReason: 'traversal',
+    };
+  }
+  if (
+    (/^[A-Za-z][A-Za-z0-9+.-]*:/u.test(decoded) &&
+      !/^file:/iu.test(decoded) &&
+      !/^[A-Za-z]:/u.test(decoded)) ||
+    /[?#]/u.test(decoded)
+  ) {
+    return {
+      status: 'blocked',
+      detail: 'Blocked: encoded external URI or unsupported URI component',
+      blockedReason: 'external-uri',
+    };
   }
   if (decoded !== rawTarget && /(?:^|\/)\.\.(?:\/|$)|[\\/]/u.test(decoded)) {
     return {
       status: 'blocked',
       detail: 'Blocked: encoded traversal or separator',
+      blockedReason: 'traversal',
     };
   }
   const base = referringPath.split('/').slice(0, -1);
@@ -76,6 +107,7 @@ export function resolveControlledProjectPath(
         return {
           status: 'blocked',
           detail: 'Blocked: traversal outside project root',
+          blockedReason: 'traversal',
         };
       }
       base.pop();

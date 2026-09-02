@@ -9,6 +9,8 @@
     formatPackageEntryKind,
     formatPackageStandardsStatus,
     formatPackageVisualizationStatus,
+    formatPackageRelationshipKind,
+    formatPackageRelationshipStatus,
   } from '../presentation/schemaSetOutlinePresentation';
   import SchemaOutlineList from './SchemaOutlineList.svelte';
   import OutlineSectionHeading from './OutlineSectionHeading.svelte';
@@ -151,6 +153,10 @@
     <div>
       <dt>DTD sources</dt>
       <dd>{presentation.summary.dtdSourceCount}</dd>
+    </div>
+    <div>
+      <dt>RELAX NG sources</dt>
+      <dd>{presentation.summary.rngSourceCount}</dd>
     </div>
     <div>
       <dt>Auxiliary entries</dt>
@@ -403,11 +409,28 @@
                   <ul>
                     {#each entry.dependencies as relationship (relationship.id)}
                       <li>
-                        <span>{relationship.kind} · {relationship.status}</span>
-                        <code
-                          >{relationship.sourcePath} → {relationship.targetPath ??
-                            relationship.rawTarget}</code
+                        <span
+                          >{formatPackageRelationshipKind(relationship.kind)} · {formatPackageRelationshipStatus(
+                            relationship,
+                          )}</span
                         >
+                        <code
+                          >{relationship.sourcePath} → {relationship.rawTarget}</code
+                        >
+                        {#if relationship.targetPath}
+                          <code
+                            >{relationship.status === 'resolved'
+                              ? 'Resolved locally'
+                              : 'Expected local path'}: {relationship.targetPath}</code
+                          >
+                        {/if}
+                        {#if relationship.candidatePaths?.length}
+                          <code
+                            >Candidates: {relationship.candidatePaths.join(
+                              ', ',
+                            )}</code
+                          >
+                        {/if}
                       </li>
                     {/each}
                   </ul>
@@ -419,11 +442,21 @@
                   <ul>
                     {#each entry.dependents as relationship (relationship.id)}
                       <li>
-                        <span>{relationship.kind} · {relationship.status}</span>
-                        <code
-                          >{relationship.sourcePath} → {relationship.targetPath ??
-                            relationship.rawTarget}</code
+                        <span
+                          >{formatPackageRelationshipKind(relationship.kind)} · {formatPackageRelationshipStatus(
+                            relationship,
+                          )}</span
                         >
+                        <code
+                          >{relationship.sourcePath} → {relationship.rawTarget}</code
+                        >
+                        {#if relationship.targetPath}
+                          <code
+                            >{relationship.status === 'resolved'
+                              ? 'Resolved locally'
+                              : 'Expected local path'}: {relationship.targetPath}</code
+                          >
+                        {/if}
                       </li>
                     {/each}
                   </ul>

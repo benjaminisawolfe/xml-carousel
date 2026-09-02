@@ -348,10 +348,49 @@ function packageEntryDocument(
   add('packagePath', entry.normalizedPath, 'normalized');
   add('sourceFile', entry.packageRelativePath, 'project');
   add('packageReason', entry.classificationReason, 'classification');
+  const relationshipLabel = (
+    kind: (typeof entry.dependencies)[number]['kind'],
+  ): string => {
+    switch (kind) {
+      case 'rng-include':
+        return 'RELAX NG include';
+      case 'rng-external-ref':
+        return 'RELAX NG externalRef';
+      case 'external-entity':
+        return 'DTD external entity';
+      case 'include':
+        return 'XSD include';
+      case 'import':
+        return 'XSD import';
+      case 'redefine':
+        return 'XSD redefine';
+    }
+  };
   for (const relationship of entry.dependencies) {
     add('dependency', relationship.rawTarget, relationship.id);
+    add('dependency', relationship.sourcePath, `${relationship.id}:source`);
+    add(
+      'dependency',
+      relationshipLabel(relationship.kind),
+      `${relationship.id}:kind`,
+    );
+    add('dependency', relationship.status, `${relationship.id}:status`);
+    if (relationship.blockedReason) {
+      add(
+        'dependency',
+        relationship.blockedReason,
+        `${relationship.id}:blocked-reason`,
+      );
+    }
     if (relationship.targetPath) {
       add('dependency', relationship.targetPath, `${relationship.id}:target`);
+    }
+    for (const candidatePath of relationship.candidatePaths ?? []) {
+      add(
+        'dependency',
+        candidatePath,
+        `${relationship.id}:candidate:${candidatePath}`,
+      );
     }
   }
   for (const relationship of entry.dependents) {
@@ -366,6 +405,7 @@ function packageEntryDocument(
     nodeCategory:
       entry.kind === 'xsd-source' ||
       entry.kind === 'dtd-source' ||
+      entry.kind === 'rng-source' ||
       entry.kind === 'auxiliary'
         ? 'packageSource'
         : 'packageEntry',
