@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<element xmlns="http://relaxng.org/ns/structure/1.0"
+         xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+         xmlns:guide="urn:xml-carousel:guide"
+         name="contact">
+  <a:documentation xml:lang="en">A project-authored contact record used to inspect documentation retention.</a:documentation>
+  <guide:review status="approved">Foreign metadata remains inert semantic data.</guide:review>
+  <attribute name="role" a:defaultValue="reader">
+    <choice><value>reader</value><value>editor</value></choice>
+  </attribute>
+  <element name="displayName"><text/></element>
+</element>

@@ -2,6 +2,7 @@ import { get } from 'svelte/store';
 import { describe, expect, it, vi } from 'vitest';
 import { importDtdSource } from '../../schema/dtd';
 import { importXsdSource } from '../../schema/xsd';
+import { buildRelaxNgSemanticModel } from '../../schema/relaxng';
 import type {
   RelaxNgValidationRequest,
   RelaxNgValidationResult,
@@ -622,5 +623,64 @@ describe('standalone RNG import controller', () => {
     ).resolves.toMatchObject({ status: 'failure' });
     expect(activateRelaxNg).toHaveBeenCalledOnce();
     expect(activateXsd).toHaveBeenCalledOnce();
+  });
+
+  it('retains worker semantic data but keeps semantic extraction failure nonfatal', async () => {
+    const semanticModel = buildRelaxNgSemanticModel({
+      sources: [
+        {
+          sourceFileId: 'imported-rng-source:semantic.rng',
+          path: 'semantic.rng',
+          sourceText: validSource,
+        },
+      ],
+    }).model!;
+    const activateRelaxNg = vi.fn((result) => ({
+      applied: true as const,
+      state: {
+        project: result.project,
+        origin: 'imported' as const,
+        sourceFilename: 'semantic.rng',
+      },
+    }));
+    let includeModel = true;
+    const controller = createSchemaFileImportController(
+      dependencies({
+        startRelaxNgValidation: (request) =>
+          completedAttempt(
+            request,
+            validationResult(request.attemptId, {
+              ...(includeModel ? { semanticModel } : {}),
+              semanticFindings: includeModel
+                ? []
+                : [
+                    {
+                      id: 'rng-semantic:finding:test',
+                      code: 'semantic-extractor-internal',
+                      message:
+                        'Forced semantic failure after standards acceptance.',
+                    },
+                  ],
+            }),
+          ),
+        activateRelaxNg,
+      }),
+    );
+
+    await expect(
+      controller.openRng(readableFile('semantic.rng')),
+    ).resolves.toMatchObject({ status: 'success' });
+    expect(activateRelaxNg.mock.calls[0]![0].semanticModel).toEqual(
+      semanticModel,
+    );
+
+    includeModel = false;
+    await expect(
+      controller.openRng(readableFile('semantic-failure.rng')),
+    ).resolves.toMatchObject({ status: 'success' });
+    expect(activateRelaxNg.mock.calls[1]![0].semanticModel).toBeUndefined();
+    expect(activateRelaxNg.mock.calls[1]![0].semanticFindings).toEqual([
+      expect.objectContaining({ code: 'semantic-extractor-internal' }),
+    ]);
   });
 });

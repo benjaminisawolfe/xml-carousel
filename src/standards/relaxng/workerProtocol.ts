@@ -17,6 +17,25 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+function isPlainJsonValue(value: unknown, seen = new Set<object>()): boolean {
+  if (
+    value === null ||
+    typeof value === 'string' ||
+    typeof value === 'boolean'
+  ) {
+    return true;
+  }
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (typeof value !== 'object' || seen.has(value)) return false;
+  seen.add(value);
+  const accepted = Array.isArray(value)
+    ? value.every((entry) => isPlainJsonValue(entry, seen))
+    : Object.getPrototypeOf(value) === Object.prototype &&
+      Object.values(value).every((entry) => isPlainJsonValue(entry, seen));
+  seen.delete(value);
+  return accepted;
+}
+
 export function isRelaxNgWorkerRequestMessage(
   value: unknown,
 ): value is RelaxNgWorkerRequestMessage {
@@ -83,9 +102,50 @@ export function isRelaxNgWorkerResultMessage(
       typeof request.resolved === 'string' &&
       ['resolved', 'missing', 'blocked'].includes(String(request.outcome)),
   );
+  const semanticModelIsValid =
+    result.semanticModel === undefined ||
+    (isRecord(result.semanticModel) &&
+      result.semanticModel.version === 1 &&
+      [
+        'documents',
+        'grammars',
+        'startClauses',
+        'effectiveStarts',
+        'defineClauses',
+        'definitionGroups',
+        'patterns',
+        'nameClasses',
+        'params',
+        'includes',
+        'annotations',
+        'documentation',
+        'bindings',
+        'findings',
+      ].every((key) =>
+        Array.isArray((result.semanticModel as Record<string, unknown>)[key]),
+      ) &&
+      isPlainJsonValue(result.semanticModel));
+  const semanticFindingsAreValid =
+    result.semanticFindings === undefined ||
+    (Array.isArray(result.semanticFindings) &&
+      result.semanticFindings.every(
+        (finding) =>
+          isRecord(finding) &&
+          typeof finding.id === 'string' &&
+          [
+            'semantic-extractor-internal',
+            'semantic-unresolved-binding',
+            'semantic-unsupported-valid-construct',
+            'semantic-source-range-unavailable',
+          ].includes(String(finding.code)) &&
+          typeof finding.message === 'string',
+      ) &&
+      isPlainJsonValue(result.semanticFindings));
   return (
     diagnosticsAreValid &&
     dependencyRequestsAreValid &&
+    semanticModelIsValid &&
+    semanticFindingsAreValid &&
     typeof result.metrics.elapsedMs === 'number' &&
     Number.isFinite(result.metrics.elapsedMs) &&
     typeof result.metrics.fileCount === 'number' &&

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<element xmlns="http://relaxng.org/ns/structure/1.0" name="record">
+  <group>
+    <attribute name="kind">
+      <choice><value>person</value><value>organization</value></choice>
+    </attribute>
+    <interleave>
+      <element name="name"><text/></element>
+      <optional><element name="summary"><mixed><zeroOrMore><element name="em"><text/></element></zeroOrMore></mixed></element></optional>
+      <zeroOrMore><element name="tag"><text/></element></zeroOrMore>
+      <oneOrMore><element name="identifier"><list><data type="token"/></list></element></oneOrMore>
+    </interleave>
+  </group>
+</element>

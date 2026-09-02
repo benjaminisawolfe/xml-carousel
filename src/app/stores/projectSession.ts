@@ -220,6 +220,9 @@ export function createProjectSession(
           visualizationSummary: importResult.visualization.summary,
           visualizationFindings: importResult.visualization.findings,
           sourceMarkupByNodeId: importResult.sourceMarkupByNodeId,
+          ...(importResult.semanticModel === undefined
+            ? {}
+            : { relaxNgSemanticModel: importResult.semanticModel }),
           ...(options.preparedSearchIndex
             ? { preparedSearchIndex: options.preparedSearchIndex }
             : {}),
@@ -258,6 +261,9 @@ export function createProjectSession(
           schemaLevelComments: importResult.schemaLevelComments,
           sourceMarkupByNodeId: importResult.sourceMarkupByNodeId,
           xsdMetadataByNodeId: importResult.xsdMetadataByNodeId,
+          ...(importResult.relaxNgSemanticModel === undefined
+            ? {}
+            : { relaxNgSemanticModel: importResult.relaxNgSemanticModel }),
           ...(options.preparedSearchIndex
             ? { preparedSearchIndex: options.preparedSearchIndex }
             : {}),

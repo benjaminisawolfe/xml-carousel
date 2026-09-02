@@ -8,6 +8,10 @@ import {
   createVisualizationResult,
   type VisualizationResult,
 } from '../visualization';
+import type {
+  RelaxNgSemanticFinding,
+  RelaxNgSemanticModel,
+} from './relaxNgSemanticModel';
 
 export interface StandaloneRelaxNgProjectOptions {
   readonly filename: string;
@@ -16,6 +20,8 @@ export interface StandaloneRelaxNgProjectOptions {
     readonly name: 'libxml2 RELAX NG';
     readonly version: '2.15.3';
   };
+  readonly semanticModel?: RelaxNgSemanticModel;
+  readonly semanticFindings?: readonly RelaxNgSemanticFinding[];
 }
 
 export interface StandaloneRelaxNgImportResult {
@@ -24,6 +30,12 @@ export interface StandaloneRelaxNgImportResult {
   readonly initialFocusNodeId: SchemaNodeId;
   readonly sourceMarkupByNodeId: SchemaSourceMarkupByNodeId;
   readonly visualization: VisualizationResult;
+  readonly semanticModel?: RelaxNgSemanticModel;
+  readonly semanticFindings: readonly RelaxNgSemanticFinding[];
+}
+
+export function deriveStandaloneRelaxNgSourceFileId(filename: string): string {
+  return `imported-rng-source:${encodeURIComponent(filename.trim())}`;
 }
 
 function endPosition(sourceText: string): SchemaSourcePosition {
@@ -51,7 +63,7 @@ export function buildStandaloneRelaxNgProject(
   const filename = options.filename.trim();
   const encodedFilename = encodeURIComponent(filename);
   const projectId = `imported-rng:${encodedFilename}`;
-  const sourceFileId = `imported-rng-source:${encodedFilename}`;
+  const sourceFileId = deriveStandaloneRelaxNgSourceFileId(filename);
   const nodeId = `relaxng:schema:${encodedFilename}`;
   const range = {
     start: { offset: 0, line: 1, column: 1 },
@@ -115,5 +127,9 @@ export function buildStandaloneRelaxNgProject(
     initialFocusNodeId: nodeId,
     sourceMarkupByNodeId,
     visualization,
+    ...(options.semanticModel === undefined
+      ? {}
+      : { semanticModel: options.semanticModel }),
+    semanticFindings: options.semanticFindings ?? [],
   });
 }

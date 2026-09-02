@@ -233,6 +233,15 @@ describe('Task 17.5 RELAX NG package resolution', () => {
     expect(
       result.project.edges.filter(({ kind }) => kind === 'dependsOnSchema'),
     ).toHaveLength(4);
+    expect(result.relaxNgSemanticModel?.documents).toHaveLength(5);
+    expect(
+      result.relaxNgSemanticModel?.documents.filter(
+        ({ path }) => path === 'shared.rng',
+      ),
+    ).toHaveLength(1);
+    expect(structuredClone(result.relaxNgSemanticModel)).toEqual(
+      result.relaxNgSemanticModel,
+    );
   });
 
   it('retains source-only nodes, relationships, Problems, inventory, and Search', async () => {
@@ -393,6 +402,14 @@ describe('Task 17.5 RELAX NG package resolution', () => {
       ]),
     );
     expect(result.visualization.summary.completeness).toBe('partial');
+    expect(
+      result.relaxNgSemanticModel?.documents.map(({ path }) => path),
+    ).toEqual(['root/main.rng', 'shared/common.rng', 'shared/pattern.rng']);
+    expect(
+      result.relaxNgSemanticModel?.documents.some(
+        ({ path }) => path === 'missing-root.rng',
+      ),
+    ).toBe(false);
   });
 
   it('keeps Xerces and libxml2 inputs separate in a mixed package', async () => {

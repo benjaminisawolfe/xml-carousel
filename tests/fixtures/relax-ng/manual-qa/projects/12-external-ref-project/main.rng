@@ -1,0 +1,4 @@
+<element xmlns="http://relaxng.org/ns/structure/1.0" name="customer">
+  <element name="name"><text/></element>
+  <externalRef href="patterns/address.rng"/>
+</element>

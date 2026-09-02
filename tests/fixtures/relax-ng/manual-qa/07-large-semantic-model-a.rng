@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+         xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+         xmlns:catalog="urn:xml-carousel:catalog"
+         xmlns:review="urn:xml-carousel:review"
+         ns="urn:xml-carousel:catalog"
+         datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <a:documentation xml:lang="en">A project-authored semantic catalog grammar for manual inspection of a broad RELAX NG model.</a:documentation>
+  <review:fixture audience="maintainers">The declarations model products, creators, editions, inventory, pricing, rights, and descriptive metadata.</review:fixture>
+
+  <start combine="choice"><ref name="catalog"/></start>
+  <start combine="choice"><ref name="catalogFragment"/></start>
+
+  <define name="catalog">
+    <element name="catalog">
+      <a:documentation>Complete catalog document with identity, descriptive, commercial, and rights metadata.</a:documentation>
+      <attribute name="version" a:defaultValue="1.0"><value type="token">1.0</value></attribute>
+      <attribute name="generated"><data type="dateTime"/></attribute>
+      <optional><attribute name="xml:lang"><data type="language"/></attribute></optional>
+      <element name="publisher"><ref name="organization"/></element>
+      <optional><element name="catalog-note"><ref name="richText"/></element></optional>
+      <oneOrMore><ref name="record"/></oneOrMore>
+    </element>
+  </define>
+
+  <define name="catalogFragment">
+    <element name="catalog-fragment">
+      <attribute name="source"><data type="anyURI"/></attribute>
+      <oneOrMore><choice><ref name="record"/><ref name="organization"/></choice></oneOrMore>
+    </element>
+  </define>
+
+  <define name="record">
+    <element name="record">
+      <attribute name="id"><data type="ID"/></attribute>
+      <attribute name="status" a:defaultValue="active">
+        <choice><value>active</value><value>draft</value><value>retired</value></choice>
+      </attribute>
+      <interleave>
+        <ref name="identityBlock"/>
+        <ref name="descriptionBlock"/>
+        <optional><ref name="commercialBlock"/></optional>
+        <optional><ref name="rightsBlock"/></optional>
+        <zeroOrMore><ref name="extensionBlock"/></zeroOrMore>
+      </interleave>
+    </element>
+  </define>
+
+  <define name="identityBlock">
+    <element name="identity">
+      <element name="title"><ref name="localizedText"/></element>
+      <zeroOrMore><element name="alternate-title"><ref name="localizedText"/></element></zeroOrMore>
+      <oneOrMore><element name="identifier"><ref name="identifier"/></element></oneOrMore>
+      <oneOrMore><element name="creator"><ref name="contributor"/></element></oneOrMore>
+      <zeroOrMore><element name="contributor"><ref name="contributor"/></element></zeroOrMore>
+    </element>
+  </define>
+
+  <define name="descriptionBlock">
+    <element name="description">
+      <optional><element name="summary"><ref name="richText"/></element></optional>
+      <zeroOrMore><element name="subject"><ref name="subject"/></element></zeroOrMore>
+      <zeroOrMore><element name="keyword"><data type="token"/></element></zeroOrMore>
+      <optional><element name="audience"><ref name="audience"/></element></optional>
+      <optional><element name="classification"><ref name="classification"/></element></optional>
+      <zeroOrMore><element name="language"><data type="language"/></element></zeroOrMore>
+    </element>
+  </define>
+
+  <define name="commercialBlock">
+    <element name="commercial">
+      <oneOrMore><ref name="edition"/></oneOrMore>
+      <zeroOrMore><ref name="inventoryRecord"/></zeroOrMore>
+      <zeroOrMore><ref name="price"/></zeroOrMore>
+      <optional><element name="availability-note"><ref name="localizedText"/></element></optional>
+    </element>
+  </define>
+
+  <define name="rightsBlock">
+    <element name="rights">
+      <choice>
+        <element name="public-domain"><empty/></element>
+        <element name="licensed"><ref name="license"/></element>
+        <element name="restricted"><ref name="restrictionStatement"/></element>
+      </choice>
+      <zeroOrMore><element name="territory"><ref name="territory"/></element></zeroOrMore>
+    </element>
+  </define>
+
+  <define name="identifier">
+    <attribute name="scheme">
+      <choice><value>isbn</value><value>issn</value><value>doi</value><value>uri</value><value>local</value></choice>
+    </attribute>
+    <choice>
+      <data type="token">
+        <param name="minLength">1</param>
+        <param name="maxLength">128</param>
+        <except><value>unknown</value></except>
+      </data>
+      <data type="anyURI"/>
+    </choice>
+  </define>
+
+  <define name="contributor">
+    <attribute name="role">
+      <choice><value>author</value><value>editor</value><value>translator</value><value>illustrator</value><value>compiler</value></choice>
+    </attribute>
+    <choice>
+      <element name="person"><ref name="person"/></element>
+      <element name="organization"><ref name="organization"/></element>
+    </choice>
+  </define>
+
+  <define name="person">
+    <element name="display-name"><ref name="localizedText"/></element>
+    <optional><element name="given-name"><text/></element></optional>
+    <optional><element name="family-name"><text/></element></optional>
+    <optional><element name="birth-year"><data type="gYear"/></element></optional>
+    <optional><element name="death-year"><data type="gYear"/></element></optional>
+    <zeroOrMore><element name="authority-id"><ref name="identifier"/></element></zeroOrMore>
+  </define>
+
+  <define name="organization">
+    <attribute name="id"><data type="ID"/></attribute>
+    <element name="name"><ref name="localizedText"/></element>
+    <optional><element name="short-name"><data type="token"/></element></optional>
+    <zeroOrMore><element name="address"><ref name="postalAddress"/></element></zeroOrMore>
+    <zeroOrMore><element name="contact"><ref name="contactPoint"/></element></zeroOrMore>
+  </define>
+
+  <define name="postalAddress">
+    <optional><element name="attention"><text/></element></optional>
+    <oneOrMore><element name="line"><text/></element></oneOrMore>
+    <element name="city"><text/></element>
+    <optional><element name="region"><text/></element></optional>
+    <optional><element name="postal-code"><data type="token"/></element></optional>
+    <element name="country"><data type="token"><param name="minLength">2</param><param name="maxLength">3</param></data></element>
+  </define>
+
+  <define name="contactPoint">
+    <attribute name="kind"><choice><value>email</value><value>phone</value><value>web</value></choice></attribute>
+    <choice><data type="string"/><data type="anyURI"/></choice>
+  </define>
+
+  <define name="localizedText">
+    <optional><attribute name="xml:lang"><data type="language"/></attribute></optional>
+    <text/>
+  </define>
+
+  <define name="richText">
+    <optional><attribute name="xml:lang"><data type="language"/></attribute></optional>
+    <mixed>
+      <zeroOrMore>
+        <choice>
+          <element name="em"><ref name="richText"/></element>
+          <element name="strong"><ref name="richText"/></element>
+          <element name="code"><text/></element>
+          <element name="link"><attribute name="href"><data type="anyURI"/></attribute><ref name="richText"/></element>
+        </choice>
+      </zeroOrMore>
+    </mixed>
+  </define>
+
+  <define name="subject">
+    <attribute name="scheme"><choice><value>local</value><value>bisac</value><value>thema</value></choice></attribute>
+    <optional><attribute name="code"><data type="token"/></attribute></optional>
+    <ref name="localizedText"/>
+  </define>
+
+  <define name="audience">
+    <choice>
+      <value>general</value><value>academic</value><value>professional</value><value>juvenile</value><value>educational</value>
+    </choice>
+  </define>
+
+  <define name="classification">
+    <attribute name="scheme"><data type="token"/></attribute>
+    <element name="code"><data type="token"/></element>
+    <optional><element name="label"><ref name="localizedText"/></element></optional>
+  </define>
+
+  <define name="edition">
+    <element name="edition">
+      <attribute name="id"><data type="ID"/></attribute>
+      <element name="format"><choice><value>hardcover</value><value>paperback</value><value>ebook</value><value>audio</value></choice></element>
+      <optional><element name="edition-number"><data type="positiveInteger"/></element></optional>
+      <optional><element name="publication-date"><data type="date"/></element></optional>
+      <zeroOrMore><element name="identifier"><ref name="identifier"/></element></zeroOrMore>
+      <optional><element name="extent"><ref name="extent"/></element></optional>
+    </element>
+  </define>
+
+  <define name="extent">
+    <attribute name="unit"><choice><value>pages</value><value>minutes</value><value>bytes</value></choice></attribute>
+    <data type="nonNegativeInteger"/>
+  </define>
+
+  <define name="inventoryRecord">
+    <element name="inventory">
+      <attribute name="edition"><data type="IDREF"/></attribute>
+      <attribute name="location"><data type="token"/></attribute>
+      <element name="quantity"><data type="nonNegativeInteger"/></element>
+      <optional><element name="expected"><data type="date"/></element></optional>
+    </element>
+  </define>
+
+  <define name="price">
+    <element name="price">
+      <attribute name="currency"><data type="token"><param name="length">3</param></data></attribute>
+      <attribute name="kind"><choice><value>list</value><value>retail</value><value>wholesale</value></choice></attribute>
+      <data type="decimal"><param name="minInclusive">0</param><param name="fractionDigits">2</param></data>
+    </element>
+  </define>
+
+  <define name="license">
+    <element name="license-name"><ref name="localizedText"/></element>
+    <optional><element name="license-uri"><data type="anyURI"/></element></optional>
+    <optional><element name="statement"><ref name="richText"/></element></optional>
+  </define>
+
+  <define name="restrictionStatement">
+    <oneOrMore><element name="restriction"><ref name="localizedText"/></element></oneOrMore>
+    <optional><element name="expires"><data type="date"/></element></optional>
+  </define>
+
+  <define name="territory">
+    <choice>
+      <element name="world"><empty/></element>
+      <element name="country-list"><list><oneOrMore><data type="token"/></oneOrMore></list></element>
+      <element name="region"><data type="token"/></element>
+    </choice>
+  </define>
+
+  <define name="extensionBlock">
+    <element>
+      <anyName><except><nsName ns="urn:xml-carousel:catalog"/></except></anyName>
+      <review:extension-policy>Foreign-namespace extensions are preserved but never rendered as unsafe HTML.</review:extension-policy>
+      <zeroOrMore>
+        <choice>
+          <attribute><anyName/><text/></attribute>
+          <text/>
+          <element><anyName/><zeroOrMore><choice><text/><attribute><anyName/><text/></attribute></choice></zeroOrMore></element>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="scopedRecord">
+    <grammar>
+      <start><parentRef name="record"/></start>
+      <define name="record"><notAllowed/></define>
+    </grammar>
+  </define>
+</grammar>

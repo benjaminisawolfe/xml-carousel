@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<element xmlns="http://relaxng.org/ns/structure/1.0" xmlns:c="urn:xml-carousel:content">
+  <choice>
+    <name>catalog</name>
+    <name>c:collection</name>
+  </choice>
+  <zeroOrMore>
+    <choice>
+      <element>
+        <nsName ns="urn:xml-carousel:content"><except><name>c:private</name></except></nsName>
+        <text/>
+      </element>
+      <element>
+        <anyName><except><nsName ns="urn:xml-carousel:reserved"/></except></anyName>
+        <attribute><anyName><except><name>internal</name></except></anyName><text/></attribute>
+        <empty/>
+      </element>
+    </choice>
+  </zeroOrMore>
+</element>

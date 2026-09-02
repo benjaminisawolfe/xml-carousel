@@ -39,6 +39,7 @@ import type {
   VisualizationFinding,
   VisualizationSummary,
 } from '../../schema/visualization';
+import type { RelaxNgSemanticModel } from '../../schema/relaxng';
 
 export type ActiveProjectOrigin = 'sample' | 'imported' | 'package';
 export type ActiveProjectOwnership = 'worker';
@@ -64,6 +65,7 @@ export interface ActiveProjectMetadata {
   readonly visualizationCompleteness?: VisualizationCompleteness;
   readonly visualizationSummary?: VisualizationSummary;
   readonly visualizationFindings?: readonly VisualizationFinding[];
+  readonly relaxNgSemanticModel?: RelaxNgSemanticModel;
 }
 
 export interface ActiveProjectState extends ActiveProjectMetadata {
@@ -216,6 +218,11 @@ function createState(
           },
         }
       : {}),
+    ...(metadata.relaxNgSemanticModel === undefined
+      ? {}
+      : {
+          relaxNgSemanticModel: structuredClone(metadata.relaxNgSemanticModel),
+        }),
   };
 }
 

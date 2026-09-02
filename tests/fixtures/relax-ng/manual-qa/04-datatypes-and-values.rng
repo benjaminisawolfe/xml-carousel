@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<element xmlns="http://relaxng.org/ns/structure/1.0" name="measurement" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <attribute name="unit"><choice><value>mm</value><value>cm</value><value>in</value></choice></attribute>
+  <element name="amount">
+    <data type="decimal">
+      <param name="minInclusive">0</param>
+      <param name="fractionDigits">3</param>
+      <except><value type="decimal">13.000</value></except>
+    </data>
+  </element>
+  <optional><element name="recorded"><data type="dateTime"/></element></optional>
+</element>

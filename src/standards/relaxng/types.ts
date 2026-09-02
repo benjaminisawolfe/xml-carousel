@@ -3,6 +3,10 @@ import type {
   StandardsProjectFile,
   StandardsValidationMetrics,
 } from '../types';
+import type {
+  RelaxNgSemanticFinding,
+  RelaxNgSemanticModel,
+} from '../../schema/relaxng';
 
 export type RelaxNgValidationStatus =
   'valid' | 'invalid' | 'blocked' | 'internal-error';
@@ -53,6 +57,8 @@ export interface RelaxNgValidationResult {
   readonly diagnostics: readonly StandardsBoundaryDiagnostic[];
   readonly dependencyRequests: readonly RelaxNgDependencyRequest[];
   readonly metrics: StandardsValidationMetrics;
+  readonly semanticModel?: RelaxNgSemanticModel;
+  readonly semanticFindings?: readonly RelaxNgSemanticFinding[];
 }
 
 export interface RelaxNgAdapter {

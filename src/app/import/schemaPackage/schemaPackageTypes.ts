@@ -38,6 +38,7 @@ import type {
   RelaxNgProjectFile,
   RelaxNgValidationResult,
 } from '../../../standards/relaxng';
+import type { RelaxNgSemanticModel } from '../../../schema/relaxng';
 
 export interface LoadedSchemaArchiveEntryContent {
   readonly archivePath: string;
@@ -254,6 +255,7 @@ export type SchemaPackageImportResult =
       readonly unresolvedReferences: readonly SchemaPackageUnresolvedReference[];
       readonly diagnostics: readonly SchemaPackageImportDiagnostic[];
       readonly visualization: VisualizationResult;
+      readonly relaxNgSemanticModel?: RelaxNgSemanticModel;
     }
   | {
       readonly status: 'failure';

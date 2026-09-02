@@ -86,9 +86,11 @@ each otherwise-unreachable cycle.
 typed worker protocol, disposable worker client, and production worker.
 Standalone `.rng` imports transfer the exact selected bytes to this worker;
 the worker validates only the one supplied virtual file and has no network or
-host-filesystem resolver. `src/schema/relaxng/` then creates the intentionally
-minimal source-first project only after a standards-valid result, retaining the
-complete original text without inventing structural relationships.
+host-filesystem resolver. After a standards-valid result, `src/schema/relaxng/`
+reuses the namespace-aware XML source AST to build a clone-safe, source-ranged
+RELAX NG semantic model. The active project retains that internal model while
+continuing to expose the intentionally minimal source-first presentation and
+complete original text; presentation relationships are not invented yet.
 
 Standalone validation remains separate from the Xerces DTD/XSD/ZIP worker
 because the engine protocols have different responsibilities. For an RNG ZIP,
@@ -96,6 +98,9 @@ the existing disposable package worker lazily loads the libxml2 adapter and
 passes only the complete supplied RNG member map to each selected RNG root.
 DTD/XSD roots continue through Xerces only. DTD/XSD-only ZIPs do not load the
 RELAX NG runtime, and worker termination discards both engines' attempt state.
+After root validation, the package worker models only accepted RNG
+root/dependency closures, reusing Task 17.5 relationship identities for include
+and externalRef binding. Invalid and blocked RNG members remain source-first.
 
 ## Worker protocol and lifecycle
 

@@ -705,6 +705,8 @@ export function createSchemaFileImportController(
       filename,
       sourceText,
       engine: outcome.result.engine,
+      semanticModel: outcome.result.semanticModel,
+      semanticFindings: outcome.result.semanticFindings,
     });
     publish({
       status: 'processing',

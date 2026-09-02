@@ -1,0 +1,6 @@
+<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+  <include href="parts/common.rng"/>
+  <include href="parts/types.rng"/>
+  <start><ref name="catalog"/></start>
+  <define name="catalog"><element name="catalog"><zeroOrMore><ref name="entry"/></zeroOrMore></element></define>
+</grammar>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+  <start>
+    <grammar>
+      <start><parentRef name="outer-record"/></start>
+      <define name="outer-record"><notAllowed/></define>
+    </grammar>
+  </start>
+  <define name="outer-record">
+    <element name="outer-record">
+      <attribute name="id"><text/></attribute>
+      <empty/>
+    </element>
+  </define>
+</grammar>

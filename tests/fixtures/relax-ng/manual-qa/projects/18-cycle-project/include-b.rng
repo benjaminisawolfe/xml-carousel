@@ -1,0 +1,1 @@
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"><include href="include-a.rng"/><define name="b"><element name="b"><empty/></element></define></grammar>
