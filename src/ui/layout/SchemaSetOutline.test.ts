@@ -157,6 +157,7 @@ function presentation(): SchemaSetOutlinePresentation {
       schemaSourceCount: 1,
       xsdSourceCount: 1,
       dtdSourceCount: 0,
+      rngSourceCount: 0,
       auxiliaryCount: 0,
       ignoredCount: 1,
       blockedCount: 0,

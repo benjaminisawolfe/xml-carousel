@@ -54,8 +54,9 @@ XSD 1.1 remains unsupported.
 
 ## ZIP packages
 
-`src/app/import/schemaArchive/` validates ZIP metadata and discovers `.dtd`
-and `.xsd` members using canonical safe paths. `src/app/import/schemaPackage/`
+`src/app/import/schemaArchive/` validates ZIP metadata and discovers `.dtd`,
+`.xsd`, and `.rng` members using canonical safe paths.
+`src/app/import/schemaPackage/`
 decodes bounded entries, imports each member, remaps source-local IDs, merges
 the normalized projects, resolves eligible XSD references across package
 members, and records unresolved or ambiguous references. JSZip is the only
@@ -69,6 +70,16 @@ for each otherwise-unreachable cycle; supporting files remain in the map and
 package metadata. Relative parent segments are accepted only when canonical
 resolution from the referring schema stays inside the virtual root.
 
+RNG package sources use the same controlled path authority and retain one
+`relaxNgSchema` source-document node per supplied member. A namespace-aware
+reuse of the XSD XML lexical/parser primitives extracts only RELAX NG
+`include` and `externalRef` `href` values and their reliable source ranges; it
+is not a validator. Exact canonical targets resolve without basename fallback.
+Missing, blocked, and genuinely ambiguous relationships retain their literal
+targets without fabricating target documents. RNG roots are documents with no
+inbound resolved RNG dependency, plus one deterministic representative for
+each otherwise-unreachable cycle.
+
 ## Standalone RELAX NG import
 
 `src/standards/relaxng/` owns the libxml2 RELAX NG 2.15.3 WebAssembly adapter,
@@ -79,9 +90,12 @@ host-filesystem resolver. `src/schema/relaxng/` then creates the intentionally
 minimal source-first project only after a standards-valid result, retaining the
 complete original text without inventing structural relationships.
 
-This path is separate from the Xerces DTD/XSD/ZIP worker because the engines
-and protocols have different responsibilities. It does not add `.rng` to ZIP
-classification or resolve RELAX NG `include`/`externalRef` dependencies.
+Standalone validation remains separate from the Xerces DTD/XSD/ZIP worker
+because the engine protocols have different responsibilities. For an RNG ZIP,
+the existing disposable package worker lazily loads the libxml2 adapter and
+passes only the complete supplied RNG member map to each selected RNG root.
+DTD/XSD roots continue through Xerces only. DTD/XSD-only ZIPs do not load the
+RELAX NG runtime, and worker termination discards both engines' attempt state.
 
 ## Worker protocol and lifecycle
 

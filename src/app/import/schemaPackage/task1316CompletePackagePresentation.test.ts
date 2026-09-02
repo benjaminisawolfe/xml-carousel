@@ -140,6 +140,7 @@ describe('Task 13.16 complete package presentation', () => {
       schemaSourceCount: 8,
       xsdSourceCount: 7,
       dtdSourceCount: 1,
+      rngSourceCount: 0,
       auxiliaryCount: 2,
       ignoredCount: 4,
       blockedCount: 1,

@@ -40,7 +40,7 @@ export function decodeSchemaPackageSource(
     };
   }
 
-  if (entry.format === 'xsd') {
+  if (entry.format === 'xsd' || entry.format === 'rng') {
     const declaration = xmlDeclarationPattern.exec(sourceText)?.[1];
     const encoding = declaration
       ? encodingAttributePattern.exec(declaration)?.[2]
@@ -56,8 +56,7 @@ export function decodeSchemaPackageSource(
           stage: 'package',
           code: 'unsupported-source-encoding',
           severity: 'error',
-          message:
-            'XSD entries must use UTF-8 when an XML encoding is declared.',
+          message: `${entry.format.toUpperCase()} entries must use UTF-8 when an XML encoding is declared.`,
           sourceFileId,
           entryPath: entry.archivePath,
         },

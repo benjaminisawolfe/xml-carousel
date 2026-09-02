@@ -126,6 +126,7 @@ describe('JSZip schema content loader', () => {
       ],
       xsdCount: 1,
       dtdCount: 0,
+      rngCount: 0,
       ignoredFileCount: 0,
       totalFileEntryCount: 1,
     };
@@ -216,6 +217,7 @@ describe('JSZip schema content loader', () => {
         schemaEntries: [],
         xsdCount: 0,
         dtdCount: 0,
+        rngCount: 0,
         ignoredFileCount: 0,
         totalFileEntryCount: 0,
       }),

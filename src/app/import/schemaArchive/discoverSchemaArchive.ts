@@ -184,6 +184,7 @@ function classifySchemaFormat(
 ): SchemaArchiveEntryFormat | undefined {
   if (/\.xsd$/iu.test(canonicalPath)) return 'xsd';
   if (/\.dtd$/iu.test(canonicalPath)) return 'dtd';
+  if (/\.rng$/iu.test(canonicalPath)) return 'rng';
   return undefined;
 }
 
@@ -306,10 +307,12 @@ function buildManifest(
 
   let xsdCount = 0;
   let dtdCount = 0;
+  let rngCount = 0;
   const schemaEntries = sortedCandidates.map(
     (candidate, sourceOrder): SchemaArchiveSchemaEntry => {
       if (candidate.format === 'xsd') xsdCount += 1;
-      else dtdCount += 1;
+      else if (candidate.format === 'dtd') dtdCount += 1;
+      else rngCount += 1;
 
       const directorySegments = candidate.segments.slice(0, -1);
       return Object.freeze({
@@ -345,7 +348,7 @@ function buildManifest(
         ? 'directory-entry'
         : osMetadata
           ? 'operating-system-metadata'
-          : kind === 'xsd' || kind === 'dtd'
+          : kind === 'xsd' || kind === 'dtd' || kind === 'rng'
             ? 'schema-source'
             : kind === 'auxiliary'
               ? 'potential-resolution-resource'
@@ -385,6 +388,7 @@ function buildManifest(
     acceptedFileEntries: Object.freeze(acceptedFileEntries),
     xsdCount,
     dtdCount,
+    rngCount,
     ignoredFileCount,
     totalFileEntryCount,
   });
@@ -514,7 +518,7 @@ export async function discoverSchemaArchive(
     return failure([
       freezeDiagnostic(
         'no-schema-files',
-        'The ZIP archive does not contain any .xsd or .dtd files.',
+        'The ZIP archive does not contain any .xsd, .dtd, or .rng files.',
       ),
     ]);
   }

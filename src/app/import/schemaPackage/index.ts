@@ -18,6 +18,7 @@ export type {
   SchemaPackageImportProgress,
   SchemaPackageImportResult,
   SchemaPackageReferenceIssueReason,
+  SchemaPackageRelationshipBlockedReason,
   SchemaPackageSourceSummary,
   SchemaPackageStandardsStatus,
   SchemaPackageSummary,

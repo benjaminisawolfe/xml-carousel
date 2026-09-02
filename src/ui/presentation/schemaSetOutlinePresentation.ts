@@ -61,8 +61,8 @@ export interface SchemaSetUnresolvedReferencePresentation {
 export interface SchemaSetSourcePresentation {
   readonly sourceFileId: string;
   readonly filename: string;
-  readonly format: 'xsd' | 'dtd';
-  readonly formatLabel: 'XSD' | 'DTD';
+  readonly format: 'xsd' | 'dtd' | 'rng';
+  readonly formatLabel: 'XSD' | 'DTD' | 'RELAX NG';
   readonly sourceOrder: number;
   readonly nodeCount: number;
   readonly rootCount: number;
@@ -101,6 +101,8 @@ export function formatPackageEntryKind(
       return 'XSD source';
     case 'dtd-source':
       return 'DTD source';
+    case 'rng-source':
+      return 'RELAX NG source';
     case 'auxiliary':
       return 'Auxiliary file';
     case 'ignored':
@@ -122,6 +124,14 @@ export function formatPackageStandardsStatus(
       return 'Not a schema source';
     case 'not-independently-validated':
       return 'Not independently validated';
+    case 'blocked-dependency':
+      return 'Validation blocked by dependency';
+    case 'standards-invalid':
+      return 'Standards-invalid';
+    case 'engine-internal':
+      return 'Standards engine unavailable';
+    case 'resource-limit':
+      return 'Standards resource limit';
   }
 }
 
@@ -135,10 +145,47 @@ export function formatPackageVisualizationStatus(
       return 'No navigable declarations';
     case 'auxiliary':
       return 'Auxiliary';
+    case 'source-only':
+      return 'Source-only';
     case 'ignored':
       return 'Ignored';
     case 'not-applicable':
       return 'Not applicable';
+  }
+}
+
+export function formatPackageRelationshipKind(
+  kind: SchemaPackageEntrySummary['dependencies'][number]['kind'],
+): string {
+  switch (kind) {
+    case 'rng-include':
+      return 'RELAX NG include';
+    case 'rng-external-ref':
+      return 'RELAX NG externalRef';
+    case 'external-entity':
+      return 'DTD external entity';
+    case 'include':
+      return 'XSD include';
+    case 'import':
+      return 'XSD import';
+    case 'redefine':
+      return 'XSD redefine';
+  }
+}
+
+export function formatPackageRelationshipStatus(
+  relationship: SchemaPackageEntrySummary['dependencies'][number],
+): string {
+  if (relationship.status !== 'blocked') return relationship.status;
+  switch (relationship.blockedReason) {
+    case 'external-uri':
+      return 'Blocked external URI';
+    case 'filesystem':
+      return 'Blocked filesystem path';
+    case 'traversal':
+      return 'Blocked traversal';
+    default:
+      return 'Blocked';
   }
 }
 
@@ -668,7 +715,12 @@ export function buildSchemaSetOutlinePresentation(
       sourceFileId: source.sourceFileId,
       filename: source.packageRelativePath,
       format: source.format,
-      formatLabel: source.format === 'xsd' ? 'XSD' : 'DTD',
+      formatLabel:
+        source.format === 'xsd'
+          ? 'XSD'
+          : source.format === 'dtd'
+            ? 'DTD'
+            : 'RELAX NG',
       sourceOrder: source.sourceOrder,
       nodeCount: source.nodeCount,
       rootCount: source.rootNodeIds.length,
@@ -681,7 +733,21 @@ export function buildSchemaSetOutlinePresentation(
               sourceNodes,
               documentElementIds,
             )
-          : dtdGroups(input, source.sourceFileId, sourceNodes, rootIds),
+          : source.format === 'dtd'
+            ? dtdGroups(input, source.sourceFileId, sourceNodes, rootIds)
+            : [
+                group(
+                  input,
+                  source.sourceFileId,
+                  'relax-ng-source',
+                  'RELAX NG source document',
+                  sourceNodes.filter(({ kind }) => kind === 'relaxNgSchema'),
+                  true,
+                ),
+              ].filter(
+                (value): value is SchemaSetNodeGroupPresentation =>
+                  value !== undefined,
+              ),
       unresolvedReferences,
     } satisfies SchemaSetSourcePresentation;
   });
@@ -691,7 +757,10 @@ export function buildSchemaSetOutlinePresentation(
       id: 'schema-sources',
       label: 'Schema sources',
       entries: input.entries.filter(
-        ({ kind }) => kind === 'xsd-source' || kind === 'dtd-source',
+        ({ kind }) =>
+          kind === 'xsd-source' ||
+          kind === 'dtd-source' ||
+          kind === 'rng-source',
       ),
     },
     {

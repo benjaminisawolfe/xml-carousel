@@ -353,6 +353,7 @@ function isSchemaDiagnostic(value: unknown): value is SchemaDiagnostic {
     value.source !== 'dtd' &&
     value.source !== 'dtd-lint' &&
     value.source !== 'xsd' &&
+    value.source !== 'rng' &&
     value.source !== 'zip' &&
     value.source !== 'project' &&
     value.source !== 'visualization'

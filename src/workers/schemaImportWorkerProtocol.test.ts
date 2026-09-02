@@ -136,6 +136,28 @@ describe('schema import progress protocol', () => {
 });
 
 describe('schema import worker response protocol', () => {
+  it('accepts normalized RELAX NG diagnostics returned by a ZIP worker', () => {
+    expect(
+      isSchemaWorkerImportResult({
+        format: 'zip',
+        importResult: {
+          status: 'failure',
+          diagnostics: [{ stage: 'standards', severity: 'error' }],
+        },
+        diagnostics: [
+          {
+            id: 'rng-package:diagnostic:1',
+            severity: 'error',
+            message: 'A supplied RELAX NG dependency is unavailable.',
+            code: 'libxml2-relaxng:4:1',
+            source: 'rng',
+            category: 'blocked-dependency',
+          },
+        ],
+      }),
+    ).toBe(true);
+  });
+
   it('accepts package-entry Search documents without pretending they are schema nodes', () => {
     const visualization = {
       summary: {

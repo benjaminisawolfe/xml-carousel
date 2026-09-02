@@ -11,12 +11,13 @@ project architecture. XSD 1.1 is not supported. XML instance documents are not
 an XML Carousel product input, so instance-dependent DTD and XSD constraints
 cannot be evaluated from a standalone grammar alone.
 
-libxml2 RELAX NG 2.15.3 is authoritative for standalone RELAX NG XML-syntax
-`.rng` validity. This first path is a source-first preview: it retains and
-exposes the complete selected source but does not yet extract a structural
-RELAX NG graph. RELAX NG Compact Syntax (`.rnc`), RELAX NG members in ZIP
-packages, and multi-file `include`/`externalRef` resolution are not supported.
-The standalone checker never searches for or fetches those dependencies.
+libxml2 RELAX NG 2.15.3 is authoritative for standalone and ZIP-supplied RELAX
+NG XML-syntax `.rng` validity. These paths remain source-first: they retain and
+expose complete source but do not yet extract a structural RELAX NG
+grammar/pattern graph. ZIP packages can resolve local `include` and
+`externalRef` targets only from safely supplied `.rng` members, while missing
+and blocked references remain visible. RELAX NG Compact Syntax (`.rnc`) is not
+supported. Neither workflow searches for or fetches dependencies.
 
 The 221/221 complete-visualization result covers the DTD/XSD/ZIP presentation
 contracts enumerated by the repository matrix. It does not include the
@@ -56,7 +57,7 @@ ZIP processing is bounded:
 
 - at most 20 MiB of archive data;
 - at most 1,000 file entries;
-- at most 250 DTD/XSD members;
+- at most 250 DTD/XSD/RNG members;
 - at most 512 Unicode code points and 32 path segments per entry;
 - at most 5 MiB per extracted schema member;
 - at most 20 MiB total extracted schema content.

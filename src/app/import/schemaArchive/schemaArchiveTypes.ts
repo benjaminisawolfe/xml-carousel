@@ -25,7 +25,7 @@ export interface SchemaArchiveDiscoveryDependencies {
   readonly loadMetadata: SchemaArchiveMetadataLoader;
 }
 
-export type SchemaArchiveEntryFormat = 'xsd' | 'dtd';
+export type SchemaArchiveEntryFormat = 'xsd' | 'dtd' | 'rng';
 
 export interface SchemaArchiveSchemaEntry {
   readonly id: string;
@@ -43,7 +43,7 @@ export interface SchemaArchiveAcceptedFileEntry {
 }
 
 export type SchemaArchiveInventoryEntryKind =
-  'xsd' | 'dtd' | 'auxiliary' | 'ignored' | 'directory';
+  'xsd' | 'dtd' | 'rng' | 'auxiliary' | 'ignored' | 'directory';
 
 export type SchemaArchiveInventoryReason =
   | 'schema-source'
@@ -80,6 +80,7 @@ export interface SchemaArchiveManifest {
   readonly acceptedFileEntries?: readonly SchemaArchiveAcceptedFileEntry[];
   readonly xsdCount: number;
   readonly dtdCount: number;
+  readonly rngCount: number;
   readonly ignoredFileCount: number;
   readonly totalFileEntryCount: number;
 }

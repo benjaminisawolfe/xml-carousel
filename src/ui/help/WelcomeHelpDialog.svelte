@@ -135,7 +135,7 @@
       <p id="welcome-help-description" class="product-description">
         XML Carousel is a browser-based explorer for DTD files, XML Schema / XSD
         files, standalone RELAX NG XML-syntax files, and ZIP packages containing
-        DTD/XSD schema files.
+        DTD, XSD, or RELAX NG XML-syntax schema files.
       </p>
 
       <p id="welcome-help-privacy" class="privacy-statement">
@@ -201,8 +201,9 @@
         <h3 id="standards-licensing-help">Validation and licences</h3>
         <p>
           Apache Xerces-C++ is the authoritative XML, DTD, and XML Schema 1.0
-          validator. libxml2 RELAX NG is the authoritative standalone .rng
-          validator. XML Carousel does not retrieve remote or host-filesystem
+          validator. libxml2 RELAX NG is the authoritative standalone and
+          ZIP-package .rng validator. XML Carousel resolves only safely supplied
+          package dependencies and does not retrieve remote or host-filesystem
           dependencies; structural RELAX NG visualization is not available yet.
         </p>
         <p>

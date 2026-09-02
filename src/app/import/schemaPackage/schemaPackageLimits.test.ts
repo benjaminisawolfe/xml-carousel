@@ -35,6 +35,7 @@ function manifest(schemaEntries: readonly SchemaArchiveSchemaEntry[]) {
     schemaEntries,
     xsdCount: 0,
     dtdCount: schemaEntries.length,
+    rngCount: 0,
     ignoredFileCount: 0,
     totalFileEntryCount: schemaEntries.length,
   } satisfies SchemaArchiveManifest;

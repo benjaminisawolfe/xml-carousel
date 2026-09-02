@@ -373,7 +373,45 @@ const packageEntryKindLabels = {
   auxiliary: 'Auxiliary package file',
   ignored: 'Ignored package entry',
   directory: 'Package directory',
+  'rng-source': 'RELAX NG package source',
 } satisfies Record<SchemaPackageEntryKind, string>;
+
+const sourceFirstRelaxNgPackageEntryReachabilityContract = Object.freeze({
+  kind: 'rng-source' as const,
+  kindLabel: packageEntryKindLabels['rng-source'],
+  primaryRoute: 'packageInventory' as const,
+  secondaryRoutes: Object.freeze(['search', 'sourceView'] as const),
+  navigation: Object.freeze({
+    availability: 'direct' as const,
+    action: 'open-package-entry' as const,
+    target: 'package-entry' as const,
+    focusResult: 'package-entry-summary' as const,
+  }),
+  search: Object.freeze({
+    availability: 'direct' as const,
+    action: 'open-package-entry' as const,
+    target: 'package-entry' as const,
+    focusResult: 'package-entry-summary' as const,
+  }),
+  carousel: Object.freeze({
+    availability: 'not-applicable' as const,
+    action: 'not-applicable' as const,
+    target: 'not-applicable' as const,
+    focusResult: 'not-applicable' as const,
+  }),
+  inspector: Object.freeze({
+    availability: 'direct' as const,
+    action: 'open-package-entry' as const,
+    target: 'package-entry' as const,
+    focusResult: 'package-entry-summary' as const,
+  }),
+  sourceView: Object.freeze({
+    availability: 'when-textual' as const,
+    action: 'open-source' as const,
+    target: 'package-entry-source' as const,
+    focusResult: 'source-markup' as const,
+  }),
+}) satisfies PackageEntryReachabilityContract;
 
 export const packageEntryReachabilityContracts = Object.freeze(
   Object.fromEntries(
@@ -419,7 +457,10 @@ export const packageEntryReachabilityContracts = Object.freeze(
         }),
       } satisfies PackageEntryReachabilityContract),
     ]),
-  ) as Record<SchemaPackageEntryKind, PackageEntryReachabilityContract>,
+  ) as Record<
+    (typeof schemaPackageEntryKinds)[number],
+    PackageEntryReachabilityContract
+  >,
 );
 
 /** Actions with concrete keyboard/click handlers in the presentation layer. */
@@ -465,6 +506,9 @@ export function schemaEdgeReachability(
 export function packageEntryReachability(
   kind: SchemaPackageEntryKind,
 ): PackageEntryReachabilityContract {
+  if (kind === 'rng-source') {
+    return sourceFirstRelaxNgPackageEntryReachabilityContract;
+  }
   return packageEntryReachabilityContracts[kind];
 }
 
