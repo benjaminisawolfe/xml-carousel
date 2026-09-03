@@ -2,7 +2,7 @@
   "name": "xml-carousel",
   "private": true,
   "version": "0.2.0",
-  "description": "A local-first browser application for exploring DTD, XSD, and ZIP schema packages as navigable journeys.",
+  "description": "A local-first browser application for exploring DTD, XSD, RNG, RNC, and ZIP schema packages as navigable journeys.",
   "author": "Ben Wolfe",
   "license": "CC0-1.0",
   "repository": {
@@ -44,6 +44,8 @@
     "audit:visualization-coverage": "node scripts/audit-visualization-coverage.mjs",
     "audit:visualization-coverage:verify": "node scripts/audit-visualization-coverage.mjs --matrix docs/technical/visualization-coverage-matrix.json --localization tests/fixtures/visualization-coverage/hermetic-finding-localization.json",
     "acceptance:complete-visualization": "node scripts/complete-visualization-acceptance.mjs",
+    "acceptance:relaxng-release": "node scripts/relax-ng-release-acceptance.mjs",
+    "acceptance:relaxng-browser": "node scripts/relax-ng-release-browser-acceptance.mjs",
     "relaxng:conformance:generate": "node scripts/generate-relax-ng-conformance-authority.mjs --write",
     "relaxng:oracle": "node scripts/regenerate-relax-ng-oracle.mjs",
     "relaxng:conformance": "node scripts/generate-relax-ng-conformance-authority.mjs && vitest run src/tests/RelaxNgConformanceGate.test.ts",

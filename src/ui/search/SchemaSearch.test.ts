@@ -189,8 +189,8 @@ describe('schema search controller', () => {
     expect(searchbox).toHaveAttribute('placeholder', 'Search schema');
     expect(searchbox).toHaveAttribute('autocomplete', 'off');
     expect(searchbox).toHaveAttribute('spellcheck', 'false');
-    expect(searchbox).toHaveAttribute('aria-expanded', 'false');
-    expect(searchbox).toHaveAttribute('aria-controls', 'schema-search-results');
+    expect(searchbox).not.toHaveAttribute('aria-expanded');
+    expect(searchbox).not.toHaveAttribute('aria-controls');
     expect(screen.getAllByRole('searchbox')).toHaveLength(1);
     expect(
       screen.queryByRole('button', { name: 'Search schema' }),
@@ -208,7 +208,10 @@ describe('schema search controller', () => {
       screen.getByRole('heading', { name: 'Search results' }),
     ).toBeVisible();
     expect(screen.getByText(SEARCH_GUIDANCE_TEXT)).toBeVisible();
-    expect(searchbox).toHaveAttribute('aria-expanded', 'true');
+    expect(searchbox).not.toHaveAttribute('aria-expanded');
+
+    expect(searchbox).toHaveAttribute('aria-controls', 'schema-search-results');
+    expect(document.getElementById('schema-search-results')).toBeVisible();
 
     await fireEvent.input(searchbox, { target: { value: 'book.content' } });
 

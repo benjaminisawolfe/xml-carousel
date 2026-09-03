@@ -118,7 +118,7 @@ describe('public alpha documentation and package contracts', () => {
 
   it('keeps accurate private-package metadata and build scripts', () => {
     expect(packageJson.private).toBe(true);
-    expect(packageJson.description).toContain('DTD, XSD, and ZIP');
+    expect(packageJson.description).toContain('DTD, XSD, RNG, RNC, and ZIP');
     expect(packageJson.author).toBe('Ben Wolfe');
     expect(packageJson.license).toBe('CC0-1.0');
     expect(packageJson.repository).toEqual({

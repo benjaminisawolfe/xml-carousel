@@ -125,7 +125,13 @@
         >
       </header>
 
-      <div class="dialog-content">
+      <!-- svelte-ignore a11y_no_noninteractive_tabindex (The scrollable report must support keyboard reading.) -->
+      <div
+        class="dialog-content"
+        role="region"
+        aria-label="Problem details"
+        tabindex="0"
+      >
         <section id="problem-report-summary" class="report-summary">
           <p class="severity-summary">{formatSeveritySummary(report)}</p>
           {#if classifications}

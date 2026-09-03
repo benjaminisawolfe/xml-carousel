@@ -38,6 +38,10 @@ library. These are exact case-ID findings in
 changed, or disappearing difference fails until the authority is reviewed.
 There are zero `INVESTIGATE` and zero harness-error results.
 
+RNG/RNC diagnostics may omit line or column coordinates when a reliable
+original-source mapping is unavailable. Generated RNC-validation XML is never
+presented as user source, and missing coordinates are not fabricated.
+
 ## Supplied-files-only resolution
 
 Dependencies resolve only from files explicitly supplied by the user. XML
@@ -51,6 +55,9 @@ absolute paths, schemes, encoded traversal, and traversal beyond the root are
 blocked. Opening `foundry-common.xsd` alone fails when
 `foundry-rich-text.xsd` was not supplied. That failure is intentional security
 and reproducibility behavior.
+
+External schema retrieval is deferred to 0.4. The unreleased 0.3.0 candidate
+preserves these supplied-files-only boundaries.
 
 ## Presentation routes
 
@@ -94,10 +101,13 @@ and Help opens automatically.
 
 ## Browser and accessibility evidence
 
-Current automated production-browser evidence covers Chrome 151.0.7922.72 and
-Firefox 153.0.1. Chrome requested viewports are 1440×900, 1280×720, 1024×768,
-768×900, 412×915, 390×844, 915×412, and 844×390. Firefox may enforce a larger
-effective content width for narrow requested viewports.
+The Task 17.10 candidate audit records current production-browser versions,
+actual viewport checks and accessibility results in the
+[0.3.0 candidate report](release-0.3.0-candidate.md). It exercises 1440×900,
+768×900 and 390×844 at both root and nested static mounts in Chrome and
+Firefox. Earlier acceptance also covered intermediate and landscape widths;
+those earlier browser versions are historical evidence, not the current
+candidate certification.
 
 The repository does not claim Safari/WebKit coverage, physical Samsung-device
 QA, manual Narrator or other screen-reader hardware testing, or browser-chrome

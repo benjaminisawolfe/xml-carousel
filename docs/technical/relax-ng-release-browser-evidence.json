@@ -1,0 +1,2092 @@
+{
+  "schemaVersion": 1,
+  "authority": "Reviewed Task 17.10 production acceptance observations",
+  "baseline": {
+    "commit": "228397c1474c23549257ca78dff13689b3098686",
+    "tree": "a3f2f6c7f7eeed7a7241132323ca5ac7bd95f688"
+  },
+  "packageVersion": "0.2.0",
+  "productionSourceDigest": "c628736f9d80c6e00fce2017ff98caffa45d84dee837726d01b1ac7f6ef65d67",
+  "buildArtifacts": [
+    {
+      "path": "LICENSE.txt",
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    },
+    {
+      "path": "THIRD_PARTY_NOTICES.txt",
+      "sha256": "bac8d3d998d63bd4d772e6c012ecdc39e547ba4e590abcbf4e9993824ecb3fee"
+    },
+    {
+      "path": "assets/LICENSE.emscripten-B2z4oyCl.txt",
+      "sha256": "99d9a9616fbde3f5ee22a71d8645799a8522d48526130c5ba6dc27ad15ce01f1"
+    },
+    {
+      "path": "assets/LICENSE.libxml2-Dw3jice5.txt",
+      "sha256": "5d4873884a890122a4b9b20ad56ac6f7da1d796a5bfcf04a427970ac96217626"
+    },
+    {
+      "path": "assets/LICENSE.xerces-CIVX19zl.txt",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "assets/NOTICE.xerces-CKTk4Q_3.txt",
+      "sha256": "95e5cca2ff3d0801841d9d17f0eec16bfb02dd6893ff7e55da4ec5a5dd30aa52"
+    },
+    {
+      "path": "assets/index-B_K6vnFA.js",
+      "sha256": "1350a8d78f92cf2b78cc0c04f1f7c10db76dd7bb8b1fc999fe0d945dfae6e482"
+    },
+    {
+      "path": "assets/index-DtCt0c7U.css",
+      "sha256": "a5c31e19a81615167a42390674e082c1796cf0ad6e7ad9c1f7b860a8bd342881"
+    },
+    {
+      "path": "assets/libxml2-relaxng-runtime-CJjnU_TS.js",
+      "sha256": "1cb2021f60c120b7130875f9b7e967ea0a35b00ae70f5e8b262cf82411668868"
+    },
+    {
+      "path": "assets/libxml2-relaxng-runtime-DWck1noo.wasm",
+      "sha256": "f587a4f9e2722bc5c132586de9224b2acf6ee22afa812889a3c6d70dc0a7af80"
+    },
+    {
+      "path": "assets/relaxNgStandardsWorker-pls-HboB.js",
+      "sha256": "8428132164e55f56fbdb1482061ddd0e4a0bddab0775c0a19764d2d770da889e"
+    },
+    {
+      "path": "assets/runtime-manifest-B8ZAhBmz.json",
+      "sha256": "c8e4d6ade03cbc8eb27fed13484ef39df25ee070d9e4c03aff861d526410a1ad"
+    },
+    {
+      "path": "assets/runtime-manifest-Dn0tC2PW.json",
+      "sha256": "efb290059722ed95af6e7208e24917e04f6d7dd066de4bb0c28ee78e99518951"
+    },
+    {
+      "path": "assets/schemaImportWorker-DmzK6d_I.ts",
+      "sha256": "56466ecc018a8ec96baa671da561729bda4ab0ced379915977dec904bde88880"
+    },
+    {
+      "path": "assets/schemaImportWorker-Qx5TPuXr.js",
+      "sha256": "2d5e8458d573f0e8ae626abd0eb38a6eaf6a500d4444e73b094b6e1eed0c57d0"
+    },
+    {
+      "path": "assets/xerces-runtime-BBH8HuGk.js",
+      "sha256": "e00a4618d52f24aa24a8d6d49173cfb2a7556627a7c71ef54650dde00923becc"
+    },
+    {
+      "path": "assets/xerces-runtime-C8Jf8PRy.wasm",
+      "sha256": "4b12de73b9b8ca974ea9caca2bcf38b7538c4a48fac8f52a98a80cfbdec6ab74"
+    },
+    {
+      "path": "assets/xml-carousel-logo-DOor6qT5.svg",
+      "sha256": "49c0e129cb288d974f5c79041e2dd44c854ef328907f9aee270ce8f145820574"
+    },
+    {
+      "path": "index.html",
+      "sha256": "75990378aebb4b7dd70e586f2ff514c825eca9c62887387acbceb29fd13c52ce"
+    }
+  ],
+  "browsers": [
+    {
+      "browser": "chrome",
+      "version": "Chrome/152.0.7977.65",
+      "status": "passed",
+      "axeVersion": "4.13.0",
+      "axeSha256": "c24f097bd2f451d4f933e8bc7d8d539f8672a2ebcb5cc9f9f3eec8ca9470a0c1",
+      "axeScreens": 36,
+      "seriousOrCriticalViolations": 0,
+      "privacy": {
+        "pageErrors": 0,
+        "consoleErrors": 0,
+        "remoteSchemaRequests": 0,
+        "fileRequests": 0,
+        "unexpectedOrigins": 0
+      },
+      "cleanup": [
+        {
+          "mount": "root",
+          "live": 0,
+          "creationTerminationBalanced": true
+        },
+        {
+          "mount": "nested",
+          "live": 0,
+          "creationTerminationBalanced": true
+        }
+      ],
+      "checks": [
+        {
+          "id": "root:startup-lazy",
+          "pass": true
+        },
+        {
+          "id": "root:dtd-xsd-lazy",
+          "pass": true
+        },
+        {
+          "id": "root:rng-valid",
+          "pass": true
+        },
+        {
+          "id": "root:rng-search-inspect",
+          "pass": true
+        },
+        {
+          "id": "root:rng-source-copy",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rng-source",
+          "pass": true
+        },
+        {
+          "id": "root:rng-source-focus",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rng-search-inspector",
+          "pass": true
+        },
+        {
+          "id": "root:rng-zoom-full",
+          "pass": true
+        },
+        {
+          "id": "root:rng-zoom-compact",
+          "pass": true
+        },
+        {
+          "id": "root:rng-zoom-overview",
+          "pass": true
+        },
+        {
+          "id": "root:rng-overview-keyboard-inspect",
+          "pass": true
+        },
+        {
+          "id": "root:rng-overview-pointer-inspect",
+          "pass": true
+        },
+        {
+          "id": "root:rng-journey",
+          "pass": true
+        },
+        {
+          "id": "root:rng-drag",
+          "pass": true
+        },
+        {
+          "id": "root:rng-input-keys",
+          "pass": true
+        },
+        {
+          "id": "root:rng-tab-order",
+          "pass": true
+        },
+        {
+          "id": "root:rng-responsive-1440",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rng-1440",
+          "pass": true
+        },
+        {
+          "id": "root:rng-responsive-768",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rng-768",
+          "pass": true
+        },
+        {
+          "id": "root:rng-responsive-390",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rng-390",
+          "pass": true
+        },
+        {
+          "id": "root:rng-mobile-source-copy",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rng-mobile-source",
+          "pass": true
+        },
+        {
+          "id": "root:rng-mobile-source-focus",
+          "pass": true
+        },
+        {
+          "id": "root:rng-invalid-preservation",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rng-invalid",
+          "pass": true
+        },
+        {
+          "id": "root:rng-invalid-focus",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rng-problems-mobile",
+          "pass": true
+        },
+        {
+          "id": "root:rng-problems-retained",
+          "pass": true
+        },
+        {
+          "id": "root:rng-retry-clears-problems",
+          "pass": true
+        },
+        {
+          "id": "root:rng-navigation-keyboard",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-valid",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-search-inspect",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-source-copy",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rnc-source",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-source-focus",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rnc-search-inspector",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-zoom-full",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-zoom-compact",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-zoom-overview",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-overview-keyboard-inspect",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-overview-pointer-inspect",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-journey",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-drag",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-input-keys",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-tab-order",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-responsive-1440",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rnc-1440",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-responsive-768",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rnc-768",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-responsive-390",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rnc-390",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-mobile-source-copy",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rnc-mobile-source",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-mobile-source-focus",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-invalid-preservation",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rnc-invalid",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-invalid-focus",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rnc-problems-mobile",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-problems-retained",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-retry-clears-problems",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-navigation-keyboard",
+          "pass": true
+        },
+        {
+          "id": "root:rng-package-11-multi-file-includes.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rng-11-multi-file-includes.zip-all-package-sources",
+          "pass": true
+        },
+        {
+          "id": "root:rng-package-12-external-ref-project.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rng-package-13-shared-dependency.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rng-package-14-nested-include-project.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rng-package-16-missing-dependency.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rng-missing-visible",
+          "pass": true
+        },
+        {
+          "id": "root:rng-package-17-blocked-external-uri.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rng-blocked-visible",
+          "pass": true
+        },
+        {
+          "id": "root:rng-package-18-cycle-project.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rng-cycle-bounded",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-package-11-multi-file-includes.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-11-multi-file-includes.zip-all-package-sources",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-package-12-external-project.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-package-13-shared-dependency.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-package-14-nested-include.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-package-16-missing-dependency.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-missing-visible",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-package-17-blocked-references.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-blocked-visible",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-package-18-cycles.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-cycle-bounded",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-package-19-mixed-inventory.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-19-mixed-inventory.zip-all-package-sources",
+          "pass": true
+        },
+        {
+          "id": "root:package-order-determinism",
+          "pass": true
+        },
+        {
+          "id": "root:mixed-rng-rnc",
+          "pass": true
+        },
+        {
+          "id": "root:real-world-epubcheck-5.3.0",
+          "pass": true
+        },
+        {
+          "id": "root:real-world-validator-26.8.30",
+          "pass": true
+        },
+        {
+          "id": "root:rng-blocked-https",
+          "pass": true
+        },
+        {
+          "id": "root:rng-blocked-file",
+          "pass": true
+        },
+        {
+          "id": "root:rng-blocked-traversal",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-blocked-https",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-blocked-file",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-blocked-traversal",
+          "pass": true
+        },
+        {
+          "id": "root:large-1000-rnc-source-copy",
+          "pass": true
+        },
+        {
+          "id": "root:axe-large-1000-rnc-source",
+          "pass": true
+        },
+        {
+          "id": "root:large-1000-rnc-source-focus",
+          "pass": true
+        },
+        {
+          "id": "root:large-1000-rnc",
+          "pass": true
+        },
+        {
+          "id": "root:large-rng",
+          "pass": true
+        },
+        {
+          "id": "root:large-rnc",
+          "pass": true
+        },
+        {
+          "id": "root:docbook-source-copy",
+          "pass": true
+        },
+        {
+          "id": "root:axe-docbook-source",
+          "pass": true
+        },
+        {
+          "id": "root:docbook-source-focus",
+          "pass": true
+        },
+        {
+          "id": "root:docbook-large",
+          "pass": true
+        },
+        {
+          "id": "root:cancel-fresh-0",
+          "pass": true
+        },
+        {
+          "id": "root:cancel-fresh-1",
+          "pass": true
+        },
+        {
+          "id": "root:cancel-fresh-2",
+          "pass": true
+        },
+        {
+          "id": "root:cancel-reading-stale",
+          "pass": true
+        },
+        {
+          "id": "root:superseded-read-stale",
+          "pass": true
+        },
+        {
+          "id": "root:stale-copy-replacement",
+          "pass": true
+        },
+        {
+          "id": "root:worker-cleanup",
+          "pass": true
+        },
+        {
+          "id": "root:rng-lazy-loaded",
+          "pass": true
+        },
+        {
+          "id": "nested:startup-lazy",
+          "pass": true
+        },
+        {
+          "id": "nested:dtd-xsd-lazy",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-valid",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-search-inspect",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-source-copy",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rng-source",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-source-focus",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rng-search-inspector",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-zoom-full",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-zoom-compact",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-zoom-overview",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-overview-keyboard-inspect",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-overview-pointer-inspect",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-journey",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-drag",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-input-keys",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-tab-order",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-responsive-1440",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rng-1440",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-responsive-768",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rng-768",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-responsive-390",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rng-390",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-mobile-source-copy",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rng-mobile-source",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-mobile-source-focus",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-invalid-preservation",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rng-invalid",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-invalid-focus",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rng-problems-mobile",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-problems-retained",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-retry-clears-problems",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-navigation-keyboard",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-valid",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-search-inspect",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-source-copy",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rnc-source",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-source-focus",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rnc-search-inspector",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-zoom-full",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-zoom-compact",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-zoom-overview",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-overview-keyboard-inspect",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-overview-pointer-inspect",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-journey",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-drag",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-input-keys",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-tab-order",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-responsive-1440",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rnc-1440",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-responsive-768",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rnc-768",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-responsive-390",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rnc-390",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-mobile-source-copy",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rnc-mobile-source",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-mobile-source-focus",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-invalid-preservation",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rnc-invalid",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-invalid-focus",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rnc-problems-mobile",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-problems-retained",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-retry-clears-problems",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-navigation-keyboard",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-package-11-multi-file-includes.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-11-multi-file-includes.zip-all-package-sources",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-package-12-external-ref-project.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-package-13-shared-dependency.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-package-14-nested-include-project.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-package-16-missing-dependency.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-missing-visible",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-package-17-blocked-external-uri.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-blocked-visible",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-package-18-cycle-project.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-cycle-bounded",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-package-11-multi-file-includes.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-11-multi-file-includes.zip-all-package-sources",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-package-12-external-project.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-package-13-shared-dependency.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-package-14-nested-include.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-package-16-missing-dependency.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-missing-visible",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-package-17-blocked-references.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-blocked-visible",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-package-18-cycles.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-cycle-bounded",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-package-19-mixed-inventory.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-19-mixed-inventory.zip-all-package-sources",
+          "pass": true
+        },
+        {
+          "id": "nested:package-order-determinism",
+          "pass": true
+        },
+        {
+          "id": "nested:mixed-rng-rnc",
+          "pass": true
+        },
+        {
+          "id": "nested:real-world-epubcheck-5.3.0",
+          "pass": true
+        },
+        {
+          "id": "nested:real-world-validator-26.8.30",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-blocked-https",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-blocked-file",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-blocked-traversal",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-blocked-https",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-blocked-file",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-blocked-traversal",
+          "pass": true
+        },
+        {
+          "id": "nested:large-1000-rnc-source-copy",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-large-1000-rnc-source",
+          "pass": true
+        },
+        {
+          "id": "nested:large-1000-rnc-source-focus",
+          "pass": true
+        },
+        {
+          "id": "nested:large-1000-rnc",
+          "pass": true
+        },
+        {
+          "id": "nested:large-rng",
+          "pass": true
+        },
+        {
+          "id": "nested:large-rnc",
+          "pass": true
+        },
+        {
+          "id": "nested:docbook-source-copy",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-docbook-source",
+          "pass": true
+        },
+        {
+          "id": "nested:docbook-source-focus",
+          "pass": true
+        },
+        {
+          "id": "nested:docbook-large",
+          "pass": true
+        },
+        {
+          "id": "nested:cancel-fresh-0",
+          "pass": true
+        },
+        {
+          "id": "nested:cancel-fresh-1",
+          "pass": true
+        },
+        {
+          "id": "nested:cancel-fresh-2",
+          "pass": true
+        },
+        {
+          "id": "nested:cancel-reading-stale",
+          "pass": true
+        },
+        {
+          "id": "nested:superseded-read-stale",
+          "pass": true
+        },
+        {
+          "id": "nested:stale-copy-replacement",
+          "pass": true
+        },
+        {
+          "id": "nested:worker-cleanup",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-lazy-loaded",
+          "pass": true
+        },
+        {
+          "id": "all:privacy",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "browser": "firefox",
+      "version": "Firefox 155.0",
+      "geckodriverVersion": "geckodriver 0.37.1 (300705c65d1b)",
+      "status": "passed",
+      "axeVersion": "4.13.0",
+      "axeSha256": "c24f097bd2f451d4f933e8bc7d8d539f8672a2ebcb5cc9f9f3eec8ca9470a0c1",
+      "axeScreens": 36,
+      "seriousOrCriticalViolations": 0,
+      "privacy": {
+        "pageErrors": 0,
+        "consoleErrors": 0,
+        "remoteSchemaRequests": 0,
+        "fileRequests": 0,
+        "unexpectedOrigins": 0
+      },
+      "cleanup": [
+        {
+          "mount": "root",
+          "live": 0,
+          "creationTerminationBalanced": true
+        },
+        {
+          "mount": "nested",
+          "live": 0,
+          "creationTerminationBalanced": true
+        }
+      ],
+      "checks": [
+        {
+          "id": "root:startup-lazy",
+          "pass": true
+        },
+        {
+          "id": "root:dtd-xsd-lazy",
+          "pass": true
+        },
+        {
+          "id": "root:rng-valid",
+          "pass": true
+        },
+        {
+          "id": "root:rng-search-inspect",
+          "pass": true
+        },
+        {
+          "id": "root:rng-source-copy",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rng-source",
+          "pass": true
+        },
+        {
+          "id": "root:rng-source-focus",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rng-search-inspector",
+          "pass": true
+        },
+        {
+          "id": "root:rng-zoom-full",
+          "pass": true
+        },
+        {
+          "id": "root:rng-zoom-compact",
+          "pass": true
+        },
+        {
+          "id": "root:rng-zoom-overview",
+          "pass": true
+        },
+        {
+          "id": "root:rng-overview-keyboard-inspect",
+          "pass": true
+        },
+        {
+          "id": "root:rng-overview-pointer-inspect",
+          "pass": true
+        },
+        {
+          "id": "root:rng-journey",
+          "pass": true
+        },
+        {
+          "id": "root:rng-drag",
+          "pass": true
+        },
+        {
+          "id": "root:rng-input-keys",
+          "pass": true
+        },
+        {
+          "id": "root:rng-tab-order",
+          "pass": true
+        },
+        {
+          "id": "root:rng-responsive-1440",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rng-1440",
+          "pass": true
+        },
+        {
+          "id": "root:rng-responsive-768",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rng-768",
+          "pass": true
+        },
+        {
+          "id": "root:rng-responsive-390",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rng-390",
+          "pass": true
+        },
+        {
+          "id": "root:rng-mobile-source-copy",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rng-mobile-source",
+          "pass": true
+        },
+        {
+          "id": "root:rng-mobile-source-focus",
+          "pass": true
+        },
+        {
+          "id": "root:rng-invalid-preservation",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rng-invalid",
+          "pass": true
+        },
+        {
+          "id": "root:rng-invalid-focus",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rng-problems-mobile",
+          "pass": true
+        },
+        {
+          "id": "root:rng-problems-retained",
+          "pass": true
+        },
+        {
+          "id": "root:rng-retry-clears-problems",
+          "pass": true
+        },
+        {
+          "id": "root:rng-navigation-keyboard",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-valid",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-search-inspect",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-source-copy",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rnc-source",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-source-focus",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rnc-search-inspector",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-zoom-full",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-zoom-compact",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-zoom-overview",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-overview-keyboard-inspect",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-overview-pointer-inspect",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-journey",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-drag",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-input-keys",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-tab-order",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-responsive-1440",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rnc-1440",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-responsive-768",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rnc-768",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-responsive-390",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rnc-390",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-mobile-source-copy",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rnc-mobile-source",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-mobile-source-focus",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-invalid-preservation",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rnc-invalid",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-invalid-focus",
+          "pass": true
+        },
+        {
+          "id": "root:axe-rnc-problems-mobile",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-problems-retained",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-retry-clears-problems",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-navigation-keyboard",
+          "pass": true
+        },
+        {
+          "id": "root:rng-package-11-multi-file-includes.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rng-11-multi-file-includes.zip-all-package-sources",
+          "pass": true
+        },
+        {
+          "id": "root:rng-package-12-external-ref-project.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rng-package-13-shared-dependency.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rng-package-14-nested-include-project.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rng-package-16-missing-dependency.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rng-missing-visible",
+          "pass": true
+        },
+        {
+          "id": "root:rng-package-17-blocked-external-uri.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rng-blocked-visible",
+          "pass": true
+        },
+        {
+          "id": "root:rng-package-18-cycle-project.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rng-cycle-bounded",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-package-11-multi-file-includes.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-11-multi-file-includes.zip-all-package-sources",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-package-12-external-project.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-package-13-shared-dependency.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-package-14-nested-include.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-package-16-missing-dependency.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-missing-visible",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-package-17-blocked-references.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-blocked-visible",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-package-18-cycles.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-cycle-bounded",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-package-19-mixed-inventory.zip",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-19-mixed-inventory.zip-all-package-sources",
+          "pass": true
+        },
+        {
+          "id": "root:package-order-determinism",
+          "pass": true
+        },
+        {
+          "id": "root:mixed-rng-rnc",
+          "pass": true
+        },
+        {
+          "id": "root:real-world-epubcheck-5.3.0",
+          "pass": true
+        },
+        {
+          "id": "root:real-world-validator-26.8.30",
+          "pass": true
+        },
+        {
+          "id": "root:rng-blocked-https",
+          "pass": true
+        },
+        {
+          "id": "root:rng-blocked-file",
+          "pass": true
+        },
+        {
+          "id": "root:rng-blocked-traversal",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-blocked-https",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-blocked-file",
+          "pass": true
+        },
+        {
+          "id": "root:rnc-blocked-traversal",
+          "pass": true
+        },
+        {
+          "id": "root:large-1000-rnc-source-copy",
+          "pass": true
+        },
+        {
+          "id": "root:axe-large-1000-rnc-source",
+          "pass": true
+        },
+        {
+          "id": "root:large-1000-rnc-source-focus",
+          "pass": true
+        },
+        {
+          "id": "root:large-1000-rnc",
+          "pass": true
+        },
+        {
+          "id": "root:large-rng",
+          "pass": true
+        },
+        {
+          "id": "root:large-rnc",
+          "pass": true
+        },
+        {
+          "id": "root:docbook-source-copy",
+          "pass": true
+        },
+        {
+          "id": "root:axe-docbook-source",
+          "pass": true
+        },
+        {
+          "id": "root:docbook-source-focus",
+          "pass": true
+        },
+        {
+          "id": "root:docbook-large",
+          "pass": true
+        },
+        {
+          "id": "root:cancel-fresh-0",
+          "pass": true
+        },
+        {
+          "id": "root:cancel-fresh-1",
+          "pass": true
+        },
+        {
+          "id": "root:cancel-fresh-2",
+          "pass": true
+        },
+        {
+          "id": "root:cancel-reading-stale",
+          "pass": true
+        },
+        {
+          "id": "root:superseded-read-stale",
+          "pass": true
+        },
+        {
+          "id": "root:stale-copy-replacement",
+          "pass": true
+        },
+        {
+          "id": "root:worker-cleanup",
+          "pass": true
+        },
+        {
+          "id": "root:rng-lazy-loaded",
+          "pass": true
+        },
+        {
+          "id": "nested:startup-lazy",
+          "pass": true
+        },
+        {
+          "id": "nested:dtd-xsd-lazy",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-valid",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-search-inspect",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-source-copy",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rng-source",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-source-focus",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rng-search-inspector",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-zoom-full",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-zoom-compact",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-zoom-overview",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-overview-keyboard-inspect",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-overview-pointer-inspect",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-journey",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-drag",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-input-keys",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-tab-order",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-responsive-1440",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rng-1440",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-responsive-768",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rng-768",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-responsive-390",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rng-390",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-mobile-source-copy",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rng-mobile-source",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-mobile-source-focus",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-invalid-preservation",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rng-invalid",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-invalid-focus",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rng-problems-mobile",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-problems-retained",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-retry-clears-problems",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-navigation-keyboard",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-valid",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-search-inspect",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-source-copy",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rnc-source",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-source-focus",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rnc-search-inspector",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-zoom-full",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-zoom-compact",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-zoom-overview",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-overview-keyboard-inspect",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-overview-pointer-inspect",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-journey",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-drag",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-input-keys",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-tab-order",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-responsive-1440",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rnc-1440",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-responsive-768",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rnc-768",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-responsive-390",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rnc-390",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-mobile-source-copy",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rnc-mobile-source",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-mobile-source-focus",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-invalid-preservation",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rnc-invalid",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-invalid-focus",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-rnc-problems-mobile",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-problems-retained",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-retry-clears-problems",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-navigation-keyboard",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-package-11-multi-file-includes.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-11-multi-file-includes.zip-all-package-sources",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-package-12-external-ref-project.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-package-13-shared-dependency.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-package-14-nested-include-project.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-package-16-missing-dependency.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-missing-visible",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-package-17-blocked-external-uri.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-blocked-visible",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-package-18-cycle-project.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-cycle-bounded",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-package-11-multi-file-includes.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-11-multi-file-includes.zip-all-package-sources",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-package-12-external-project.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-package-13-shared-dependency.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-package-14-nested-include.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-package-16-missing-dependency.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-missing-visible",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-package-17-blocked-references.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-blocked-visible",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-package-18-cycles.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-cycle-bounded",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-package-19-mixed-inventory.zip",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-19-mixed-inventory.zip-all-package-sources",
+          "pass": true
+        },
+        {
+          "id": "nested:package-order-determinism",
+          "pass": true
+        },
+        {
+          "id": "nested:mixed-rng-rnc",
+          "pass": true
+        },
+        {
+          "id": "nested:real-world-epubcheck-5.3.0",
+          "pass": true
+        },
+        {
+          "id": "nested:real-world-validator-26.8.30",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-blocked-https",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-blocked-file",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-blocked-traversal",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-blocked-https",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-blocked-file",
+          "pass": true
+        },
+        {
+          "id": "nested:rnc-blocked-traversal",
+          "pass": true
+        },
+        {
+          "id": "nested:large-1000-rnc-source-copy",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-large-1000-rnc-source",
+          "pass": true
+        },
+        {
+          "id": "nested:large-1000-rnc-source-focus",
+          "pass": true
+        },
+        {
+          "id": "nested:large-1000-rnc",
+          "pass": true
+        },
+        {
+          "id": "nested:large-rng",
+          "pass": true
+        },
+        {
+          "id": "nested:large-rnc",
+          "pass": true
+        },
+        {
+          "id": "nested:docbook-source-copy",
+          "pass": true
+        },
+        {
+          "id": "nested:axe-docbook-source",
+          "pass": true
+        },
+        {
+          "id": "nested:docbook-source-focus",
+          "pass": true
+        },
+        {
+          "id": "nested:docbook-large",
+          "pass": true
+        },
+        {
+          "id": "nested:cancel-fresh-0",
+          "pass": true
+        },
+        {
+          "id": "nested:cancel-fresh-1",
+          "pass": true
+        },
+        {
+          "id": "nested:cancel-fresh-2",
+          "pass": true
+        },
+        {
+          "id": "nested:cancel-reading-stale",
+          "pass": true
+        },
+        {
+          "id": "nested:superseded-read-stale",
+          "pass": true
+        },
+        {
+          "id": "nested:stale-copy-replacement",
+          "pass": true
+        },
+        {
+          "id": "nested:worker-cleanup",
+          "pass": true
+        },
+        {
+          "id": "nested:rng-lazy-loaded",
+          "pass": true
+        },
+        {
+          "id": "all:privacy",
+          "pass": true
+        }
+      ]
+    }
+  ],
+  "gates": {
+    "validate": {
+      "status": "PASS",
+      "testFiles": 192,
+      "testsPassed": 2445,
+      "typeErrors": 0,
+      "typeWarnings": 0
+    },
+    "dtdCi": {
+      "status": "PASS",
+      "files": 1,
+      "testsPassed": 3,
+      "testsSkipped": 1,
+      "cases": 64,
+      "failures": 0,
+      "harnessErrors": 0
+    },
+    "xsdCi": {
+      "status": "PASS",
+      "files": 2,
+      "testsPassed": 6,
+      "testsSkipped": 1,
+      "cases": 52,
+      "failures": 0,
+      "harnessErrors": 0
+    },
+    "authorityRepeat": {
+      "status": "PASS",
+      "repetitions": 2,
+      "byteIdentical": true,
+      "manifestDigest": "806824774b9c5d04ed4b784d7b6db3680c56dcfa8c34fc813f2753afab5bd6d4",
+      "oracleDigest": "053dcf0670e26e4bb5509e4234d0533e45e9f1843ebaddba2b306dc7c484d39c"
+    },
+    "buildRepeat": {
+      "status": "PASS",
+      "builds": 2,
+      "fileCount": 19,
+      "inventoryDigest": "250c34a66ec6240ef63bb08553d49ae7fb3cee4cbda28405b6e6ba29fbed3804"
+    },
+    "dist": {
+      "status": "PASS"
+    },
+    "hostileMime": {
+      "status": "PASS"
+    },
+    "licensing": {
+      "status": "PASS"
+    },
+    "releaseIntegrity": {
+      "status": "PASS"
+    },
+    "documentation": {
+      "status": "PASS"
+    },
+    "historicalVisualization": {
+      "status": "PASS",
+      "rows": 221,
+      "digest": "1e31059953b718750a749a23760e7f5540966e988562033ba1dc69b57bed84b2"
+    },
+    "relaxNgVisualization": {
+      "status": "PASS",
+      "rows": 77,
+      "findings": 0,
+      "digest": "b5798413268b6f874ea1f9ef24909765153562bd4c04ae046fca02ea0476a5fc"
+    },
+    "relaxNgConformance": {
+      "status": "PASS",
+      "spectest": 385,
+      "compacttest": 90,
+      "selected": 475,
+      "excluded": 0,
+      "investigations": 0,
+      "harnessErrors": 0,
+      "productBoundaries": 40,
+      "securityBoundaries": 2
+    }
+  }
+}

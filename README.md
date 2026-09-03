@@ -10,6 +10,12 @@ The application is a static, local-first site. Selected files are read and
 processed in the browser, including parsing work performed in a Web Worker. No
 XML Carousel backend is required.
 
+This working tree contains the **unreleased 0.3.0 candidate**, including
+first-class RELAX NG XML and Compact Syntax support. The package version stays
+at 0.2.0 until a separate release decision. See the
+[candidate acceptance report](docs/release-0.3.0-candidate.md) and
+[manual QA checklist](docs/release-0.3.0-manual-qa.md).
+
 ## Privacy
 
 XML Carousel does not upload selected schema files to an XML Carousel backend.
@@ -96,6 +102,9 @@ Useful commands:
 - `npm run lint` runs ESLint.
 - `npm run format:check` checks formatting without rewriting files.
 - `npm run verify:dist -- --base=./` verifies an existing portable build.
+- `npm run acceptance:relaxng-release` verifies the Task 17.10 decision matrix
+  against its reviewed browser evidence and current production inputs. Run it
+  after the complete validation suite; it does not launch browsers itself.
 
 ## Distribution
 

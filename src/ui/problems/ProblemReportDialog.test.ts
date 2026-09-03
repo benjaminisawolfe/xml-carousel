@@ -164,9 +164,13 @@ describe('ProblemReportDialog', () => {
       name: 'Close problems for annotation-errors.xsd',
     });
     await waitFor(() => expect(close).toHaveFocus());
-    await fireEvent.keyDown(close, { key: 'Tab' });
-    expect(close).toHaveFocus();
+    const details = within(dialog).getByRole('region', {
+      name: 'Problem details',
+    });
+    expect(details).toHaveAttribute('tabindex', '0');
     await fireEvent.keyDown(close, { key: 'Tab', shiftKey: true });
+    expect(details).toHaveFocus();
+    await fireEvent.keyDown(details, { key: 'Tab' });
     expect(close).toHaveFocus();
     await fireEvent.keyDown(close, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledWith('escape');

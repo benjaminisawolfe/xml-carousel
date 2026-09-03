@@ -1,0 +1,1449 @@
+{
+  "schemaVersion": 1,
+  "authority": "XML Carousel Task 17.10 release acceptance",
+  "baseline": {
+    "commit": "228397c1474c23549257ca78dff13689b3098686",
+    "tree": "a3f2f6c7f7eeed7a7241132323ca5ac7bd95f688"
+  },
+  "productionSourceDigest": "c628736f9d80c6e00fce2017ff98caffa45d84dee837726d01b1ac7f6ef65d67",
+  "evidenceDigest": "0a47de05332892c1667f36c9eb1fc8e35df565978c9e6d687a450bc2b511c7c4",
+  "entries": [
+    {
+      "id": "accessible-labels",
+      "requirement": "Provide accessible names and truthful status",
+      "evidence": {
+        "browserChecks": [
+          "axe-rng-search-inspector",
+          "axe-rnc-search-inspector",
+          "axe-rng-problems-mobile",
+          "axe-rnc-problems-mobile",
+          "axe-rng-390",
+          "axe-rnc-390"
+        ],
+        "automated": [
+          "src/ui/layout/TopBarImport.test.ts",
+          "src/ui/search/SchemaSearch.test.ts",
+          "src/tests/ReleaseCandidateAccessibility.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "No serious/critical axe WCAG A/AA findings on representative screens",
+      "actualResult": {
+        "browserObservations": 24,
+        "passedBrowserObservations": 24,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "axe-core 4.13.0 plus keyboard/focus checks; no claim of manual screen-reader or physical-device QA."
+    },
+    {
+      "id": "authority-determinism",
+      "requirement": "Rebuild conformance, oracle, visualization and manual-QA authorities twice",
+      "evidence": {
+        "browserChecks": [],
+        "automated": [
+          "npm run relaxng:oracle",
+          "node scripts/generate-relax-ng-conformance-authority.mjs",
+          "node scripts/relax-ng-complete-visualization-acceptance.mjs"
+        ],
+        "gates": [
+          "authorityRepeat"
+        ]
+      },
+      "expectedResult": "Byte-identical repeated results and approved digests",
+      "actualResult": {
+        "browserObservations": 0,
+        "passedBrowserObservations": 0,
+        "gateResults": [
+          {
+            "gate": "authorityRepeat",
+            "pass": true
+          }
+        ]
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "blocked-file",
+      "requirement": "Block arbitrary host filesystem references",
+      "evidence": {
+        "browserChecks": [
+          "rng-blocked-file",
+          "rnc-blocked-file"
+        ],
+        "automated": [
+          "src/app/import/schemaPackage/rngPackageResolution.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "file: references rejected without host retrieval",
+      "actualResult": {
+        "browserObservations": 8,
+        "passedBrowserObservations": 8,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "blocked-https",
+      "requirement": "Block remote schema retrieval",
+      "evidence": {
+        "browserChecks": [
+          "rng-blocked-https",
+          "rnc-blocked-https",
+          "rng-blocked-visible",
+          "rnc-blocked-visible"
+        ],
+        "automated": [
+          "src/app/import/schemaPackage/rngPackageResolution.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "HTTPS reference remains blocked; no remote request",
+      "actualResult": {
+        "browserObservations": 16,
+        "passedBrowserObservations": 16,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "blocked-traversal",
+      "requirement": "Block references outside the supplied project",
+      "evidence": {
+        "browserChecks": [
+          "rng-blocked-traversal",
+          "rnc-blocked-traversal"
+        ],
+        "automated": [
+          "src/app/import/schemaPackage/rngPackageResolution.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Traversal rejected without target semantics",
+      "actualResult": {
+        "browserObservations": 8,
+        "passedBrowserObservations": 8,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "build-determinism",
+      "requirement": "Repeat clean builds from identical inputs",
+      "evidence": {
+        "browserChecks": [],
+        "automated": [
+          "npm run build"
+        ],
+        "gates": [
+          "buildRepeat"
+        ]
+      },
+      "expectedResult": "Every production artifact path and byte digest identical",
+      "actualResult": {
+        "browserObservations": 0,
+        "passedBrowserObservations": 0,
+        "gateResults": [
+          {
+            "gate": "buildRepeat",
+            "pass": true
+          }
+        ]
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "cancellation",
+      "requirement": "Cancel reading and processing imports",
+      "evidence": {
+        "browserChecks": [
+          "cancel-fresh-0",
+          "cancel-fresh-1",
+          "cancel-fresh-2",
+          "cancel-reading-stale"
+        ],
+        "automated": [
+          "src/app/import/schemaFileImportController.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Cancelled attempts leave no active worker and fresh import succeeds",
+      "actualResult": {
+        "browserObservations": 16,
+        "passedBrowserObservations": 16,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "carousel",
+      "requirement": "Preserve journey semantics and orientation",
+      "evidence": {
+        "browserChecks": [
+          "rng-journey",
+          "rnc-journey"
+        ],
+        "automated": [
+          "src/tests/OverviewSemanticZoom.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Leafward right, rootward left; rootward returns through actual journey",
+      "actualResult": {
+        "browserObservations": 8,
+        "passedBrowserObservations": 8,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Ben confirmed the approved rootward-left, leafward-right orientation; Task 17.10 section 19 diagram is superseded."
+    },
+    {
+      "id": "chrome",
+      "requirement": "Run controlled Chrome independently",
+      "evidence": {
+        "browserChecks": [
+          "worker-cleanup"
+        ],
+        "automated": [
+          "scripts/relax-ng-release-browser-acceptance.mjs"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Every required browser check passes with zero errors",
+      "actualResult": {
+        "browserObservations": 4,
+        "passedBrowserObservations": 4,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "copy-source",
+      "requirement": "Copy the exact viewed source",
+      "evidence": {
+        "browserChecks": [
+          "rng-source-copy",
+          "rnc-source-copy",
+          "docbook-source-copy"
+        ],
+        "automated": [
+          "src/ui/source/SourceViewDialog.test.ts",
+          "src/tests/StandaloneRngImportIntegration.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Clipboard API receives exact original syntax, without generated RNC XML",
+      "actualResult": {
+        "browserObservations": 12,
+        "passedBrowserObservations": 12,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Browser instrumentation captures navigator.clipboard.writeText arguments; OS clipboard paste is in manual QA."
+    },
+    {
+      "id": "copy-summary",
+      "requirement": "Keep summary copying distinct and safe across replacement",
+      "evidence": {
+        "browserChecks": [
+          "rng-source-copy",
+          "rnc-source-copy",
+          "stale-copy-replacement"
+        ],
+        "automated": [
+          "src/ui/inspector/NodeSummaryCopyAction.test.ts",
+          "src/ui/source/SourceViewDialog.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Summary differs from source; stale completion cannot affect new project",
+      "actualResult": {
+        "browserObservations": 12,
+        "passedBrowserObservations": 12,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "cycles",
+      "requirement": "Keep recursive graphs navigable",
+      "evidence": {
+        "browserChecks": [
+          "rng-cycle-bounded",
+          "rnc-cycle-bounded"
+        ],
+        "automated": [
+          "src/schema/relaxng/relaxNgSemanticModel.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Repeated navigation remains bounded by production window limits",
+      "actualResult": {
+        "browserObservations": 8,
+        "passedBrowserObservations": 8,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "failed-replacement",
+      "requirement": "Preserve active project after failure",
+      "evidence": {
+        "browserChecks": [
+          "rng-invalid-preservation",
+          "rnc-invalid-preservation"
+        ],
+        "automated": [
+          "src/tests/StandaloneRngImportIntegration.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "RNG and RNC failures do not discard focus or source",
+      "actualResult": {
+        "browserObservations": 8,
+        "passedBrowserObservations": 8,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "firefox",
+      "requirement": "Run controlled Firefox independently",
+      "evidence": {
+        "browserChecks": [
+          "worker-cleanup"
+        ],
+        "automated": [
+          "scripts/relax-ng-release-browser-acceptance.mjs"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Every required browser check passes with zero errors",
+      "actualResult": {
+        "browserObservations": 4,
+        "passedBrowserObservations": 4,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "focus-restoration",
+      "requirement": "Restore useful focus after transient UI closes",
+      "evidence": {
+        "browserChecks": [
+          "rng-source-focus",
+          "rnc-source-focus",
+          "rng-invalid-focus",
+          "rnc-invalid-focus",
+          "rng-problems-retained",
+          "rnc-problems-retained"
+        ],
+        "automated": [
+          "src/ui/source/SourceViewDialog.test.ts",
+          "src/ui/problems/ProblemReportDialog.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Source, invalid import and Problems return to appropriate controls",
+      "actualResult": {
+        "browserObservations": 24,
+        "passedBrowserObservations": 24,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "full-validation",
+      "requirement": "Run the full repository and legacy CI gates",
+      "evidence": {
+        "browserChecks": [],
+        "automated": [
+          "npm run validate",
+          "npm run w3c:dtd:ci",
+          "npm run w3c:xsd:ci"
+        ],
+        "gates": [
+          "validate",
+          "dtdCi",
+          "xsdCi"
+        ]
+      },
+      "expectedResult": "Validation, DTD and XSD CI pass with exact counts recorded",
+      "actualResult": {
+        "browserObservations": 0,
+        "passedBrowserObservations": 0,
+        "gateResults": [
+          {
+            "gate": "validate",
+            "pass": true
+          },
+          {
+            "gate": "dtdCi",
+            "pass": true
+          },
+          {
+            "gate": "xsdCi",
+            "pass": true
+          }
+        ]
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "historical-visualization",
+      "requirement": "Preserve the historical presentation authority",
+      "evidence": {
+        "browserChecks": [],
+        "automated": [
+          "npm run acceptance:complete-visualization"
+        ],
+        "gates": [
+          "historicalVisualization"
+        ]
+      },
+      "expectedResult": "221/221; approved digest unchanged",
+      "actualResult": {
+        "browserObservations": 0,
+        "passedBrowserObservations": 0,
+        "gateResults": [
+          {
+            "gate": "historicalVisualization",
+            "pass": true
+          }
+        ]
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "hostile-mime",
+      "requirement": "Support WASM served as application/octet-stream",
+      "evidence": {
+        "browserChecks": [
+          "rng-lazy-loaded"
+        ],
+        "automated": [
+          "npm run verify:hostile-mime"
+        ],
+        "gates": [
+          "hostileMime"
+        ]
+      },
+      "expectedResult": "Both browser mounts run and static verifier passes",
+      "actualResult": {
+        "browserObservations": 4,
+        "passedBrowserObservations": 4,
+        "gateResults": [
+          {
+            "gate": "hostileMime",
+            "pass": true
+          }
+        ]
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "inspector",
+      "requirement": "Expose faithful RELAX NG semantics independently of focus",
+      "evidence": {
+        "browserChecks": [
+          "rng-search-inspect",
+          "rnc-search-inspect"
+        ],
+        "automated": [
+          "src/schema/relaxng/relaxNgSemanticModel.test.ts",
+          "src/schema/relaxng/relaxNgPresentationProjector.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Kind, source, range, scope, bindings, names, datatype and relationships remain inspectable",
+      "actualResult": {
+        "browserObservations": 8,
+        "passedBrowserObservations": 8,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "keyboard",
+      "requirement": "Support keyboard workflows and native input keys",
+      "evidence": {
+        "browserChecks": [
+          "rng-tab-order",
+          "rnc-tab-order",
+          "rng-input-keys",
+          "rnc-input-keys",
+          "rng-navigation-keyboard",
+          "rnc-navigation-keyboard"
+        ],
+        "automated": [
+          "src/tests/OverviewSemanticZoom.test.ts",
+          "src/ui/source/SourceViewDialog.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Tab/Shift+Tab, Enter, Space, Escape and arrows work without traps",
+      "actualResult": {
+        "browserObservations": 24,
+        "passedBrowserObservations": 24,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "large-rnc",
+      "requirement": "Use bounded presentation for large RNC",
+      "evidence": {
+        "browserChecks": [
+          "large-rnc",
+          "large-1000-rnc",
+          "large-1000-rnc-source-copy"
+        ],
+        "automated": [
+          "scripts/relax-ng-release-browser-acceptance.mjs"
+        ],
+        "gates": []
+      },
+      "expectedResult": "1,000 definitions searchable; exact source and usable Inspector",
+      "actualResult": {
+        "browserObservations": 12,
+        "passedBrowserObservations": 12,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing compact fixtures plus a deterministic 1,000-definition grammar generated only in the external audit directory."
+    },
+    {
+      "id": "large-rng",
+      "requirement": "Use bounded presentation for large RNG",
+      "evidence": {
+        "browserChecks": [
+          "large-rng",
+          "docbook-large",
+          "docbook-source-copy"
+        ],
+        "automated": [
+          "src/schema/relaxng/relaxNgSemanticModel.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Search, Inspector and source remain usable with bounded DOM",
+      "actualResult": {
+        "browserObservations": 12,
+        "passedBrowserObservations": 12,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "lazy-loading",
+      "requirement": "Load RELAX NG runtime only when needed",
+      "evidence": {
+        "browserChecks": [
+          "startup-lazy",
+          "dtd-xsd-lazy",
+          "rng-lazy-loaded"
+        ],
+        "automated": [
+          "src/app/import/schemaFileImportController.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Startup and DTD/XSD do not load it; RNG/RNC do",
+      "actualResult": {
+        "browserObservations": 12,
+        "passedBrowserObservations": 12,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "licensing",
+      "requirement": "Preserve production and test-corpus attribution",
+      "evidence": {
+        "browserChecks": [],
+        "automated": [
+          "npm run verify:release-integrity",
+          "docs/third-party-licensing.md"
+        ],
+        "gates": [
+          "licensing",
+          "releaseIntegrity"
+        ]
+      },
+      "expectedResult": "Required notices reachable; test-only JARs/corpus absent from dist",
+      "actualResult": {
+        "browserObservations": 0,
+        "passedBrowserObservations": 0,
+        "gateResults": [
+          {
+            "gate": "licensing",
+            "pass": true
+          },
+          {
+            "gate": "releaseIntegrity",
+            "pass": true
+          }
+        ]
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "missing-dependency",
+      "requirement": "Retain missing include/external relationships",
+      "evidence": {
+        "browserChecks": [
+          "rng-missing-visible",
+          "rnc-missing-visible"
+        ],
+        "automated": [
+          "src/app/import/schemaPackage/rngPackageResolution.test.ts",
+          "src/schema/relaxng/relaxNgSemanticModel.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Literal reference visible; no invented target semantics",
+      "actualResult": {
+        "browserObservations": 8,
+        "passedBrowserObservations": 8,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "mobile",
+      "requirement": "Keep phone-width workflows usable",
+      "evidence": {
+        "browserChecks": [
+          "rng-responsive-390",
+          "rnc-responsive-390",
+          "rng-mobile-source-copy",
+          "rnc-mobile-source-copy"
+        ],
+        "automated": [
+          "src/ui/source/SourceViewDialog.test.ts",
+          "src/ui/problems/ProblemReportDialog.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "390x844 Search, Inspector, source/copy and retained Problems usable",
+      "actualResult": {
+        "browserObservations": 16,
+        "passedBrowserObservations": 16,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "navigation",
+      "requirement": "Navigate through the shared Navigation panel",
+      "evidence": {
+        "browserChecks": [
+          "rng-navigation-keyboard",
+          "rnc-navigation-keyboard"
+        ],
+        "automated": [
+          "src/ui/layout/SchemaOutlineList.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Keyboard Enter changes semantic focus through normal navigation",
+      "actualResult": {
+        "browserObservations": 8,
+        "passedBrowserObservations": 8,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "nested-mount",
+      "requirement": "Run the same artifact at /xml-carousel/",
+      "evidence": {
+        "browserChecks": [
+          "startup-lazy",
+          "docbook-large",
+          "worker-cleanup"
+        ],
+        "automated": [
+          "scripts/verify-hostile-mime-build.mjs"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Imports, workers, WASM and UI resolve under the nested mount",
+      "actualResult": {
+        "browserObservations": 12,
+        "passedBrowserObservations": 12,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "overview-inspect",
+      "requirement": "Keep focused Overview Inspect available",
+      "evidence": {
+        "browserChecks": [
+          "rng-overview-keyboard-inspect",
+          "rnc-overview-keyboard-inspect",
+          "rng-overview-pointer-inspect",
+          "rnc-overview-pointer-inspect"
+        ],
+        "automated": [
+          "src/tests/OverviewSemanticZoom.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Space and pointer inspect without navigating; independent target may be centered explicitly",
+      "actualResult": {
+        "browserObservations": 16,
+        "passedBrowserObservations": 16,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "package-mixed-all",
+      "requirement": "Keep DTD/XSD/RNG/RNC in one package",
+      "evidence": {
+        "browserChecks": [
+          "rnc-package-19-mixed-inventory.zip",
+          "rnc-19-mixed-inventory.zip-all-package-sources"
+        ],
+        "automated": [
+          "src/app/import/schemaPackage/rngPackageResolution.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Complete inventory and exact member text across formats",
+      "actualResult": {
+        "browserObservations": 8,
+        "passedBrowserObservations": 8,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "package-mixed-rng-rnc",
+      "requirement": "Keep both RELAX NG syntaxes in one package",
+      "evidence": {
+        "browserChecks": [
+          "mixed-rng-rnc"
+        ],
+        "automated": [
+          "src/app/import/schemaPackage/rngPackageResolution.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Independent syntax-owned identities; no extension fallback",
+      "actualResult": {
+        "browserObservations": 4,
+        "passedBrowserObservations": 4,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "package-order",
+      "requirement": "Ignore ZIP entry order for semantic identity",
+      "evidence": {
+        "browserChecks": [
+          "package-order-determinism"
+        ],
+        "automated": [
+          "src/app/import/schemaPackage/rngPackageResolution.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Reversed ZIP order has identical semantic focus, nodes and sorted paths",
+      "actualResult": {
+        "browserObservations": 4,
+        "passedBrowserObservations": 4,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "package-rnc",
+      "requirement": "Resolve supplied RNC package dependencies",
+      "evidence": {
+        "browserChecks": [
+          "rnc-package-11-multi-file-includes.zip",
+          "rnc-package-12-external-project.zip",
+          "rnc-package-14-nested-include.zip"
+        ],
+        "automated": [
+          "src/app/import/schemaPackage/rngPackageResolution.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Include, external and nested paths retain Compact Syntax identity",
+      "actualResult": {
+        "browserObservations": 12,
+        "passedBrowserObservations": 12,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "package-rng",
+      "requirement": "Resolve supplied RNG package dependencies",
+      "evidence": {
+        "browserChecks": [
+          "rng-package-11-multi-file-includes.zip",
+          "rng-package-12-external-ref-project.zip",
+          "rng-package-14-nested-include-project.zip"
+        ],
+        "automated": [
+          "src/app/import/schemaPackage/rngPackageResolution.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Include, externalRef, nested paths and source inventory remain truthful",
+      "actualResult": {
+        "browserObservations": 12,
+        "passedBrowserObservations": 12,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "package-source",
+      "requirement": "Open every retained text member in representative packages",
+      "evidence": {
+        "browserChecks": [
+          "rng-11-multi-file-includes.zip-all-package-sources",
+          "rnc-11-multi-file-includes.zip-all-package-sources",
+          "rnc-19-mixed-inventory.zip-all-package-sources"
+        ],
+        "automated": [
+          "src/ui/layout/SchemaSetOutline.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Each source equals the original decoded ZIP member byte-for-byte as text",
+      "actualResult": {
+        "browserObservations": 12,
+        "passedBrowserObservations": 12,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "pointer-drag",
+      "requirement": "Support pointer card and drag navigation",
+      "evidence": {
+        "browserChecks": [
+          "rng-drag",
+          "rnc-drag"
+        ],
+        "automated": [
+          "src/tests/CarouselGesture.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Real mouse drag reaches same leafward target as pointer activation",
+      "actualResult": {
+        "browserObservations": 8,
+        "passedBrowserObservations": 8,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "portable-build",
+      "requirement": "Verify only portable intended release assets",
+      "evidence": {
+        "browserChecks": [],
+        "automated": [
+          "npm run verify:dist -- --base=./"
+        ],
+        "gates": [
+          "dist"
+        ]
+      },
+      "expectedResult": "Relative URLs, pinned runtimes, notices and no conformance/test assets",
+      "actualResult": {
+        "browserObservations": 0,
+        "passedBrowserObservations": 0,
+        "gateResults": [
+          {
+            "gate": "dist",
+            "pass": true
+          }
+        ]
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "privacy",
+      "requirement": "Make no schema-network or host-file requests",
+      "evidence": {
+        "browserChecks": [],
+        "automated": [
+          "scripts/relax-ng-release-browser-acceptance.mjs"
+        ],
+        "gates": [
+          "privacy"
+        ]
+      },
+      "expectedResult": "Zero remote schema requests, file requests and unexpected origins",
+      "actualResult": {
+        "browserObservations": 0,
+        "passedBrowserObservations": 0,
+        "gateResults": [
+          {
+            "gate": "privacy",
+            "pass": true
+          }
+        ]
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "problems",
+      "requirement": "Retain truthful failed-import reports",
+      "evidence": {
+        "browserChecks": [
+          "rng-problems-retained",
+          "rnc-problems-retained",
+          "rng-retry-clears-problems",
+          "rnc-retry-clears-problems"
+        ],
+        "automated": [
+          "src/ui/problems/ProblemReportDialog.test.ts",
+          "src/standards/relaxng/productionValidator.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Original identity, no host paths/generated XML, retry clears old report",
+      "actualResult": {
+        "browserObservations": 16,
+        "passedBrowserObservations": 16,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "project-replacement",
+      "requirement": "Replace one coherent project atomically",
+      "evidence": {
+        "browserChecks": [
+          "stale-copy-replacement",
+          "rng-retry-clears-problems",
+          "rnc-retry-clears-problems"
+        ],
+        "automated": [
+          "src/app/import/schemaFileImportController.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Fresh source/semantic identity; old Inspector and Problems cleared",
+      "actualResult": {
+        "browserObservations": 12,
+        "passedBrowserObservations": 12,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "real-world-docbook",
+      "requirement": "Explore pinned DocBook 5.1",
+      "evidence": {
+        "browserChecks": [
+          "docbook-large",
+          "docbook-source-copy"
+        ],
+        "automated": [
+          "tests/fixtures/relax-ng/conformance/real-world/docbook-5.1/docbook.rng",
+          "src/tests/RelaxNgConformanceGate.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "book Search, Inspector and original source work",
+      "actualResult": {
+        "browserObservations": 8,
+        "passedBrowserObservations": 8,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "real-world-epubcheck",
+      "requirement": "Explore supplied EPUBCheck Compact Syntax",
+      "evidence": {
+        "browserChecks": [
+          "real-world-epubcheck-5.3.0"
+        ],
+        "automated": [
+          "src/tests/RelaxNgConformanceGate.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Local package activates with retained source identities",
+      "actualResult": {
+        "browserObservations": 4,
+        "passedBrowserObservations": 4,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "relaxng-conformance",
+      "requirement": "Keep all reviewed conformance boundaries explicit",
+      "evidence": {
+        "browserChecks": [],
+        "automated": [
+          "npm run relaxng:conformance"
+        ],
+        "gates": [
+          "relaxNgConformance"
+        ]
+      },
+      "expectedResult": "385 spectest + 90 compacttest = 475 selected; zero excluded/investigations/harness errors",
+      "actualResult": {
+        "browserObservations": 0,
+        "passedBrowserObservations": 0,
+        "gateResults": [
+          {
+            "gate": "relaxNgConformance",
+            "pass": true
+          }
+        ]
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "relaxng-visualization",
+      "requirement": "Preserve the RELAX NG presentation authority",
+      "evidence": {
+        "browserChecks": [],
+        "automated": [
+          "npm run acceptance:relaxng-complete-visualization"
+        ],
+        "gates": [
+          "relaxNgVisualization"
+        ]
+      },
+      "expectedResult": "77/77; zero findings; approved digest unchanged",
+      "actualResult": {
+        "browserObservations": 0,
+        "passedBrowserObservations": 0,
+        "gateResults": [
+          {
+            "gate": "relaxNgVisualization",
+            "pass": true
+          }
+        ]
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "release-documentation",
+      "requirement": "Prepare an unreleased 0.3 candidate decision record",
+      "evidence": {
+        "browserChecks": [],
+        "automated": [
+          "docs/release-0.3.0-candidate.md",
+          "docs/release-0.3.0-manual-qa.md"
+        ],
+        "gates": [
+          "documentation"
+        ]
+      },
+      "expectedResult": "Support, limits, evidence and manual QA documented; version remains 0.2.0",
+      "actualResult": {
+        "browserObservations": 0,
+        "passedBrowserObservations": 0,
+        "gateResults": [
+          {
+            "gate": "documentation",
+            "pass": true
+          }
+        ]
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "responsive",
+      "requirement": "Adapt desktop and narrow layouts",
+      "evidence": {
+        "browserChecks": [
+          "rng-responsive-1440",
+          "rnc-responsive-1440",
+          "rng-responsive-768",
+          "rnc-responsive-768"
+        ],
+        "automated": [
+          "src/tests/OverviewSemanticZoom.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "No document overflow at 1440x900 and 768x900; Search and carousel usable",
+      "actualResult": {
+        "browserObservations": 16,
+        "passedBrowserObservations": 16,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "root-mount",
+      "requirement": "Run the portable artifact at /",
+      "evidence": {
+        "browserChecks": [
+          "startup-lazy",
+          "docbook-large",
+          "worker-cleanup"
+        ],
+        "automated": [
+          "scripts/verify-static-build.mjs"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Complete representative browser flow passes",
+      "actualResult": {
+        "browserObservations": 12,
+        "passedBrowserObservations": 12,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "search",
+      "requirement": "Search semantic names, references, literals, annotations and source context",
+      "evidence": {
+        "browserChecks": [
+          "rng-search-inspect",
+          "rnc-search-inspect"
+        ],
+        "automated": [
+          "src/schema/relaxng/relaxNgPresentationProjector.test.ts",
+          "src/tests/RelaxNgCompleteVisualizationAcceptance.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Inspect leaves focus unchanged; Center navigates; no generated XML",
+      "actualResult": {
+        "browserObservations": 8,
+        "passedBrowserObservations": 8,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "shared-dependencies",
+      "requirement": "Preserve shared target identity",
+      "evidence": {
+        "browserChecks": [
+          "rng-package-13-shared-dependency.zip",
+          "rnc-package-13-shared-dependency.zip"
+        ],
+        "automated": [
+          "src/schema/relaxng/relaxNgSemanticModel.test.ts",
+          "src/app/import/schemaPackage/rngPackageResolution.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "One target identity, truthful incoming and outgoing relationships",
+      "actualResult": {
+        "browserObservations": 8,
+        "passedBrowserObservations": 8,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "source-modal",
+      "requirement": "Show exact retained semantic source fragments",
+      "evidence": {
+        "browserChecks": [
+          "rng-source-copy",
+          "rnc-source-copy",
+          "rng-source-focus",
+          "rnc-source-focus"
+        ],
+        "automated": [
+          "src/ui/source/SourceViewDialog.test.ts",
+          "src/tests/RelaxNgCompleteVisualizationAcceptance.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "RNG XML/RNC text exact; Search and Inspector survive Escape",
+      "actualResult": {
+        "browserObservations": 16,
+        "passedBrowserObservations": 16,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "stale-results",
+      "requirement": "Suppress late read, worker and copy results",
+      "evidence": {
+        "browserChecks": [
+          "cancel-reading-stale",
+          "superseded-read-stale",
+          "stale-copy-replacement"
+        ],
+        "automated": [
+          "src/app/import/schemaFileImportController.test.ts",
+          "src/standards/relaxng/workerClient.test.ts",
+          "src/ui/source/SourceViewDialog.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Latest attempt wins after controlled late settlement",
+      "actualResult": {
+        "browserObservations": 12,
+        "passedBrowserObservations": 12,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Real browser File reads and clipboard promises are held/released deliberately; production workers are also cancelled. Late worker messages are covered by controller/client tests."
+    },
+    {
+      "id": "standalone-rnc-invalid",
+      "requirement": "Reject invalid RNC",
+      "evidence": {
+        "browserChecks": [
+          "rnc-invalid-preservation"
+        ],
+        "automated": [
+          "src/tests/StandaloneRngImportIntegration.test.ts",
+          "tests/fixtures/relax-ng/manual-qa-rnc/09-invalid-syntax.rnc"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Prior project preserved; diagnostics refer to original source",
+      "actualResult": {
+        "browserObservations": 4,
+        "passedBrowserObservations": 4,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "standalone-rnc-valid",
+      "requirement": "Accept and activate a standards-valid RNC",
+      "evidence": {
+        "browserChecks": [
+          "rnc-valid"
+        ],
+        "automated": [
+          "src/tests/StandaloneRngImportIntegration.test.ts",
+          "tests/fixtures/relax-ng/manual-qa-rnc/01-basic-grammar.rnc"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Compact parser and libxml2 agree; original RNC retained",
+      "actualResult": {
+        "browserObservations": 4,
+        "passedBrowserObservations": 4,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "standalone-rng-invalid",
+      "requirement": "Reject invalid RNG",
+      "evidence": {
+        "browserChecks": [
+          "rng-invalid-preservation"
+        ],
+        "automated": [
+          "src/tests/StandaloneRngImportIntegration.test.ts",
+          "tests/fixtures/relax-ng/manual-qa/09-invalid-schema.rng"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Prior project and source remain active",
+      "actualResult": {
+        "browserObservations": 4,
+        "passedBrowserObservations": 4,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "standalone-rng-valid",
+      "requirement": "Accept and activate a standards-valid RNG",
+      "evidence": {
+        "browserChecks": [
+          "rng-valid"
+        ],
+        "automated": [
+          "src/tests/StandaloneRngImportIntegration.test.ts",
+          "tests/fixtures/relax-ng/manual-qa/01-basic-grammar.rng"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Semantic Start, exact source, disposable worker",
+      "actualResult": {
+        "browserObservations": 4,
+        "passedBrowserObservations": 4,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "validator-datatype-boundary",
+      "requirement": "Keep the reviewed Validator.nu custom datatype boundary explicit",
+      "evidence": {
+        "browserChecks": [
+          "real-world-validator-26.8.30"
+        ],
+        "automated": [
+          "src/tests/RelaxNgConformanceGate.test.ts",
+          "tests/fixtures/relax-ng/conformance/expected-boundaries.json"
+        ],
+        "gates": []
+      },
+      "expectedResult": "WHATWG datatype-library limitation remains an expected boundary",
+      "actualResult": {
+        "browserObservations": 4,
+        "passedBrowserObservations": 4,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "worker-cleanup",
+      "requirement": "Dispose workers across formats and outcomes",
+      "evidence": {
+        "browserChecks": [
+          "worker-cleanup"
+        ],
+        "automated": [
+          "src/app/import/schemaFileImportController.test.ts",
+          "src/standards/relaxng/workerClient.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Created count equals terminated count; zero live workers",
+      "actualResult": {
+        "browserObservations": 4,
+        "passedBrowserObservations": 4,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "zoom-compact",
+      "requirement": "Preserve semantic identity in Compact",
+      "evidence": {
+        "browserChecks": [
+          "rng-zoom-compact",
+          "rnc-zoom-compact"
+        ],
+        "automated": [
+          "src/tests/RelaxNgCompleteVisualizationAcceptance.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Focus, journey, Search results, Inspector and source target unchanged",
+      "actualResult": {
+        "browserObservations": 8,
+        "passedBrowserObservations": 8,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "zoom-full",
+      "requirement": "Preserve semantic identity in Full",
+      "evidence": {
+        "browserChecks": [
+          "rng-zoom-full",
+          "rnc-zoom-full"
+        ],
+        "automated": [
+          "src/tests/RelaxNgCompleteVisualizationAcceptance.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Focus, journey, Search results, Inspector and source target unchanged",
+      "actualResult": {
+        "browserObservations": 8,
+        "passedBrowserObservations": 8,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    },
+    {
+      "id": "zoom-overview",
+      "requirement": "Preserve semantic identity in Overview",
+      "evidence": {
+        "browserChecks": [
+          "rng-zoom-overview",
+          "rnc-zoom-overview"
+        ],
+        "automated": [
+          "src/tests/RelaxNgCompleteVisualizationAcceptance.test.ts"
+        ],
+        "gates": []
+      },
+      "expectedResult": "Focus, journey, Search results, Inspector and source target unchanged",
+      "actualResult": {
+        "browserObservations": 8,
+        "passedBrowserObservations": 8,
+        "gateResults": []
+      },
+      "status": "PASS",
+      "notes": "Existing automated semantics and real production-browser observations are complementary."
+    }
+  ],
+  "recommendation": "READY_FOR_0_3_0_RELEASE"
+}
