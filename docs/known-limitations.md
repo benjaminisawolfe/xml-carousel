@@ -1,9 +1,11 @@
-# Known limitations
+# Known Limitations
 
 This document records current release boundaries. For supported behavior and
-evidence, see [Standards support](standards-support.md).
+evidence, see [Standards Support](standards-support.md). For practical import,
+navigation, and troubleshooting instructions, see
+[Using XML Carousel](using-xml-carousel.md).
 
-## Standards scope
+## Standards Scope
 
 Apache Xerces-C++ is authoritative for XML 1.0, standalone DTD grammar
 preparation, and XML Schema 1.0 validity within XML Carousel's controlled
@@ -42,7 +44,7 @@ RNG/RNC diagnostics may omit line or column coordinates when a reliable
 original-source mapping is unavailable. Generated RNC-validation XML is never
 presented as user source, and missing coordinates are not fabricated.
 
-## Supplied-files-only resolution
+## Supplied-Files-Only Resolution
 
 Dependencies resolve only from files explicitly supplied by the user. XML
 Carousel does not crawl the host filesystem, inherit disk-folder siblings,
@@ -59,7 +61,7 @@ and reproducibility behavior.
 External schema retrieval is deferred to 0.4. The 0.3.0 public alpha
 preserves these supplied-files-only boundaries.
 
-## Presentation routes
+## Presentation Routes
 
 Not every supported construct appears as a carousel card. Some constructs are
 correctly Navigation-, Search-, inspector-, source-, or package-inventory-first.
@@ -70,7 +72,7 @@ The application is read-only. It does not edit, rewrite, export, or save schema
 source. Source view presents escaped retained text and declaration-oriented
 fragments; it is not a round-trip editor or a line/column source IDE.
 
-## ZIP and resource limits
+## ZIP and Resource Limits
 
 ZIP processing is bounded:
 
@@ -87,7 +89,7 @@ ignored entries remain classified in package inventory instead of being parsed.
 Diagnostic details are capped while retaining an explicit uncapped total where
 supported.
 
-## Capacity and persistence
+## Capacity and Persistence
 
 Worker parsing, bounded carousel windows, and indexed presentation reduce
 main-thread work, but usable project size remains dependent on browser memory,
@@ -99,15 +101,16 @@ Projects live only in memory for the current page. Reloading restores the
 default sample. The only persisted application preference is whether Welcome
 and Help opens automatically.
 
-## Browser and accessibility evidence
+## Browser and Accessibility Evidence
 
-The Task 17.10 candidate audit records current production-browser versions,
-actual viewport checks and accessibility results in the
+The historical Task 17.10 candidate audit records the production-browser
+versions, actual viewport checks, and accessibility results accepted for 0.3.0 in the
 [0.3.0 candidate report](release-0.3.0-candidate.md). It exercises 1440×900,
 768×900 and 390×844 at both root and nested static mounts in Chrome and
 Firefox. Earlier acceptance also covered intermediate and landscape widths;
 those earlier browser versions are historical evidence, not the current
-candidate certification.
+release certification. See the [release report](release-0.3.0-release-report.md)
+for completed live-site deployment checks at <https://xmlcarousel.knowone.ca>.
 
 The repository does not claim Safari/WebKit coverage, physical Samsung-device
 QA, manual Narrator or other screen-reader hardware testing, or browser-chrome
@@ -115,7 +118,7 @@ zoom telemetry. Automated semantics, keyboard, focus, reduced-motion, and
 responsive tests are not a substitute for every assistive-technology/device
 combination.
 
-## Deployment and privacy
+## Deployment and Privacy
 
 Schema contents are processed locally and are not uploaded to an XML Carousel
 backend. There is no backend, analytics, telemetry, account system, update
@@ -128,7 +131,7 @@ JavaScript MIME type for `.js`. The verified WASM path tolerates
 `application/octet-stream`. Root and nested-directory deployments use the same
 portable artifact.
 
-## Repository-history licensing status
+## Repository-History Licensing Status
 
 The current tree stores James Clark's `xmltest` collection only as the verified
 unchanged archive permitted by its embedded terms. The former public Git

@@ -2,14 +2,17 @@
 
 Release date: 2026-09-02. Version: `0.3.0`. Annotated tag: `v0.3.0`.
 This is alpha-quality exploratory software, published as a non-draft GitHub
-prerelease after the exact release source passes hosted CI. The public release
-body records that source commit; this document is frozen before publication.
+prerelease after hosted CI passed on the exact release source
+`09ba96274e61f8c6486f2fe6eb0a498ed9412e67`.
 
-Canonical site: <https://xmlcarousel.wolfshafenpress.com/>. Canonical-site
-deployment is separate and has not been performed under this release authority.
-This release does not claim live-site 0.3.0 smoke or deployed-byte verification.
+Canonical site: <https://xmlcarousel.knowone.ca>. Canonical-site deployment is
+complete using the exact preserved release distribution: 19 files / 3,826,638
+bytes, 19/19 byte-verified. The deployed inventory digest is
+`250c34a66ec6240ef63bb08553d49ae7fb3cee4cbda28405b6e6ba29fbed3804`.
+Chrome live smoke passed; Firefox live smoke passed. No rollback is required.
+Start with [Using XML Carousel](using-xml-carousel.md) for a practical guide.
 
-## First-class RELAX NG
+## First-Class RELAX NG
 
 RELAX NG XML syntax (`.rng`) and Compact Syntax (`.rnc`) join DTD and XSD as
 first-class inputs. Open standalone schemas, multi-file ZIP projects, and mixed
@@ -26,7 +29,7 @@ approved orientation remains rootward left and leafward right.
 User source remains original RNG XML for `.rng` and original Compact Syntax
 for `.rnc`. Generated RNC validation XML is never user-facing source.
 
-## Accepted evidence
+## Accepted Evidence
 
 The unchanged Task 17.10 decision is `READY_FOR_0_3_0_RELEASE`: 60 / 60 PASS.
 The [candidate record](release-0.3.0-candidate.md) documents stabilization and
@@ -58,7 +61,7 @@ Reviewed browser acceptance is Chrome 152.0.7977.65: 233 / 233 and Firefox
 The release report separately records focused smoke of the release distribution
 in both browsers at `/` and `/xml-carousel/`.
 
-## Privacy, security, and limits
+## Privacy, Security, and Limits
 
 Schema processing remains local-first with no schema upload backend, no remote
 schema retrieval in 0.3.0, and no arbitrary host filesystem retrieval.

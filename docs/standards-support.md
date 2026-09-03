@@ -1,4 +1,4 @@
-# Standards support
+# Standards Support
 
 This is the current release-facing statement of XML Carousel's validation,
 presentation, resolver, security, and test boundaries. Detailed presentation
@@ -9,7 +9,7 @@ RELAX NG has separate
 [conformance and visualization authorities](technical/relax-ng-conformance-and-visualization-authority.md)
 so its evidence does not rewrite the historical DTD/XSD/ZIP matrix.
 
-## Supported inputs and validation authority
+## Supported Inputs and Validation Authority
 
 XML Carousel accepts standalone `.dtd`, `.xsd`, RELAX NG XML-syntax `.rng`, and
 RELAX NG Compact Syntax `.rnc` files, plus ZIP packages that preserve DTD, XSD,
@@ -47,7 +47,7 @@ retaining distinct filenames, lexical text, and ranges. Invalid,
 blocked, cancelled, and internal-failure attempts leave the active project
 unchanged.
 
-## RELAX NG in ZIP packages
+## RELAX NG in ZIP Packages
 
 **Open ZIP** recognizes case-insensitive `.rng` and `.rnc` members and retains one
 source-document node and the complete exact UTF-8 source for each member.
@@ -65,7 +65,7 @@ entry status. Accepted members use the same bounded semantic graph and rich
 presentation as standalone input; shared targets and cycles remain links rather
 than expanded copies.
 
-## DTD support
+## DTD Support
 
 For Xerces-accepted DTD input, supported presentation includes element and
 ATTLIST declarations; named, tokenized, enumerated, and notation attributes;
@@ -80,7 +80,7 @@ supplied inside the controlled virtual project. Network-based external entities,
 arbitrary `file:` resources, host-drive lookup, and paths escaping the project
 root are not supported.
 
-## XSD 1.0 support
+## XSD 1.0 Support
 
 Supported XML Schema 1.0 presentation includes:
 
@@ -100,7 +100,7 @@ Supported XML Schema 1.0 presentation includes:
 This list summarizes implemented XSD 1.0 contracts. It is not a claim that XML
 Carousel implements XSD 1.1 or every feature of every XML-related standard.
 
-## Presentation contract
+## Presentation Contract
 
 Support does not mean that every construct becomes a carousel card. Depending
 on its semantics, the primary route may be Navigation, Search, carousel focus,
@@ -144,7 +144,7 @@ The accepted conformance result categories are `unsupported`,
 `security-blocked`, and `metadata-disputed`. They are explicit boundaries, not
 passes disguised as failures or failures disguised as passes.
 
-## Multi-file projects and controlled resolution
+## Multi-File Projects and Controlled Resolution
 
 The approved complete-project workflow is a ZIP that preserves relative paths.
 Only files explicitly supplied by the user are available. Safe `..` segments
@@ -164,7 +164,7 @@ on the computer. Opening a complete ZIP containing both files makes the safe
 relative dependency available. This is intentional security and reproducible
 project behavior, not a parser defect.
 
-## Accepted release evidence
+## Accepted Release Evidence
 
 The current repository-backed evidence includes:
 
@@ -194,19 +194,27 @@ The current repository-backed evidence includes:
 Exact changing evidence belongs in generated reports and technical audits, not
 in marketing claims.
 
-## Browser, responsive, and accessibility evidence
+## Browser, Responsive, and Accessibility Evidence
 
-Automated production-browser evidence covers Chrome 151.0.7922.72 and Firefox
-153.0.1. Chrome requested viewports were 1440×900, 1280×720, 1024×768,
-768×900, 412×915, 390×844, 915×412, and 844×390. Firefox can enforce a larger
-effective content width than a requested narrow viewport.
+Current 0.3.0 acceptance covers Chrome 152.0.7977.65 and Firefox 155.0 with
+geckodriver 0.37.1. axe-core 4.13.0 examined 72 representative axe screens with
+0 serious/critical findings. Each browser passed 233/233 checks at root and
+nested static mounts, including 1440×900, 768×900, and 390×844 viewports.
+The [release report](release-0.3.0-release-report.md) also records independent
+live-site smoke: 76/76 checks in each browser after deployed-byte verification.
+
+Historical production-browser evidence used Chrome 151.0.7922.72 and Firefox
+153.0.1. Its requested Chrome viewports additionally included 1280×720,
+1024×768, 412×915, 915×412, and 844×390. Those versions are historical evidence,
+not the current release certification. Firefox can enforce a larger effective
+content width than a requested narrow viewport.
 
 The evidence covers focus, semantics, responsive containment, reduced motion,
 and browser lifecycle. It does not claim Safari/WebKit execution, physical
 Samsung-device QA, manual screen-reader hardware testing, or browser-chrome
 zoom telemetry.
 
-## Authoritative documentation map
+## Authoritative Documentation Map
 
 | Topic | Primary source |
 | --- | --- |

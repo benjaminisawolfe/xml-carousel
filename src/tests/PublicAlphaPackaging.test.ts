@@ -61,11 +61,11 @@ describe('public alpha documentation and package contracts', () => {
     for (const heading of [
       'Overview',
       'Privacy',
-      'Try it',
-      'Supported capabilities',
+      'Try It',
+      'Supported Capabilities',
       'Development',
       'Distribution',
-      'Project documentation',
+      'Project Documentation',
       'Status',
       'Licence',
     ]) {

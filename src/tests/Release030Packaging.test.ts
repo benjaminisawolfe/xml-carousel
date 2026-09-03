@@ -74,10 +74,15 @@ describe('0.3.0 release packaging and immutable historical authority', () => {
       'docs/third-public-alpha.md',
       'docs/release-0.3.0-checklist.md',
       'docs/release-0.3.0-release-report.md',
+      'docs/using-xml-carousel.md',
     ]) {
       const document = read(file);
       expect(read('README.md')).toContain(`](${file})`);
-      expect(document).toContain('XML Carousel 0.3.0');
+      expect(document).toContain(
+        file === 'docs/using-xml-carousel.md'
+          ? 'Using XML Carousel'
+          : 'XML Carousel 0.3.0',
+      );
       for (const [, link] of document.matchAll(/\[[^\]]+\]\(([^)]+)\)/gu)) {
         if (!/^[a-z]+:/iu.test(link)) {
           expect(existsSync(`docs/${link}`), link).toBe(true);
@@ -86,7 +91,7 @@ describe('0.3.0 release packaging and immutable historical authority', () => {
     }
   });
 
-  it('states standards, source fidelity, licensing, limitations and non-deployment truth', () => {
+  it('states standards, source fidelity, licensing, limitations and completed deployment', () => {
     const notes = read('docs/third-public-alpha.md');
     for (const claim of [
       'XML Carousel 0.3.0 — Third Public Alpha',
@@ -103,10 +108,85 @@ describe('0.3.0 release packaging and immutable historical authority', () => {
       'supplied-files-only',
       'XSD 1.1 is unsupported',
       'third-party-licensing.md',
-      'deployment is separate and has not been performed',
+      'https://xmlcarousel.knowone.ca',
+      '19/19 byte-verified',
+      'Chrome live smoke passed; Firefox live smoke passed',
+      'No rollback is required',
     ]) {
       expect(notes).toContain(claim);
     }
+    // This immutable source record describes preparation before deployment.
     expect(record.publication.deployment).toContain('not performed');
+  });
+
+  it('routes new users to the canonical site and complete guide without stale deployment claims', () => {
+    const readme = read('README.md');
+    const guide = read('docs/using-xml-carousel.md');
+    expect(
+      readme.match(/\]\(docs\/using-xml-carousel\.md\)/gu)?.length,
+    ).toBeGreaterThanOrEqual(2);
+    for (const file of [
+      'README.md',
+      'docs/using-xml-carousel.md',
+      'docs/third-public-alpha.md',
+      'docs/release-0.3.0-release-report.md',
+      'docs/release-0.3.0-checklist.md',
+    ]) {
+      const text = read(file).replace(/\s+/gu, ' ');
+      expect(text, file).toContain('https://xmlcarousel.knowone.ca');
+      expect(text, file).not.toMatch(
+        /deployment (?:is separate and )?has not been performed/iu,
+      );
+    }
+    for (const claim of [
+      'Open RNG accepts both `.rng` and `.rnc` files.',
+      'rootward / previous journey step ← current focus → leafward / available destinations',
+      'Inspecting a node does not change the current carousel journey.',
+      '## Multi-File Projects',
+      '## Missing and Blocked References',
+      '## Troubleshooting',
+    ]) {
+      expect(guide).toContain(claim);
+    }
+    expect(guide).not.toMatch(/Codex|Task 17\.|Git-integrity|test matrix/iu);
+  });
+
+  it('pins the closed deployment to the immutable release source and exact distribution', () => {
+    const report = read('docs/release-0.3.0-release-report.md');
+    for (const claim of [
+      '09ba96274e61f8c6486f2fe6eb0a498ed9412e67',
+      '5bf3a2ba8935e2456f245fd5ebdc1fe87ac3cfd5',
+      '6aae292e03910458b28328f419833b688bb14c16',
+      '381707566',
+      '19/19 files / 3,826,638 bytes',
+      '250c34a66ec6240ef63bb08553d49ae7fb3cee4cbda28405b6e6ba29fbed3804',
+      'No rollback is required.',
+    ]) {
+      expect(report).toContain(claim);
+    }
+    const checklist = read('docs/release-0.3.0-checklist.md').replace(
+      /\s+/gu,
+      ' ',
+    );
+    for (const completed of [
+      'Create and push annotated `v0.3.0`',
+      'Publish non-draft GitHub prerelease',
+      'Canonical-site deployment completed',
+      '19/19 deployed files byte-verified',
+      'Deployed inventory SHA-256 verified',
+      'Chrome live smoke passed',
+      'Firefox live smoke passed',
+      'Privacy/network checks passed',
+      'No rollback required',
+      'Add [Using XML Carousel]',
+    ]) {
+      const item = checklist
+        .split('- ')
+        .find((entry) => entry.includes(completed));
+      expect(item, completed).toMatch(/^\[x\]/u);
+    }
+    expect(checklist).toContain(
+      '0.3.0 publication and deployment are complete. No rollback is required.',
+    );
   });
 });
