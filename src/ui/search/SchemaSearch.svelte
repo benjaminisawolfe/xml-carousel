@@ -407,7 +407,7 @@
       type="button"
       aria-label="Search schema"
       aria-expanded={isOpen}
-      aria-controls={panelId}
+      aria-controls={isOpen ? panelId : undefined}
       onclick={() => void openFromCompact()}
     >
       Search
@@ -419,7 +419,6 @@
       <label class="visually-hidden" for="schema-search-input">
         Search schema
       </label>
-      <!-- svelte-ignore a11y_role_supports_aria_props_implicit -->
       <input
         bind:this={searchInput}
         id="schema-search-input"
@@ -430,8 +429,7 @@
         placeholder="Search schema"
         autocomplete="off"
         spellcheck="false"
-        aria-expanded={isOpen}
-        aria-controls={panelId}
+        aria-controls={isOpen ? panelId : undefined}
         onfocus={handleInputFocus}
         oninput={handleInput}
       />

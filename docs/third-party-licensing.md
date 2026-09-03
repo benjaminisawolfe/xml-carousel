@@ -24,7 +24,7 @@ The production distribution contains:
 - Emscripten 6.0.5 runtime support. Its authoritative repository copy is
   `src/standards/xerces/runtime/LICENSE.emscripten.txt`;
 - libxml2 2.15.3 compiled to JavaScript/WebAssembly for the user-facing
-  standalone `.rng` workflow. Its authoritative repository copy is
+  standalone and ZIP-supplied `.rng`/`.rnc` workflows. Its authoritative repository copy is
   `src/standards/relaxng/runtime/LICENSE.libxml2.txt`; the adjacent
   `LICENSE.emscripten.txt` covers its generated runtime layer;
 - JavaScript originating from Svelte 5.56.7, `clsx` 2.1.1, `esm-env` 1.2.2,
@@ -48,10 +48,15 @@ libxml2's exact upstream MIT-style licence is preserved as
 runtime layer is covered by the adjacent `LICENSE.emscripten.txt`.
 
 This runtime is the authoritative engine for RELAX NG XML-syntax grammar
-compilation. Task 17.4 makes it reachable from the ordinary application only
-after the user selects a standalone `.rng` file. The ordinary distribution now
+compilation. It loads lazily when an RNG/RNC import requires standards validation;
+Compact Syntax is translated transiently in the worker. The ordinary distribution
 includes the lazy RELAX NG worker, runtime, manifest, libxml2 licence, and the
 shared Emscripten licence; `THIRD_PARTY_NOTICES.txt` names those shipped roles.
+
+Task 17.10 also uses an externally downloaded, hash-pinned axe-core 4.13.0
+bundle for browser accessibility checks (MPL-2.0). Its package and licence stay
+with the external test tools. It is neither an application dependency nor a
+production asset. The release-candidate report records the bundle identity.
 
 Jing, Trang, RNV, and their Java/native tooling remain development-only
 comparison or reproducibility evidence. They are not production dependencies.

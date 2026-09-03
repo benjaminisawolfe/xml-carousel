@@ -102,6 +102,17 @@ function delay(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
+async function removeAuditProfile(profileDirectory) {
+  const target = path.resolve(profileDirectory);
+  const relative = path.relative(path.resolve(os.tmpdir()), target);
+  if (!/^xml-carousel-(chromium|firefox)-[^/\\]+$/u.test(relative)) {
+    throw new Error(
+      'Refusing to remove a path outside an isolated browser profile.',
+    );
+  }
+  await rm(target, { recursive: true, force: true });
+}
+
 async function waitUntil(
   operation,
   description,
@@ -441,7 +452,7 @@ class ChromiumDriver {
       'Chromium process shutdown',
       10_000,
     ).catch(() => undefined);
-    await rm(this.profileDirectory, { recursive: true, force: true });
+    await removeAuditProfile(this.profileDirectory);
   }
 }
 
@@ -682,7 +693,7 @@ class FirefoxDriver {
       'Firefox process shutdown',
       10_000,
     ).catch(() => undefined);
-    await rm(this.profileDirectory, { recursive: true, force: true });
+    await removeAuditProfile(this.profileDirectory);
   }
 }
 
@@ -3676,6 +3687,16 @@ async function main() {
     await server.close();
   }
 }
+
+export {
+  ChromiumDriver,
+  FirefoxDriver,
+  dismissWelcome,
+  importFile,
+  waitForIdle,
+  waitUntil,
+  smokeDeployment,
+};
 
 if (
   process.argv[1] &&
