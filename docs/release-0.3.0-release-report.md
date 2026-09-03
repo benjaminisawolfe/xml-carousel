@@ -1,38 +1,56 @@
-# XML Carousel 0.3.0 — Release Preparation Report
+# XML Carousel 0.3.0 — Release and Deployment Report
 
 Release date: 2026-09-02. Title: **XML Carousel 0.3.0 — Third Public Alpha**.
 Public repository: `benjaminisawolfe/xml-carousel`.
 
-This is the record frozen before the release commit. The external final report
-will record actual publication identities after exact-source hosted CI, tagging,
-and GitHub publication. This file does not assert that pending steps completed.
-Canonical-site deployment has not been performed under this release authority.
+Publication and canonical-site deployment are complete. The exact preserved
+release distribution is deployed at <https://xmlcarousel.knowone.ca>, with all
+19 files byte-verified and independent live Chrome and Firefox smoke passed.
+No rollback is required. This post-release documentation update records the
+completed work without changing the annotated tag or deployed runtime bytes.
 
-## Source and publication boundary
+## Source and Publication Identity
 
-- Baseline commit: `edda9ce3125330853c73d1b483be3ca2cfd7ccac`
-- Baseline tree: `e6d2f80a2987df88315f8b1de99b78b0f887ae70`
-- Branch: `release-0.3.0`
+- Historical preparation baseline: `edda9ce3125330853c73d1b483be3ca2cfd7ccac`
+- Historical preparation tree: `e6d2f80a2987df88315f8b1de99b78b0f887ae70`
+- Release branch: `release-0.3.0`
 - Version: `0.3.0`; package and both root lockfile versions agree.
-- Release task commit/tree: pending source freeze and commit.
-- Release source commit/tree: pending exact no-ff merge and hosted CI.
-- Annotated tag: `v0.3.0`; object: pending.
+- Release task commit: `1e476dacd17b3c2003fc18d6224d16f72452a981`
+- Release source commit: `09ba96274e61f8c6486f2fe6eb0a498ed9412e67`
+- Release task/source tree: `5bf3a2ba8935e2456f245fd5ebdc1fe87ac3cfd5`
+- Annotated tag: `v0.3.0`
+- Tag object: `6aae292e03910458b28328f419833b688bb14c16`
+- Tag target: `09ba96274e61f8c6486f2fe6eb0a498ed9412e67`
 - GitHub title: `XML Carousel 0.3.0 — Third Public Alpha`
-- GitHub Release ID: pending; intended state: non-draft prerelease.
-- Canonical site: <https://xmlcarousel.wolfshafenpress.com/>
-- Deployment: not performed; separate authority required.
+- GitHub Release ID: `381707566`; draft: `false`; prerelease: `true`.
+- Published at: `2026-09-03T03:28:43Z` (2026-09-02 in the release timezone).
+- Hosted CI: [run 33711160857](https://github.com/benjaminisawolfe/xml-carousel/actions/runs/33711160857),
+  validate job `100510728653`, completed successfully on the release source.
+- Canonical site: <https://xmlcarousel.knowone.ca>
+- Deployment: completed using the exact preserved release distribution.
 
 Both historical tags/releases were present unchanged before preparation;
 `v0.3.0` was absent locally, at origin, and in GitHub releases. Historical
 `v0.2.0` retains tag object `8584d805caa734edbab712c6b4e2b16667304ff9`
 and source commit `1c744fd16079cbefcaf1f4c96d69c1897e9727ab`.
 
-## Scope and historical contracts
+The release task was merged with `--no-ff`; its tree equals the release merge
+tree, with no integration edits. The published annotated tag object and target
+were independently verified. GitHub zipball and tarball contents matched every
+blob in the exact tagged tree, with no missing or extra files. Historical
+0.1.0/0.2.0 release metadata, tag objects, and targets remained unchanged.
+
+## Scope and Historical Contracts
 
 No product source or behavior changes. Dependencies/devDependencies, lockfile
 resolutions/integrities, corpus, licenses, runtimes, and browser/conformance/
 visualization evidence remain unchanged. `pnpm-lock.yaml` is absent.
-Known-limitations changes only release-state wording; licensing needs no edit.
+The original release changed version metadata and release packaging records.
+The closure adds user documentation, completed deployment records, and narrow
+documentation regression tests. Licensing and historical release records need
+no edits. The [user guide](using-xml-carousel.md) explains current operation;
+the [maintenance follow-up](release-0.3.0-maintenance.md) records runtime Help
+corrections for a later patch, not this immutable release.
 
 The [source record](release-0.3.0-source-record.json) preserves the baseline
 README and root package identities for the two historical 0.2.0 packaging
@@ -55,7 +73,7 @@ and `package-lock.json.packages[""].version`, each `0.2.0` to `0.3.0`.
 The unchanged [candidate record](release-0.3.0-candidate.md) remains historical
 prepublication evidence, including its original version and pending decisions.
 
-## Audit and validation
+## Historical Release Audit and Validation
 
 `npm ci` and `npm ls --all` passed. `npm audit --omit=dev --json` reports zero
 production vulnerabilities. The full audit reports two high-severity transitive
@@ -81,7 +99,7 @@ alone in 1.54 seconds, and the complete unchanged suite then passed with four lo
 product code, test timeout, or test expectation was changed to address it.
 The standard Vite large-chunk advisory remains nonblocking.
 
-## Preserved acceptance
+## Preserved Acceptance
 
 The [release notes](third-public-alpha.md) record the frozen authority values:
 60/60 Task 17.10, 221/221 historical visualization, 77/77 RELAX NG visualization,
@@ -95,7 +113,7 @@ There were 72 representative axe screens and zero serious/critical findings.
 Ben's manual QA is complete per the release authority. No Safari/WebKit,
 manual screen-reader, or physical-phone certification is claimed.
 
-## Distribution and focused smoke
+## Distribution and Release Smoke
 
 Two clean-output builds produced identical raw bytes, relative paths, sizes,
 and per-file SHA-256: **19 files, 3,826,638 bytes**.
@@ -106,8 +124,8 @@ metadata does not appear in runtime assets. The canonical inventory hashes
 JSON.stringify(sorted [{path,sha256}], null, 2) plus LF; the external manifest
 also records every byte size. Relative assets, workers, WASM and notices
 passed verification; no test corpus, JARs, source maps or temporary files ship.
-An exact accepted distribution and its inventory are preserved externally for
-separate deployment authority.
+The exact accepted distribution and its inventory were preserved externally
+and subsequently used for the completed manual deployment.
 
 Because the release integrity verifier changed, the unchanged browser harness
 was rerun in full: Chrome and Firefox each passed 233/233 on final release
@@ -119,14 +137,99 @@ schema requests, file requests and unexpected origins were all zero. Original
 Task 17.10 browser evidence remains unchanged; these are separate release
 observations. Browser automation reads byte-identical build output; the
 preserved copy is independently reverified against that inventory.
-Both source archives will later be compared against the exact public tag tree.
+Both source archives were compared against the exact public tag tree.
 GitHub archive hashes are observations; the annotated tag and commit/tree are
 the canonical immutable source identity.
 
-The [checklist](release-0.3.0-checklist.md) separates preparation from publication.
-No canonical-site deployment, live-site release verification, uploaded binary
-asset, or post-tag source mutation is part of this release authority.
+## Canonical-Site Deployment
 
+Ben confirmed the intentional migration to <https://xmlcarousel.knowone.ca>
+and completion of the manual FTP transfer in Binary/Image mode for all files.
+The previous hostname, `xmlcarousel.wolfshafenpress.com`, redirects with HTTP
+301 to the new canonical host. The assistant performed no hosting writes.
+
+Cache-bypassed observations at `2026-09-03T04:08:13.987Z` verified HTTP 200,
+exact raw-byte lengths, and exact SHA-256 for **19/19 files / 3,826,638 bytes**.
+There were zero missing or mismatched files. The deployed canonical inventory
+SHA-256 is
+`250c34a66ec6240ef63bb08553d49ae7fb3cee4cbda28405b6e6ba29fbed3804`.
+The root and `index.html` were 529 bytes with SHA-256
+`75990378aebb4b7dd70e586f2ff514c825eca9c62887387acbceb29fd13c52ce`.
+The complete verified file inventory appears below.
+
+HTML, executed JavaScript/workers, CSS, WASM, manifests, and licence/notice
+assets had suitable MIME types. Both WASM files were `application/wasm` and
+both standards engines ran successfully in each browser. The retained `.ts`
+provenance asset was served as `video/mp2t`; it is not an executed browser
+dependency and remained byte-exact.
+
+Independent fresh-session live smoke passed:
+
+| Browser | Version | Checks | UTC Start | UTC Completion |
+| --- | --- | ---: | --- | --- |
+| Chrome | 152.0.7977.65 | 76/76 | 2026-09-03T04:12:29.862Z | 2026-09-03T04:12:40.190Z |
+| Firefox | 155.0; geckodriver 0.37.1, revision 300705c65d1b | 76/76 | 2026-09-03T04:13:03.342Z | 2026-09-03T04:13:18.207Z |
+
+Both covered startup, RNG/RNC import, Search, Navigation, carousel journey,
+independent Inspect, original source/copy, Full/Compact/Overview, focused
+Overview Inspect, narrow viewports, retained Problems after invalid
+replacement, blocked references, workers, and runtimes. Each also passed 16
+axe scans with zero reported violations; these live scans are separate from
+the 72-screen release acceptance. Incomplete axe checks are retained in the
+external evidence; no broader accessibility certification is implied.
+
+| Live Request/Error Category | Chrome | Firefox |
+| --- | ---: | ---: |
+| Normal application static requests | 50 | 50 |
+| Approved legacy redirect navigation | 1 | 1 |
+| Automatic same-origin favicon GET | 1 | 1 |
+| Total observed requests | 52 | 52 |
+| Schema-data transmission | 0 | 0 |
+| Remote schema retrieval | 0 | 0 |
+| File retrieval | 0 | 0 |
+| Analytics/telemetry/crash requests | 0 | 0 |
+| Unexpected origins or application paths | 0 | 0 |
+| Old bundle requests | 0 | 0 |
+| Page, console, or instrumentation errors | 0 | 0 |
+
+The automatic favicon request returned 404 and was accounted for separately:
+the accepted index declares no favicon asset, and the request carried no
+schema data. The first Chrome audit over-classified that request; the external
+audit classification was corrected and fresh runs of both browsers passed.
+No application code or broad network allowlist changed.
+
+Three known 0.2.0 assets remained HTTP 200, with their historical hashes:
+`assets/index-BL1wGqMF.js`, `assets/index-COR_keLr.css`, and
+`assets/schemaImportWorker-Caeajx9r.js`. The accepted index references none and
+neither browser requested them. Manual hosting cleanup remains for those exact
+paths only; their absence has not been claimed.
+
+Rollback was not required and was not performed. The historical 0.2.0
+deployment identity was retained as a rollback reference; a complete exact
+0.2.0 distribution was not located and no replacement was rebuilt. Because
+Ben's transfer preceded confirmation here, the observed live baseline was
+already 0.3.0, not an independently captured pre-overwrite 0.2.0 state.
+
+Retained external evidence includes `release-0.3.0-publication-state.json`,
+`release-0.3.0-archive-verification.json`, and `deployment-0.3.0-live/` containing
+`deployment-report.md`, `live-byte-verification.json`, `chrome-verified.json`,
+`firefox.json`, and `final-integrity.json`. These are under
+`C:/Users/Administrator/.codex/visualizations/2026/09/02/01a063fb-af7f-7572-a742-d08ace54349a/`.
+Final deployment integrity was checked at `2026-09-03T04:14:01.729Z`: source,
+tag, package version, and GitHub prerelease were unchanged.
+
+## Post-Release Closure
+
+The [checklist](release-0.3.0-checklist.md) records completed publication and
+deployment. Documentation closure is prepared on `release-0.3.0-closure` for
+manual QA, unstaged and uncommitted. The corrected GitHub Release body is a
+handoff artifact only; the published body remains unchanged pending separate
+approval. Ben subsequently authorized the full local validation command,
+including its build, while keeping the external preserved release distribution
+and deployment untouched. No redeployment, tag movement, or runtime Help edit
+is part of this documentation work.
+
+## Verified Distribution Inventory
 
 | Relative path | Bytes | SHA-256 |
 | --- | ---: | --- |

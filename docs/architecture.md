@@ -278,5 +278,7 @@ contract before the build.
 Distribution consists of placing the contents of `dist/` in a web-served
 directory. Transfer and hosting tooling are outside the application
 architecture. CI validates the portable artifact but does not deploy it. The
-canonical hostname, `https://xmlcarousel.wolfshafenpress.com/`, is metadata
-and documentation rather than a runtime build argument.
+current canonical hostname, `https://xmlcarousel.knowone.ca`, is documented
+separately from runtime build arguments. The immutable 0.3.0 package homepage
+still records the previous hostname; its correction is a
+[maintenance follow-up](release-0.3.0-maintenance.md).

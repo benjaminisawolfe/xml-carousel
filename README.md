@@ -11,7 +11,10 @@ processed in the browser, including parsing work performed in a Web Worker. No
 XML Carousel backend is required.
 
 Version **0.3.0 is the current public alpha**, the Third Public Alpha, including
-first-class RELAX NG XML and Compact Syntax support. See the
+first-class RELAX NG XML and Compact Syntax support. It is published and
+deployed at <https://xmlcarousel.knowone.ca>; deployed-byte verification and
+live Chrome and Firefox smoke checks passed. Start with
+[Using XML Carousel](docs/using-xml-carousel.md). See the
 [release notes](docs/third-public-alpha.md), the historical
 [candidate acceptance report](docs/release-0.3.0-candidate.md), and
 [manual QA checklist](docs/release-0.3.0-manual-qa.md).
@@ -24,21 +27,25 @@ itself can still involve normal network requests to the site host for HTML,
 JavaScript, CSS, and other application assets. Your data remains in your
 hands. Everything happens in the browser.
 
-## Try it
+## Try It
+
+Open <https://xmlcarousel.knowone.ca> and follow the
+[Using XML Carousel guide](docs/using-xml-carousel.md) for a complete walkthrough.
 
 On startup, the built-in Book DTD sample is ready to explore. Open **Help** for
 an introduction or to switch between the built-in Book DTD and Library XSD
 samples. Use **Open DTD**, **Open XSD**, **Open RNG**, or **Open ZIP** to replace
-the active project with a local file.
+the active project with a local file. **Open RNG accepts both `.rng` and `.rnc`.**
 
 Selecting a relationship card advances or revisits the carousel journey.
 **Inspect** opens details independently, so checking a related declaration does
-not move the current journey. Search groups matching declarations and offers
-the same navigation and inspection actions. Pointer, touch, and spatial
+not move the current journey. Search finds elements, definitions, attributes,
+references, documentation, and source context where available, with separate
+navigation and inspection actions. Pointer, touch, and spatial
 keyboard controls are available; use the arrow keys from a focused carousel
 control and follow the visible control labels.
 
-## Supported capabilities
+## Supported Capabilities
 
 - XML 1.0 DTD grammar and XML Schema 1.0 validity through the authoritative
   Apache Xerces-C++ 3.3.0 WebAssembly engine
@@ -68,7 +75,7 @@ documented contracts, not a claim to support every XML-related standard. XSD
 1.1 is not supported. See [Standards support](docs/standards-support.md) and
 [Known limitations](docs/known-limitations.md).
 
-## Multi-file projects and security
+## Multi-File Projects and Security
 
 Use **Open ZIP** for a complete multi-file project. The ZIP must preserve the
 project's relative paths. XML Carousel never searches the host drive for
@@ -94,7 +101,7 @@ Useful commands:
 
 - `npm run build` creates the portable production build in `dist/`.
 - `npm run preview` serves the current production build locally.
-- `npm run validate` runs the complete non-writing release gate.
+- `npm run validate` runs the complete release gate, including a local build.
 - `npm run verify:release-integrity` checks documentation, licensing,
   attribution, archive provenance, and packaging invariants offline.
 - `npm run check` runs Svelte and TypeScript checks.
@@ -125,8 +132,10 @@ application backend is required.
 
 Version 0.3.0 is the current third public alpha. Annotated tag
 [`v0.3.0`](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.3.0)
-identifies its GitHub prerelease source. Canonical-site deployment of 0.3.0
-has not been performed under this release authority.
+identifies its GitHub prerelease source. Canonical-site deployment at
+<https://xmlcarousel.knowone.ca> is complete: all 19 preserved release files
+passed deployed-byte verification, the inventory digest matched, and live
+Chrome and Firefox smoke checks passed. No rollback is required.
 
 Version 0.2.0 is the historical second public alpha. Annotated tag
 [`v0.2.0`](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.2.0)
@@ -147,8 +156,9 @@ inventory SHA-256 is
 Distribution remains hosting-neutral: the same relative-base files can be
 served from a domain root or a nested directory without rebuilding.
 
-## Project documentation
+## Project Documentation
 
+- [Using XML Carousel](docs/using-xml-carousel.md)
 - [Architecture](docs/architecture.md)
 - [Standards support](docs/standards-support.md)
 - [Known limitations](docs/known-limitations.md)
@@ -170,8 +180,9 @@ served from a domain root or a nested directory without rebuilding.
 
 Version 0.3.0 is the current public alpha. Annotated tag `v0.3.0` and the
 [GitHub prerelease](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.3.0)
-identify the release source. Canonical-site deployment of 0.3.0 is separate
-and has not been performed under this release authority. Read the current
+identify the immutable release source. Version 0.3.0 is published and deployed
+at <https://xmlcarousel.knowone.ca>, with 19/19 deployed files byte-verified and
+live Chrome and Firefox smoke passed. Read the current
 [release notes](docs/third-public-alpha.md), [known limitations](docs/known-limitations.md),
 and [release report](docs/release-0.3.0-release-report.md) before testing unfamiliar schemas.
 
