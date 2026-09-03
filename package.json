@@ -1,7 +1,7 @@
 {
   "name": "xml-carousel",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A local-first browser application for exploring DTD, XSD, RNG, RNC, and ZIP schema packages as navigable journeys.",
   "author": "Ben Wolfe",
   "license": "CC0-1.0",

@@ -10,10 +10,10 @@ The application is a static, local-first site. Selected files are read and
 processed in the browser, including parsing work performed in a Web Worker. No
 XML Carousel backend is required.
 
-This working tree contains the **unreleased 0.3.0 candidate**, including
-first-class RELAX NG XML and Compact Syntax support. The package version stays
-at 0.2.0 until a separate release decision. See the
-[candidate acceptance report](docs/release-0.3.0-candidate.md) and
+Version **0.3.0 is the current public alpha**, the Third Public Alpha, including
+first-class RELAX NG XML and Compact Syntax support. See the
+[release notes](docs/third-public-alpha.md), the historical
+[candidate acceptance report](docs/release-0.3.0-candidate.md), and
 [manual QA checklist](docs/release-0.3.0-manual-qa.md).
 
 ## Privacy
@@ -123,11 +123,16 @@ Serve the application from the directory URL, normally with a trailing slash.
 The server must deliver the generated files with their normal MIME types. No
 application backend is required.
 
-Version 0.2.0 is the current second public alpha. Annotated tag
+Version 0.3.0 is the current third public alpha. Annotated tag
+[`v0.3.0`](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.3.0)
+identifies its GitHub prerelease source. Canonical-site deployment of 0.3.0
+has not been performed under this release authority.
+
+Version 0.2.0 is the historical second public alpha. Annotated tag
 [`v0.2.0`](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.2.0)
-and its GitHub prerelease identify the published source. The canonical site at
-<https://xmlcarousel.wolfshafenpress.com/> runs the exact verified 14-file
-0.2.0 distribution. Deployed-byte verification passed with live inventory
+and its GitHub prerelease identify the historical published source. Its
+canonical-site deployment at <https://xmlcarousel.wolfshafenpress.com/> used
+the verified 14-file 0.2.0 distribution. Deployed-byte verification passed with live inventory
 SHA-256
 `39f0f141b99f43aaeec8de09a189ec4f6ba65b06edbb55008179b8cf3147ddd9`,
 and live checks passed in Chrome 151.0.7922.77 and Firefox 153.0.3.
@@ -148,7 +153,10 @@ served from a domain root or a nested directory without rebuilding.
 - [Standards support](docs/standards-support.md)
 - [Known limitations](docs/known-limitations.md)
 - [Third-party licensing and attribution](docs/third-party-licensing.md)
-- 0.2.0: [Release notes](docs/second-public-alpha.md)
+- 0.3.0: [Release notes](docs/third-public-alpha.md)
+- 0.3.0: [Release checklist](docs/release-0.3.0-checklist.md)
+- 0.3.0: [Release report](docs/release-0.3.0-release-report.md)
+- 0.2.0 historical: [Release notes](docs/second-public-alpha.md)
 - 0.2.0: [Completed release checklist](docs/release-0.2.0-checklist.md)
 - 0.2.0: [Release and deployment report](docs/release-0.2.0-release-report.md)
 - 0.2.0 historical: [Candidate report](docs/release-0.2.0-candidate-report.md)
@@ -160,14 +168,12 @@ served from a domain root or a nested directory without rebuilding.
 
 ## Status
 
-Version 0.2.0 is the current public alpha. Annotated tag `v0.2.0` and the
-[GitHub prerelease](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.2.0)
-identify the published source. The canonical deployment matches the exact
-authorized 14-file distribution, deployed-byte verification passed, and live
-Chrome and Firefox checks passed. Read the current [release
-notes](docs/second-public-alpha.md), [known
-limitations](docs/known-limitations.md), and [release and deployment
-report](docs/release-0.2.0-release-report.md) before testing unfamiliar schemas.
+Version 0.3.0 is the current public alpha. Annotated tag `v0.3.0` and the
+[GitHub prerelease](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.3.0)
+identify the release source. Canonical-site deployment of 0.3.0 is separate
+and has not been performed under this release authority. Read the current
+[release notes](docs/third-public-alpha.md), [known limitations](docs/known-limitations.md),
+and [release report](docs/release-0.3.0-release-report.md) before testing unfamiliar schemas.
 
 Version 0.1.0 is preserved as the historical first public alpha with its
 original annotated tag, prerelease, release documents, and deployment evidence.
