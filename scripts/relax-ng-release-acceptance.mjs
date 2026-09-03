@@ -565,7 +565,8 @@ async function filesIn(directory) {
   return result.sort();
 }
 
-export async function productionSourceDigest() {
+/** @param {'0.2.0'} [historicalVersion] */
+export async function productionSourceDigest(historicalVersion) {
   const files = [
     ...(await filesIn('src')).filter(
       (file) => !file.endsWith('.test.ts') && !file.startsWith('src/tests/'),
@@ -579,7 +580,17 @@ export async function productionSourceDigest() {
   ].sort();
   const records = [];
   for (const file of files) {
-    const bytes = await readFile(file);
+    let bytes = await readFile(file);
+    // Release packaging may normalize only the two root lockfile versions.
+    // Every dependency, resolution, integrity and product byte remains bound.
+    if (historicalVersion && file === 'package-lock.json') {
+      const lock = JSON.parse(bytes.toString('utf8'));
+      assert.equal(lock.version, '0.3.0');
+      assert.equal(lock.packages[''].version, '0.3.0');
+      lock.version = historicalVersion;
+      lock.packages[''].version = historicalVersion;
+      bytes = Buffer.from(serialize(lock));
+    }
     records.push([
       file,
       sha256(
@@ -594,7 +605,7 @@ export async function productionSourceDigest() {
     'package-runtime-configuration',
     sha256(
       JSON.stringify({
-        version: pkg.version,
+        version: historicalVersion ?? pkg.version,
         dependencies: pkg.dependencies,
         devDependencies: pkg.devDependencies,
       }),
@@ -713,15 +724,26 @@ export function buildReleaseAcceptanceMatrix(evidence) {
 
 export async function verifyReleaseAcceptance() {
   const evidence = JSON.parse(await readFile(evidencePath, 'utf8'));
+  const version = JSON.parse(await readFile('package.json', 'utf8')).version;
+  assert.ok(version === '0.2.0' || version === '0.3.0');
+  const currentProductionDigest = await productionSourceDigest();
   assert.equal(
-    await productionSourceDigest(),
+    version === '0.3.0'
+      ? await productionSourceDigest('0.2.0')
+      : currentProductionDigest,
     evidence.productionSourceDigest,
-    'Production inputs changed since browser acceptance; rerun the browser audit.',
+    'Production inputs changed beyond approved release version metadata.',
   );
-  assert.equal(
-    JSON.parse(await readFile('package.json', 'utf8')).version,
-    '0.2.0',
-  );
+  if (version === '0.3.0') {
+    const release = JSON.parse(
+      await readFile('docs/release-0.3.0-source-record.json', 'utf8'),
+    );
+    assert.equal(currentProductionDigest, release.productionInputDigest);
+    assert.equal(
+      evidence.productionSourceDigest,
+      release.candidateProductionInputDigest,
+    );
+  }
   const generated = buildReleaseAcceptanceMatrix(evidence);
   assert.equal(
     await readFile(matrixPath, 'utf8'),
@@ -742,6 +764,8 @@ export async function verifyReleaseAcceptance() {
     rows: generated.entries.length,
     digest: sha256(serialize(generated)),
     recommendation: generated.recommendation,
+    version,
+    currentProductionDigest,
   };
 }
 

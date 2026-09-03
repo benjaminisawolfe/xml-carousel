@@ -21,11 +21,11 @@ function gitBlob(relativePath: string): string {
     .digest('hex');
 }
 
-const packageJson = JSON.parse(read('package.json')) as { version: string };
-const packageLock = JSON.parse(read('package-lock.json')) as {
-  version: string;
-  packages: { '': { version: string } };
-};
+// Historical expectations bind to the recorded pre-0.3 packaging identity.
+// The current package has its own Release030Packaging contract.
+const { packageJson, packageLock } = JSON.parse(
+  read('docs/release-0.3.0-source-record.json'),
+).historicalPackaging;
 const candidateReportPath = 'docs/release-0.2.0-candidate-report.md';
 const candidateReport = read(candidateReportPath);
 const browserHarness = read('scripts/audit-standards-engine-lifecycle.mjs');

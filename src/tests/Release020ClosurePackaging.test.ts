@@ -21,17 +21,15 @@ function gitBlob(relativePath: string): string {
     .digest('hex');
 }
 
-const readme = read('README.md');
+// Preserve the original 0.2 expectations against their recorded source state.
+const { readme, packageJson, packageLock } = JSON.parse(
+  read('docs/release-0.3.0-source-record.json'),
+).historicalPackaging;
 const releaseNotes = read('docs/second-public-alpha.md');
 const releaseChecklist = read('docs/release-0.2.0-checklist.md');
 const releaseReportPath = 'docs/release-0.2.0-release-report.md';
 const releaseReport = read(releaseReportPath);
 const candidateReport = read('docs/release-0.2.0-candidate-report.md');
-const packageJson = JSON.parse(read('package.json')) as { version: string };
-const packageLock = JSON.parse(read('package-lock.json')) as {
-  version: string;
-  packages: { '': { version: string } };
-};
 const currentFacingDocuments = [
   readme,
   releaseNotes,

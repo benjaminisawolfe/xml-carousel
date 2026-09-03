@@ -56,7 +56,7 @@ blocked. Opening `foundry-common.xsd` alone fails when
 `foundry-rich-text.xsd` was not supplied. That failure is intentional security
 and reproducibility behavior.
 
-External schema retrieval is deferred to 0.4. The unreleased 0.3.0 candidate
+External schema retrieval is deferred to 0.4. The 0.3.0 public alpha
 preserves these supplied-files-only boundaries.
 
 ## Presentation routes

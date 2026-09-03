@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "authority": "XML Carousel 0.3.0 release preparation",
+  "releaseDate": "2026-09-02",
+  "version": "0.3.0",
+  "title": "XML Carousel 0.3.0 — Third Public Alpha",
+  "baseline": {
+    "commit": "edda9ce3125330853c73d1b483be3ca2cfd7ccac",
+    "tree": "e6d2f80a2987df88315f8b1de99b78b0f887ae70"
+  },
+  "publication": {
+    "sourceCommit": "pending exact release merge and hosted CI",
+    "tagObject": "pending",
+    "githubReleaseId": "pending",
+    "deployment": "not performed; separate authority required"
+  },
+  "candidateProductionInputDigest": "c628736f9d80c6e00fce2017ff98caffa45d84dee837726d01b1ac7f6ef65d67",
+  "productionInputDigest": "5df05a36560cdbe07e623bb0af461d5507bdc327fff66260fd395660dbf96840",
+  "productionDigestChange": "Only package.json.version, package-lock.json.version and package-lock.json.packages[\"\"].version changed from 0.2.0 to 0.3.0. Normalizing those three fields to 0.2.0 must reproduce the candidate digest; all product inputs and dependency data remain bound.",
+  "historicalPackaging": {
+    "sourceCommit": "edda9ce3125330853c73d1b483be3ca2cfd7ccac",
+    "purpose": "Historical 0.2.0 packaging assertions retain their exact expected values against the integrated pre-0.3 source. Current-release assertions are in Release030Packaging.test.ts.",
+    "readme": "# XML Carousel\n\n## Overview\n\nXML Carousel is a browser-based explorer for XML schema definitions. It turns\nDTD, XSD, standalone RELAX NG XML or Compact Syntax schemas, and ZIP schema\npackages into an inspectable semantic project.\n\nThe application is a static, local-first site. Selected files are read and\nprocessed in the browser, including parsing work performed in a Web Worker. No\nXML Carousel backend is required.\n\nThis working tree contains the **unreleased 0.3.0 candidate**, including\nfirst-class RELAX NG XML and Compact Syntax support. The package version stays\nat 0.2.0 until a separate release decision. See the\n[candidate acceptance report](docs/release-0.3.0-candidate.md) and\n[manual QA checklist](docs/release-0.3.0-manual-qa.md).\n\n## Privacy\n\nXML Carousel does not upload selected schema files to an XML Carousel backend.\nFile contents are processed locally by the browser. Loading the application\nitself can still involve normal network requests to the site host for HTML,\nJavaScript, CSS, and other application assets. Your data remains in your\nhands. Everything happens in the browser.\n\n## Try it\n\nOn startup, the built-in Book DTD sample is ready to explore. Open **Help** for\nan introduction or to switch between the built-in Book DTD and Library XSD\nsamples. Use **Open DTD**, **Open XSD**, **Open RNG**, or **Open ZIP** to replace\nthe active project with a local file.\n\nSelecting a relationship card advances or revisits the carousel journey.\n**Inspect** opens details independently, so checking a related declaration does\nnot move the current journey. Search groups matching declarations and offers\nthe same navigation and inspection actions. Pointer, touch, and spatial\nkeyboard controls are available; use the arrow keys from a focused carousel\ncontrol and follow the visible control labels.\n\n## Supported capabilities\n\n- XML 1.0 DTD grammar and XML Schema 1.0 validity through the authoritative\n  Apache Xerces-C++ 3.3.0 WebAssembly engine\n- Standalone RELAX NG XML (`.rng`) and Compact Syntax (`.rnc`) validity through\n  the authoritative libxml2 RELAX NG 2.15.3 WebAssembly engine, with exact\n  retained source and one shared semantic presentation\n- Complete supported DTD and XSD 1.0 presentation through Navigation, Search,\n  carousel focus, inspector, source view, and package inventory\n- ZIP packages containing DTD, XSD, and RELAX NG `.rng`/`.rnc` files, with\n  project-local dependencies resolved only from explicitly supplied members\n  and preserved relative paths\n- RELAX NG package inventory and semantic graphs for source-correct `include`\n  and `externalRef` relationships, including retained missing and blocked targets\n- Worker-based import with progress and cancellation\n- Precise declaration, reference, ownership, type, derivation, substitution,\n  dependency, redefinition, source, and package relationships\n- Full, Compact, and Overview semantic zoom with bounded neighbourhoods,\n  relationship lines, and direct Inspect access for the focused node\n- Visible source identity and location, a dedicated source modal, exact retained\n  source copying, and deterministic plain-text node summaries\n- Adaptive presentation for large schemas and compact viewports\n- Built-in DTD and XSD samples plus keyboard-accessible Help\n\nThe deterministic DTD/XSD/ZIP supported-presentation gate is currently 221/221\ncomplete. That result is an implementation-completeness statement for those\ndocumented contracts, not a claim to support every XML-related standard. XSD\n1.1 is not supported. See [Standards support](docs/standards-support.md) and\n[Known limitations](docs/known-limitations.md).\n\n## Multi-file projects and security\n\nUse **Open ZIP** for a complete multi-file project. The ZIP must preserve the\nproject's relative paths. XML Carousel never searches the host drive for\nsiblings, uses ambiguous basename fallback, retrieves remote schemas, or opens\narbitrary `file:` URLs. A standalone file with an unsupplied dependency fails\neven when that dependency exists elsewhere on the computer.\n\nSafe relative parent segments are accepted only when they normalize inside the\ncontrolled virtual project root. Unsafe archive paths and references escaping\nthat root are blocked.\n\n## Development\n\nThe checked-in Node version is `24.16.0`; use Node 24 for local development and\nCI parity.\n\n```sh\nnpm ci\nnpm run dev\n```\n\nUseful commands:\n\n- `npm run build` creates the portable production build in `dist/`.\n- `npm run preview` serves the current production build locally.\n- `npm run validate` runs the complete non-writing release gate.\n- `npm run verify:release-integrity` checks documentation, licensing,\n  attribution, archive provenance, and packaging invariants offline.\n- `npm run check` runs Svelte and TypeScript checks.\n- `npm test` runs the Vitest suite.\n- `npm run lint` runs ESLint.\n- `npm run format:check` checks formatting without rewriting files.\n- `npm run verify:dist -- --base=./` verifies an existing portable build.\n- `npm run acceptance:relaxng-release` verifies the Task 17.10 decision matrix\n  against its reviewed browser evidence and current production inputs. Run it\n  after the complete validation suite; it does not launch browsers itself.\n\n## Distribution\n\nCreate and verify the portable production build:\n\n```sh\nnpm run build\nnpm run verify:dist -- --base=./\n```\n\nThe build is written to `dist/`. Copy the contents of `dist/` into any\ndirectory served by a static web server. Because the generated asset URLs are\nrelative, the same build can run from a domain root or a nested directory.\n\nServe the application from the directory URL, normally with a trailing slash.\nThe server must deliver the generated files with their normal MIME types. No\napplication backend is required.\n\nVersion 0.2.0 is the current second public alpha. Annotated tag\n[`v0.2.0`](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.2.0)\nand its GitHub prerelease identify the published source. The canonical site at\n<https://xmlcarousel.wolfshafenpress.com/> runs the exact verified 14-file\n0.2.0 distribution. Deployed-byte verification passed with live inventory\nSHA-256\n`39f0f141b99f43aaeec8de09a189ec4f6ba65b06edbb55008179b8cf3147ddd9`,\nand live checks passed in Chrome 151.0.7922.77 and Firefox 153.0.3.\n\nVersion 0.1.0 is the first public alpha. It remains historical and is identified\nby annotated tag\n[`v0.1.0`](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.1.0).\nIts manual FTP deployment passed deployed-byte verification and live-site\nchecks in Chrome 151.0.7922.72 and Firefox 153.0.1. Its verified historical\ninventory SHA-256 is\n`2f73adbba3ec0837fd6c4bf5c86e879af1fa0bef7730f14e6afbf0040d412dc0`.\nDistribution remains hosting-neutral: the same relative-base files can be\nserved from a domain root or a nested directory without rebuilding.\n\n## Project documentation\n\n- [Architecture](docs/architecture.md)\n- [Standards support](docs/standards-support.md)\n- [Known limitations](docs/known-limitations.md)\n- [Third-party licensing and attribution](docs/third-party-licensing.md)\n- 0.2.0: [Release notes](docs/second-public-alpha.md)\n- 0.2.0: [Completed release checklist](docs/release-0.2.0-checklist.md)\n- 0.2.0: [Release and deployment report](docs/release-0.2.0-release-report.md)\n- 0.2.0 historical: [Candidate report](docs/release-0.2.0-candidate-report.md)\n- 0.1.0 historical: [First public alpha release notes](docs/first-public-alpha.md)\n- 0.1.0 historical: [Release and deployment report](docs/release-candidate-report.md)\n- 0.1.0 historical: [Release checklist](docs/release-checklist.md)\n- [Development plan](docs/development-plan.md)\n- [Style guide](docs/style-guide.md)\n\n## Status\n\nVersion 0.2.0 is the current public alpha. Annotated tag `v0.2.0` and the\n[GitHub prerelease](https://github.com/benjaminisawolfe/xml-carousel/releases/tag/v0.2.0)\nidentify the published source. The canonical deployment matches the exact\nauthorized 14-file distribution, deployed-byte verification passed, and live\nChrome and Firefox checks passed. Read the current [release\nnotes](docs/second-public-alpha.md), [known\nlimitations](docs/known-limitations.md), and [release and deployment\nreport](docs/release-0.2.0-release-report.md) before testing unfamiliar schemas.\n\nVersion 0.1.0 is preserved as the historical first public alpha with its\noriginal annotated tag, prerelease, release documents, and deployment evidence.\n\nThis alpha is suitable for exploratory testing. Apache Xerces-C++ is the\nauthoritative XML, DTD, and XML Schema 1.0 validator within the controlled\nproject architecture. XML Carousel's post-Xerces extraction and presentation\nlayers are not a second validator. XSD 1.1, XML-instance product import,\nnetwork retrieval, and host-filesystem discovery remain outside scope. libxml2\nRELAX NG is authoritative for standalone and ZIP-supplied `.rng` and `.rnc` validity.\nZIP packages can safely resolve local `include` and `externalRef` targets from\ntheir supplied RNG members while retaining missing or blocked references.\nBoth syntaxes share structural RELAX NG presentation while retaining truthful,\nsyntax-specific original source.\n\n## Licence\n\nThe project is dedicated to the public domain under\n[CC0 1.0 Universal](LICENSE). Third-party components and fixtures retain their\nown terms; see [Third-party licensing](docs/third-party-licensing.md) and the\ndistributed [notices](THIRD_PARTY_NOTICES.txt).\n",
+    "packageJson": {
+      "version": "0.2.0"
+    },
+    "packageLock": {
+      "version": "0.2.0",
+      "packages": {
+        "": {
+          "version": "0.2.0"
+        }
+      }
+    },
+    "sourceFiles": [
+      {
+        "path": "README.md",
+        "blob": "4ae5b55a1d32ed837066681f16e59bb11e050bc5",
+        "sha256": "d4744cf5061d910a76a989ebfe24d5a3a3f6fd442930a226266f60d8e62ed6fd"
+      },
+      {
+        "path": "package.json",
+        "blob": "24e53d8bff3071c22c8b0d9c4e18dd2742003f77",
+        "sha256": "8dd4eb20bcb859c552fd9af903a3e799a73c54e338e2b787a245ac5746ecfdf9"
+      },
+      {
+        "path": "package-lock.json",
+        "blob": "581bb7bb0119a96d6907d674c75ad9b42b400a8c",
+        "sha256": "b0b82f6a822a900d6b717f75bbeb5b3135d95c0cc71fc98c8975ca9a946cd706"
+      }
+    ]
+  },
+  "preservedRecords": [
+    {
+      "path": "docs/first-public-alpha.md",
+      "blob": "9886527e4746e86d746c39ab4782904ad2ee607e",
+      "sha256": "1bcb0777f61573a7b4aa45c98350c1377700f9803fab5b22b31d857be608b71b"
+    },
+    {
+      "path": "docs/release-checklist.md",
+      "blob": "05de57faf7dae13d2417a9e4d02247bb2746a864",
+      "sha256": "178b044b5a88f644bde800f7529fdc7ccfb60691a743693568c512d1e3a97ac4"
+    },
+    {
+      "path": "docs/release-candidate-report.md",
+      "blob": "9a37e9936bf249c61d475d0580f9c7963d47f530",
+      "sha256": "1979983b874d3e9d9cea76331d3e1f05799bcc2a141b24d041125e7db807a456"
+    },
+    {
+      "path": "docs/second-public-alpha.md",
+      "blob": "1c910bab1a645be0777b778494bd4d906bc32c71",
+      "sha256": "fa84884cf9d0cafaf74f533f1d4b5e9ca4d4e6d4ea5a82863d61443745989a3e"
+    },
+    {
+      "path": "docs/release-0.2.0-checklist.md",
+      "blob": "4aa32699d3ebb18f1632f881d5aeef5ba0be63e6",
+      "sha256": "89bbdea6685282bc9e42ab420c369fc82c432258e6225b8db1b36abeea52d8e1"
+    },
+    {
+      "path": "docs/release-0.2.0-release-report.md",
+      "blob": "23635220c7e1a0a0785cf1c2c8f6af9d6b68bc39",
+      "sha256": "adaa0c10890e38251c9238b7d9238cf0e51c862818c2dba64f5153ae3185228b"
+    },
+    {
+      "path": "docs/release-0.2.0-candidate-report.md",
+      "blob": "894c86a2971abd805b6bc5989e974ea8b6e2b262",
+      "sha256": "8e863271bc1c62d8ca8d1f459c2c57ca7d781abfdce999df7d300c88fd8b3ace"
+    },
+    {
+      "path": "docs/release-0.3.0-candidate.md",
+      "blob": "5f832671b19a0dbf854ed67af5e397cb7f769211",
+      "sha256": "2d08045aedf5a904ec40d4372ffdba05e8df16e5f33cb8654fe32fe602d1a5da"
+    },
+    {
+      "path": "docs/release-0.3.0-manual-qa.md",
+      "blob": "c530d1a5be88a9ac2bc3530ecc8b7f42bef5ba43",
+      "sha256": "8206e3fc72edc3a368f5c77b5fe1e440ee0c5a8d7db40e9c01426a731ca71904"
+    },
+    {
+      "path": "docs/technical/relax-ng-release-acceptance-matrix.json",
+      "blob": "d46e466fa609a858c38b00dd9654eb32b5a5bb48",
+      "sha256": "032bedd8e0dcb32d753a718861d9d311010c5dbed8eb89aeecf1a1dd0fb91397"
+    },
+    {
+      "path": "docs/technical/relax-ng-release-browser-evidence.json",
+      "blob": "6e234c0e3255eaa9e2aa11a4d22911af9da693bb",
+      "sha256": "0a47de05332892c1667f36c9eb1fc8e35df565978c9e6d687a450bc2b511c7c4"
+    }
+  ]
+}
